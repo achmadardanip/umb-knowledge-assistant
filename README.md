@@ -36,6 +36,14 @@ DATABASE_URL=postgresql+psycopg://postgres:<SUPABASE_DB_PASSWORD>@db.<SUPABASE_P
 
 Jangan hardcode connection string di source code. Simpan hanya di `.env`.
 
+Untuk GitHub Actions, gunakan Supabase pooler jika direct database host gagal karena IPv6 di GitHub-hosted runner. Tambahkan repository secret:
+
+```env
+SUPABASE_POOLER_DATABASE_URL=postgresql+psycopg://postgres.<SUPABASE_PROJECT_REF>:<SUPABASE_DB_PASSWORD>@aws-0-<SUPABASE_REGION>.pooler.supabase.com:6543/postgres
+```
+
+Secret ini akan dipakai oleh workflow freshness sebagai `DATABASE_URL`. Secret `DATABASE_URL` tetap bisa dipakai untuk runtime lokal/server yang dapat menjangkau host direct Supabase.
+
 ## pgvector
 
 Jalankan SQL berikut melalui Supabase SQL Editor atau migration runner:

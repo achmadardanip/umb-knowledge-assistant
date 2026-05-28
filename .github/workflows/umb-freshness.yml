@@ -21,7 +21,7 @@ jobs:
       run:
         working-directory: backend
     env:
-      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      DATABASE_URL: ${{ secrets.SUPABASE_POOLER_DATABASE_URL || secrets.DATABASE_URL }}
       OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
       TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
       AI_PROVIDER: openrouter
@@ -51,6 +51,27 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
+
+      - name: Verify Supabase database connection
+        run: |
+          python - <<'PY'
+          from sqlalchemy import text
+          from app.db.database import get_engine
+
+          try:
+              with get_engine().connect() as connection:
+                  connection.execute(text("select 1"))
+          except Exception as exc:
+              message = str(exc)
+              print("Database connection failed.")
+              if "Network is unreachable" in message or "@db." in message:
+                  print(
+                      "GitHub-hosted runners often cannot reach the direct Supabase IPv6 host. "
+                      "Add a repository secret named SUPABASE_POOLER_DATABASE_URL using the "
+                      "Supabase Session/Transaction Pooler connection string, then rerun this workflow."
+                  )
+              raise
+          PY
 
       - name: Prepare runtime data directories
         run: |
