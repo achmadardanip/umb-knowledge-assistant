@@ -52,11 +52,20 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r requirements.txt
 
+      - name: Prepare runtime data directories
+        run: |
+          mkdir -p ../data/discovery ../data/multimodal ../data/downloads/raw
+
       - name: Merge and filter discovered URLs
         run: python -m app.discovery.discovery_pipeline merge-filter --domain mercubuana.ac.id
 
       - name: Incremental crawl indexed public pages
-        run: python -m app.ingestion.pipeline crawl-discovered --max-pages "$SCHEDULED_CRAWL_MAX_PAGES" --rate-limit 1
+        run: |
+          if [ -s ../data/discovery/urls_filtered.txt ]; then
+            python -m app.ingestion.pipeline crawl-discovered --max-pages "$SCHEDULED_CRAWL_MAX_PAGES" --rate-limit 1
+          else
+            python -m app.ingestion.pipeline crawl --domain mercubuana.ac.id --max-pages "$SCHEDULED_CRAWL_MAX_PAGES" --max-depth 3 --confirm-authorized
+          fi
 
       - name: Incremental multimodal ingestion
         run: python -m app.multimodal.multimodal_pipeline run-all --max-files "$SCHEDULED_MULTIMODAL_MAX_FILES"

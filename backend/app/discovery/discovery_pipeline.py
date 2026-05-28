@@ -246,6 +246,7 @@ def merge_filter_command(domain: str | None = None) -> dict:
             allowed.append(normalized)
 
     target_dir = discovery_dir()
+    target_dir.mkdir(parents=True, exist_ok=True)
     (target_dir / "urls_merged.txt").write_text("\n".join(sorted(set(merged_lines))) + "\n", encoding="utf-8")
     (target_dir / "urls_filtered.txt").write_text("\n".join(allowed) + "\n", encoding="utf-8")
     urls_synced = _sync_discovered_urls(root_domain, db_records)
