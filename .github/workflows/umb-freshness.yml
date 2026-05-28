@@ -1,0 +1,72 @@
+name: UMB Freshness Crawl
+
+on:
+  schedule:
+    - cron: "0 20 * * *"
+  workflow_dispatch:
+    inputs:
+      crawl_max_pages:
+        description: "Maximum public pages to refresh"
+        required: false
+        default: "500"
+      multimodal_max_files:
+        description: "Maximum public assets to refresh"
+        required: false
+        default: "200"
+
+jobs:
+  refresh-rag:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    env:
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+      TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+      AI_PROVIDER: openrouter
+      EMBEDDING_PROVIDER: openai
+      EMBEDDING_MODEL: text-embedding-3-small
+      DISCOVERY_DOMAIN: mercubuana.ac.id
+      ALLOWED_DOMAIN: mercubuana.ac.id
+      DISCOVERY_RATE_LIMIT: "1"
+      CRAWLER_RATE_LIMIT: "1"
+      ENABLE_FFUF: "false"
+      ENABLE_DIRSEARCH: "false"
+      ENABLE_OCR: "false"
+      ENABLE_ASR: "false"
+      ENABLE_VIDEO_DOWNLOAD: "false"
+      SCHEDULED_CRAWL_MAX_PAGES: ${{ inputs.crawl_max_pages || '500' }}
+      SCHEDULED_MULTIMODAL_MAX_FILES: ${{ inputs.multimodal_max_files || '200' }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+
+      - name: Install backend dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Merge and filter discovered URLs
+        run: python -m app.discovery.discovery_pipeline merge-filter --domain mercubuana.ac.id
+
+      - name: Incremental crawl indexed public pages
+        run: python -m app.ingestion.pipeline crawl-discovered --max-pages "$SCHEDULED_CRAWL_MAX_PAGES" --rate-limit 1
+
+      - name: Incremental multimodal ingestion
+        run: python -m app.multimodal.multimodal_pipeline run-all --max-files "$SCHEDULED_MULTIMODAL_MAX_FILES"
+
+      - name: Upload sanitized reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: umb-freshness-reports
+          path: |
+            data/discovery/discovery_report.json
+            data/multimodal/extraction_report.json
+          if-no-files-found: ignore

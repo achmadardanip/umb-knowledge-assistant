@@ -1,0 +1,23 @@
+[
+  {"id": "admission_01", "question": "Bagaimana cara daftar mahasiswa baru Universitas Mercu Buana?", "category": "admission"},
+  {"id": "tuition_01", "question": "Di mana saya bisa melihat informasi biaya kuliah UMB?", "category": "tuition"},
+  {"id": "sso_01", "question": "Apa itu SSO Universitas Mercu Buana?", "category": "sso"},
+  {"id": "sia_01", "question": "Bagaimana jika tidak bisa login SIA?", "category": "sia"},
+  {"id": "library_01", "question": "Di mana informasi perpustakaan UMB?", "category": "library"},
+  {"id": "repository_01", "question": "Bagaimana mengakses repository UMB?", "category": "repository"},
+  {"id": "faculties_01", "question": "Apa saja fakultas di Universitas Mercu Buana?", "category": "faculties"},
+  {"id": "programs_01", "question": "Apa saja program studi yang tersedia di UMB?", "category": "study_programs"},
+  {"id": "scholarship_01", "question": "Apakah ada informasi beasiswa di UMB?", "category": "scholarship"},
+  {"id": "academic_services_01", "question": "Apa saja layanan akademik untuk mahasiswa?", "category": "academic_services"},
+  {"id": "location_01", "question": "Di mana lokasi kampus Universitas Mercu Buana?", "category": "campus_location"},
+  {"id": "contact_01", "question": "Bagaimana menghubungi Universitas Mercu Buana?", "category": "contact"},
+  {"id": "calendar_01", "question": "Di mana kalender akademik UMB dipublikasikan?", "category": "academic_calendar"},
+  {"id": "curriculum_01", "question": "Di mana informasi kurikulum program studi?", "category": "curriculum"},
+  {"id": "announcement_01", "question": "Apa pengumuman terbaru dari UMB yang berhasil diindeks?", "category": "announcement"},
+  {"id": "pdf_01", "question": "Apakah ada dokumen PDF resmi tentang pendaftaran atau akademik?", "category": "pdf"},
+  {"id": "transcript_01", "question": "Apakah ada transkrip video resmi terkait layanan UMB?", "category": "transcript_video"},
+  {"id": "spreadsheet_01", "question": "Apakah ada tabel atau spreadsheet resmi terkait informasi akademik?", "category": "spreadsheet"},
+  {"id": "faculty_contact_01", "question": "Di mana kontak fakultas atau program studi bisa ditemukan?", "category": "faculty_contact"},
+  {"id": "public_policy_01", "question": "Di mana saya bisa mengecek kebijakan akademik resmi UMB?", "category": "policy"}
+]
+
