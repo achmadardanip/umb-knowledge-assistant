@@ -52,7 +52,9 @@ def _provider(value: str | None) -> ProviderName:
 
 @dataclass(frozen=True)
 class Settings:
-    database_url: str | None = os.getenv("DATABASE_URL")
+    database_url: str | None = os.getenv("SUPABASE_POOLER_DATABASE_URL") or os.getenv("DATABASE_URL")
+    local_sqlite_fallback_enabled: bool = _bool("LOCAL_SQLITE_FALLBACK_ENABLED", True)
+    local_sqlite_path: str = os.getenv("LOCAL_SQLITE_PATH", "local-dev.db")
 
     ai_provider: ProviderName = _provider(os.getenv("AI_PROVIDER"))
 

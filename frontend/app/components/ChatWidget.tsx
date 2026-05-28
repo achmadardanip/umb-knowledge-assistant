@@ -66,11 +66,15 @@ export function ChatWidget() {
   }, []);
 
   useEffect(() => {
-    refreshSessions().catch((err) => setError(err.message));
+    refreshSessions()
+      .then(() => setError(null))
+      .catch((err) => setError(err.message));
   }, [refreshSessions]);
 
   useEffect(() => {
-    refreshMessages().catch((err) => setError(err.message));
+    refreshMessages()
+      .then(() => setError(null))
+      .catch((err) => setError(err.message));
   }, [refreshMessages]);
 
   const activeTitle = useMemo(() => sessions.find((session) => session.session_id === activeSessionId)?.title || "UMB Knowledge Assistant", [sessions, activeSessionId]);

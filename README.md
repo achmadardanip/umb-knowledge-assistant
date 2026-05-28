@@ -44,6 +44,13 @@ SUPABASE_POOLER_DATABASE_URL=postgresql+psycopg://postgres.<SUPABASE_PROJECT_REF
 
 Secret ini akan dipakai oleh workflow freshness sebagai `DATABASE_URL`. Secret `DATABASE_URL` tetap bisa dipakai untuk runtime lokal/server yang dapat menjangkau host direct Supabase.
 
+Untuk development lokal, aplikasi otomatis fallback ke SQLite `backend/local-dev.db` jika direct Supabase tidak bisa dijangkau, misalnya karena host direct hanya resolve ke IPv6. Fallback ini dikontrol oleh:
+
+```env
+LOCAL_SQLITE_FALLBACK_ENABLED=true
+LOCAL_SQLITE_PATH=local-dev.db
+```
+
 ## pgvector
 
 Jalankan SQL berikut melalui Supabase SQL Editor atau migration runner:

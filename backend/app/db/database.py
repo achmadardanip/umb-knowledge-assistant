@@ -1,11 +1,15 @@
 from __future__ import annotations
 
 from collections.abc import Generator
+from pathlib import Path
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.config import get_settings
+from app.core.paths import project_path
+from app.db.models import Base
 
 
 _engine = None
@@ -20,13 +24,48 @@ def normalize_database_url(database_url: str) -> str:
     return database_url
 
 
+def _engine_kwargs(database_url: str) -> dict:
+    if database_url.startswith("sqlite"):
+        return {"connect_args": {"check_same_thread": False}}
+    return {"pool_pre_ping": True}
+
+
+def _create_verified_engine(database_url: str):
+    engine = create_engine(normalize_database_url(database_url), **_engine_kwargs(database_url))
+    with engine.connect() as connection:
+        connection.execute(text("select 1"))
+    return engine
+
+
+def _local_sqlite_url() -> str | None:
+    settings = get_settings()
+    if not settings.local_sqlite_fallback_enabled:
+        return None
+    configured_path = Path(settings.local_sqlite_path)
+    db_path = configured_path if configured_path.is_absolute() else project_path("backend", configured_path.as_posix())
+    db_path.parent.mkdir(parents=True, exist_ok=True)
+    return f"sqlite:///{db_path.as_posix()}"
+
+
 def get_engine():
     global _engine
     if _engine is None:
         database_url = get_settings().database_url
         if not database_url:
-            raise RuntimeError("DATABASE_URL is not configured.")
-        _engine = create_engine(normalize_database_url(database_url), pool_pre_ping=True)
+            fallback_url = _local_sqlite_url()
+            if not fallback_url:
+                raise RuntimeError("DATABASE_URL is not configured.")
+            _engine = create_engine(fallback_url, **_engine_kwargs(fallback_url))
+            Base.metadata.create_all(_engine)
+            return _engine
+        try:
+            _engine = _create_verified_engine(database_url)
+        except OperationalError:
+            fallback_url = _local_sqlite_url()
+            if not fallback_url:
+                raise
+            _engine = create_engine(fallback_url, **_engine_kwargs(fallback_url))
+            Base.metadata.create_all(_engine)
     return _engine
 
 
