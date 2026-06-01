@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from typing import Literal
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic"]
+ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes"]
 
 
 class ProviderConfigurationError(RuntimeError):
@@ -30,4 +30,3 @@ class BaseLLMProvider(ABC):
     @abstractmethod
     def chat(self, messages: list[dict], temperature: float = 0.1) -> LLMResponse:
         raise NotImplementedError
-

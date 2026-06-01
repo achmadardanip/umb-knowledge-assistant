@@ -33,8 +33,12 @@ export function setSelectedProvider(provider: ProviderId) {
 
 export function getRetrievalMode(): RetrievalMode {
   const saved = window.localStorage.getItem(KEYS.retrievalMode) as RetrievalMode | null;
-  if (saved === "web" || saved === "hybrid" || saved === "indexed") return saved;
-  return "indexed";
+  if (saved === "web") {
+    window.localStorage.setItem(KEYS.retrievalMode, "hybrid");
+    return "hybrid";
+  }
+  if (saved === "hybrid" || saved === "indexed") return saved;
+  return "hybrid";
 }
 
 export function setRetrievalMode(mode: RetrievalMode) {

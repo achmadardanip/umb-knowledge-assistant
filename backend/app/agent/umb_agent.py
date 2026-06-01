@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 from dataclasses import dataclass
 from typing import Callable, Literal
 
@@ -17,6 +18,7 @@ except Exception:  # pragma: no cover - fallback only when dependency is absent.
 
 RetrievalMode = Literal["indexed", "web", "hybrid"]
 AgentEmitter = Callable[[str, str, str, str | None, dict | None], None]
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -25,6 +27,8 @@ class AgentResult:
     indexed_context_count: int
     web_context_count: int
     agent_tool_calls: int
+    retrieval_fallback_used: bool = False
+    retrieval_warnings: list[str] | None = None
 
 
 def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
@@ -79,6 +83,8 @@ def run_umb_agent(
     contexts: list[dict] = []
     indexed_contexts: list[dict] = []
     web_contexts: list[dict] = []
+    retrieval_warnings: list[str] = []
+    retrieval_fallback_used = False
     tool_calls = 0
 
     def emit_step(step_id: str, label: str, status: str, detail: str | None = None, metadata: dict | None = None) -> None:
@@ -95,7 +101,12 @@ def run_umb_agent(
 
     def web_tool(tool_query: str) -> str:
         nonlocal web_contexts
-        web_contexts = live_retriever.search(tool_query, top_k=top_k)
+        try:
+            web_contexts = live_retriever.search(tool_query, top_k=top_k)
+        except Exception as exc:
+            web_contexts = []
+            retrieval_warnings.append(str(exc))
+            logger.info("Live web retrieval skipped: %s", exc)
         return f"{len(web_contexts)} live web contexts"
 
     def citation_tool(_tool_query: str) -> str:
@@ -103,58 +114,82 @@ def run_umb_agent(
 
     _build_langchain_tools(indexed_tool, web_tool, citation_tool)
 
-    planned_tools: list[str]
-    if retrieval_mode == "indexed":
-        planned_tools = ["indexed_retriever", "citation_validator"]
-    elif retrieval_mode == "web":
-        planned_tools = ["umb_live_web_search", "citation_validator"]
-    else:
-        planned_tools = ["indexed_retriever", "umb_live_web_search", "citation_validator"]
-
     emit_step(
         "agent",
-        "Menjalankan agent retrieval UMB",
+        "Menyiapkan retrieval UMB",
         "running",
-        f"Mode {retrieval_mode}; maksimal {max_iterations} tool iteration",
+        f"Mode {retrieval_mode}; maksimal {max_iterations} langkah alat",
         {"retrieval_mode": retrieval_mode, "max_tool_iterations": max_iterations},
     )
 
-    for tool_name in planned_tools:
+    def can_call_tool() -> bool:
+        return tool_calls < max_iterations
+
+    def run_indexed(*, fallback: bool = False) -> None:
+        nonlocal tool_calls
+        if not can_call_tool():
+            emit_step("agent_limit", "Membatasi langkah retrieval", "skipped", "Batas langkah alat tercapai")
+            return
+        step_id = "indexed_fallback" if fallback else "indexed_retriever"
+        label = "Mencari sumber indexed resmi UMB"
+        emit_step(step_id, label, "running", f"Top-k {top_k}")
+        indexed_tool(query)
+        tool_calls += 1
+        emit_step(
+            step_id,
+            label,
+            "done" if indexed_contexts else "skipped",
+            f"{len(indexed_contexts)} konteks indexed ditemukan",
+            {"indexed_context_count": len(indexed_contexts), "fallback": fallback},
+        )
+
+    def run_web() -> None:
+        nonlocal tool_calls
         if tool_calls >= max_iterations:
-            emit_step("agent_limit", "Membatasi iterasi agent", "skipped", "Agent mencapai batas tool iteration")
-            break
-        if tool_name == "indexed_retriever":
-            emit_step("indexed_retriever", "Mencari di indexed RAG UMB", "running", f"Top-k {top_k}")
-            indexed_tool(query)
-            tool_calls += 1
+            emit_step("agent_limit", "Membatasi langkah retrieval", "skipped", "Batas langkah alat tercapai")
+            return
+        emit_step("umb_live_web_search", "Mencari sumber live resmi UMB", "running", f"Domain {settings.web_search_strict_domain}")
+        emit_step("web_scope", "Memvalidasi scope hasil web", "running", "Hanya root/subdomain UMB yang diterima")
+        web_tool(query)
+        tool_calls += 1
+        emit_step("web_scope", "Memvalidasi scope hasil web", "done", "Hasil eksternal/lookalike/archive ditolak")
+        status = "done" if web_contexts else ("error" if retrieval_warnings else "skipped")
+        emit_step(
+            "umb_live_web_search",
+            "Mengambil dan mengekstrak halaman live",
+            status,
+            f"{len(web_contexts)} konteks live ditemukan",
+            {"web_context_count": len(web_contexts), "warning": retrieval_warnings[-1] if retrieval_warnings else None},
+        )
+
+    if retrieval_mode == "indexed":
+        run_indexed()
+    elif retrieval_mode == "web":
+        run_web()
+        if not web_contexts:
+            retrieval_fallback_used = True
+            run_indexed(fallback=True)
+    else:
+        run_indexed()
+        run_web()
+        if retrieval_warnings and indexed_contexts:
+            retrieval_fallback_used = True
             emit_step(
-                "indexed_retriever",
-                "Mencari di indexed RAG UMB",
-                "done" if indexed_contexts else "skipped",
-                f"{len(indexed_contexts)} konteks indexed ditemukan",
-                {"indexed_context_count": len(indexed_contexts)},
+                "web_to_indexed_fallback",
+                "Memakai sumber indexed karena live web tidak tersedia",
+                "done",
+                "Jawaban tetap memakai konteks resmi yang sudah diindeks",
+                {"retrieval_fallback_used": True},
             )
-        elif tool_name == "umb_live_web_search":
-            emit_step("umb_live_web_search", "Mencari sumber live resmi UMB", "running", f"Domain {settings.web_search_strict_domain}")
-            emit_step("web_scope", "Memvalidasi scope hasil web", "running", "Hanya root/subdomain UMB yang diterima")
-            web_tool(query)
-            tool_calls += 1
-            emit_step("web_scope", "Memvalidasi scope hasil web", "done", "Hasil eksternal/lookalike/archive ditolak")
-            emit_step(
-                "umb_live_web_search",
-                "Mengambil dan mengekstrak halaman live",
-                "done" if web_contexts else "skipped",
-                f"{len(web_contexts)} konteks live ditemukan",
-                {"web_context_count": len(web_contexts)},
-            )
-        elif tool_name == "citation_validator":
-            tool_calls += 1
-            emit_step("citation_candidates", "Menyiapkan kandidat sitasi", "done", "Sitasi akan divalidasi sebelum jawaban final")
+
+    if can_call_tool():
+        tool_calls += 1
+        emit_step("citation_candidates", "Menyiapkan kandidat sitasi", "done", "Sitasi akan divalidasi sebelum jawaban final")
 
     if retrieval_mode == "indexed":
         contexts = indexed_contexts
     elif retrieval_mode == "web":
-        contexts = web_contexts
+        contexts = web_contexts or indexed_contexts
     else:
         emit_step("agent_merge", "Menggabungkan konteks indexed dan live", "running")
         contexts = indexed_contexts + web_contexts
@@ -171,14 +206,20 @@ def run_umb_agent(
     contexts = contexts[:top_k]
     emit_step(
         "agent",
-        "Menjalankan agent retrieval UMB",
+        "Menyiapkan retrieval UMB",
         "done",
         f"{len(contexts)} konteks final dipilih",
-        {"retrieval_mode": retrieval_mode, "agent_tool_calls": tool_calls},
+        {
+            "retrieval_mode": retrieval_mode,
+            "agent_tool_calls": tool_calls,
+            "retrieval_fallback_used": retrieval_fallback_used,
+        },
     )
     return AgentResult(
         contexts=contexts,
         indexed_context_count=len(indexed_contexts),
         web_context_count=len(web_contexts),
         agent_tool_calls=tool_calls,
+        retrieval_fallback_used=retrieval_fallback_used,
+        retrieval_warnings=retrieval_warnings,
     )

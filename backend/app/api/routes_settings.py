@@ -18,6 +18,12 @@ def providers() -> dict:
             {"id": "openai", "label": "OpenAI", "configured": bool(settings.openai_api_key), "model": settings.openai_model},
             {"id": "gemini", "label": "Gemini", "configured": bool(settings.gemini_api_key), "model": settings.gemini_model},
             {"id": "anthropic", "label": "Claude", "configured": bool(settings.anthropic_api_key), "model": settings.anthropic_model},
+            {
+                "id": "hermes",
+                "label": "Hermes",
+                "configured": bool(settings.hermes_enabled and settings.hermes_api_key and settings.hermes_base_url),
+                "model": settings.hermes_model,
+            },
         ],
         "web_search": {
             "enabled": settings.web_search_enabled,

@@ -53,6 +53,30 @@ def _build_sources(contexts: list[dict]) -> list[dict]:
     return sources
 
 
+def _context_source_key(context: dict) -> tuple:
+    return (
+        context.get("url"),
+        context.get("page_number"),
+        context.get("slide_number"),
+        context.get("sheet_name"),
+        context.get("row_range"),
+        context.get("timestamp_start"),
+        context.get("timestamp_end"),
+    )
+
+
+def _unique_contexts_by_source(contexts: list[dict]) -> list[dict]:
+    seen = set()
+    unique_contexts: list[dict] = []
+    for context in contexts:
+        key = _context_source_key(context)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique_contexts.append(context)
+    return unique_contexts
+
+
 def _ensure_sentence_citation_markers(answer: str, source_count: int) -> str:
     if not answer or source_count < 1 or re.search(r"\[\d+\]", answer):
         return answer
@@ -83,9 +107,10 @@ def extractive_fallback_payload(
     model_used: str | None = None,
     reason: str | None = None,
 ) -> dict:
-    sources = _build_sources(contexts[:5])
+    fallback_contexts = _unique_contexts_by_source(contexts)[:5]
+    sources = _build_sources(fallback_contexts)
     snippets = []
-    for index, context in enumerate(contexts[:3], start=1):
+    for index, context in enumerate(fallback_contexts[:3], start=1):
         text = " ".join((context.get("chunk_text") or "").split())
         if text:
             snippets.append(f"{text[:650]} [{index}]")
@@ -209,7 +234,8 @@ Percakapan terbaru:
 Kembalikan JSON valid sesuai format yang diminta.
 Gunakan hanya URL dari konteks resmi.
 Setiap kalimat faktual penting pada field answer harus mencantumkan marker sitasi bernomor seperti [1] atau [2].
-Nomor marker harus sesuai urutan sources yang Anda kembalikan."""
+Nomor marker harus sesuai urutan sources yang Anda kembalikan.
+Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, atau tag <think> pada field mana pun."""
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_prompt}]
     max_retries = max(settings.llm_max_retries, 0)
@@ -243,4 +269,13 @@ Nomor marker harus sesuai urutan sources yang Anda kembalikan."""
     if not payload.get("sources"):
         payload["sources"] = _build_sources(contexts[:3])
     payload["answer"] = _ensure_sentence_citation_markers(payload.get("answer") or "", len(payload.get("sources") or []))
-    return validate_citations(payload, contexts, require_citation_markers=True)
+    validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
+    if validated_payload.get("not_found") and settings.llm_fallback_extractive:
+        return extractive_fallback_payload(
+            contexts=contexts,
+            memory_used=memory_used,
+            provider_used=response.provider_used,
+            model_used=response.model_used,
+            reason="provider_answer_missing_valid_citations",
+        )
+    return validated_payload

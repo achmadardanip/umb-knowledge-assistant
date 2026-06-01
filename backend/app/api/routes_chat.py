@@ -41,10 +41,10 @@ class ChatRequest(BaseModel):
     anonymous_session_id: str | None = None
     question: str = Field(min_length=1)
     top_k: int = 5
-    provider_override: Literal["openrouter", "openai", "gemini", "anthropic"] | None = None
+    provider_override: Literal["openrouter", "openai", "gemini", "anthropic", "hermes"] | None = None
     memory_enabled: bool = True
     regenerate_from_message_id: str | None = None
-    retrieval_mode: RetrievalMode = "indexed"
+    retrieval_mode: RetrievalMode = "hybrid"
     language: str | None = None
 
 
@@ -72,11 +72,37 @@ def _agent_step(step_id: str, label: str, status: StepStatus, detail: str | None
     }
 
 
-def _build_retrieval_query(question: str, history: list[dict]) -> str:
-    recent_user_turns = [message.get("content", "") for message in history if message.get("role") == "user"][-3:]
-    if not recent_user_turns:
-        return question
-    return compact_context([question, "Konteks percakapan:", *recent_user_turns], max_chars=1200)
+def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None) -> str:
+    prior_messages = list(history or [])
+    normalized_question = " ".join((question or "").split()).lower()
+    for index in range(len(prior_messages) - 1, -1, -1):
+        message = prior_messages[index]
+        if message.get("role") == "user" and " ".join((message.get("content") or "").split()).lower() == normalized_question:
+            prior_messages.pop(index)
+            break
+
+    recent_user_turns = [message.get("content", "") for message in prior_messages if message.get("role") == "user"][-3:]
+    source_hints: list[str] = []
+    for message in prior_messages[-4:]:
+        for source in (message.get("sources") or [])[:3]:
+            if not isinstance(source, dict):
+                continue
+            hint = " ".join(
+                str(value)
+                for value in [source.get("title"), source.get("hostname"), source.get("url")]
+                if value
+            )
+            if hint and hint not in source_hints:
+                source_hints.append(hint)
+
+    parts = [question]
+    if chat_title and chat_title != "New Chat":
+        parts.append(f"Judul chat: {chat_title}")
+    if recent_user_turns:
+        parts.extend(["Konteks pertanyaan sebelumnya:", *recent_user_turns])
+    if source_hints:
+        parts.extend(["Sumber resmi yang pernah relevan:", *source_hints[:5]])
+    return compact_context(parts, max_chars=1600)
 
 
 def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
@@ -249,7 +275,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
         }
     emit("guardrail", "Memvalidasi keamanan pertanyaan", "done", "Pertanyaan aman untuk diproses")
 
-    retrieval_query = _build_retrieval_query(payload.question, history)
+    retrieval_query = _build_retrieval_query(payload.question, history, title)
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
 
     emit("memory", "Memeriksa memori chat yang relevan", "running")
@@ -373,6 +399,8 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
         "indexed_context_count": agent_result.indexed_context_count if agent_result else 0,
         "web_context_count": agent_result.web_context_count if agent_result else 0,
         "agent_tool_calls": agent_result.agent_tool_calls if agent_result else 0,
+        "retrieval_fallback_used": agent_result.retrieval_fallback_used if agent_result else False,
+        "retrieval_warnings": agent_result.retrieval_warnings if agent_result else [],
         "cache_hit": bool(answer_payload.get("cache_hit")),
         "regenerate_from_message_id": payload.regenerate_from_message_id,
     }
@@ -421,6 +449,8 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
         "indexed_context_count": agent_result.indexed_context_count if agent_result else 0,
         "web_context_count": agent_result.web_context_count if agent_result else 0,
         "agent_tool_calls": agent_result.agent_tool_calls if agent_result else 0,
+        "retrieval_fallback_used": agent_result.retrieval_fallback_used if agent_result else False,
+        "retrieval_warnings": agent_result.retrieval_warnings if agent_result else [],
     }
 
 

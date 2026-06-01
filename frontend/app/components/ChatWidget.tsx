@@ -13,7 +13,7 @@ import {
   setRetrievalMode,
   setSelectedProvider
 } from "../lib/localStorage";
-import type { ChatMessage, ChatSession, ProviderId, RetrievalMode } from "../lib/types";
+import type { ChatMessage, ChatSession, ProviderId, ProviderOption, RetrievalMode } from "../lib/types";
 import { useChatMessages } from "../hooks/useChatMessages";
 import { useChatSessions } from "../hooks/useChatSessions";
 import { ChatInput } from "./ChatInput";
@@ -45,7 +45,8 @@ export function ChatWidget() {
   const [anonymousId, setAnonymousId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("openrouter");
-  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("indexed");
+  const [providerOptions, setProviderOptions] = useState<ProviderOption[]>([]);
+  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("hybrid");
   const [memoryEnabledState, setMemoryEnabledState] = useState(true);
   const [sending, setSending] = useState(false);
   const [steps, setSteps] = useState<NonNullable<ChatMessage["visible_steps"]>>([]);
@@ -64,6 +65,18 @@ export function ChatWidget() {
     setMemoryEnabledState(getMemoryEnabled());
     setActiveSessionId(getLastActiveSession());
   }, []);
+
+  useEffect(() => {
+    api.providers()
+      .then((payload) => {
+        const visibleProviders = payload.providers.filter((provider) => provider.id !== "hermes" || provider.configured);
+        setProviderOptions(visibleProviders);
+        if (selectedProviderState === "hermes" && !visibleProviders.some((provider) => provider.id === "hermes")) {
+          chooseProvider(payload.default_provider === "hermes" ? "openrouter" : payload.default_provider);
+        }
+      })
+      .catch(() => undefined);
+  }, [selectedProviderState]);
 
   useEffect(() => {
     refreshSessions()
@@ -161,7 +174,9 @@ export function ChatWidget() {
           prompt_context_chunk_count: result.prompt_context_chunk_count,
           indexed_context_count: result.indexed_context_count,
           web_context_count: result.web_context_count,
-          agent_tool_calls: result.agent_tool_calls
+          agent_tool_calls: result.agent_tool_calls,
+          retrieval_fallback_used: result.retrieval_fallback_used,
+          retrieval_warnings: result.retrieval_warnings
         }
       };
       setMessages((current) => [...current.filter((message) => message.id !== optimisticUser.id), optimisticUser, assistant]);
@@ -199,12 +214,13 @@ export function ChatWidget() {
   }
 
   return (
-    <main className="flex h-screen flex-col md:flex-row">
-      <div className="hidden md:block">
+    <main className="flex h-dvh min-h-dvh flex-col overflow-hidden md:flex-row">
+      <div className="hidden shrink-0 md:block">
         <ChatSidebar
           sessions={sessions}
           activeSessionId={activeSessionId}
           selectedProvider={selectedProviderState}
+          providerOptions={providerOptions}
           memoryEnabled={memoryEnabledState}
           onProviderChange={chooseProvider}
           onMemoryChange={toggleMemory}
@@ -214,12 +230,13 @@ export function ChatWidget() {
           onDeleteSession={setDeleteTarget}
         />
       </div>
-      <section className="flex min-h-0 flex-1 flex-col">
-        <div className="max-h-72 overflow-y-auto border-b border-line md:hidden">
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
+        <div className="max-h-48 shrink-0 overflow-y-auto border-b border-line md:hidden">
           <ChatSidebar
             sessions={sessions}
             activeSessionId={activeSessionId}
             selectedProvider={selectedProviderState}
+            providerOptions={providerOptions}
             memoryEnabled={memoryEnabledState}
             onProviderChange={chooseProvider}
             onMemoryChange={toggleMemory}
@@ -229,16 +246,16 @@ export function ChatWidget() {
             onDeleteSession={setDeleteTarget}
           />
         </div>
-        <header className="border-b border-line bg-white px-4 py-4">
+        <header className="shrink-0 border-b border-line bg-white px-4 py-4">
           <div className="mx-auto max-w-4xl">
             <h1 className="text-xl font-semibold">{activeTitle}</h1>
             <p className="text-sm text-neutral-600">Asisten informasi publik berbasis sumber resmi Universitas Mercu Buana</p>
           </div>
         </header>
-        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5">
+        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28 md:pb-5">
           <div className="mx-auto flex max-w-4xl flex-col gap-4">
             {!messages.length ? (
-              <div className="mt-10">
+              <div className="mt-4 md:mt-10">
                 <h2 className="mb-2 text-lg font-semibold">UMB Knowledge Assistant</h2>
                 <p className="mb-5 max-w-2xl text-sm leading-6 text-neutral-700">
                   Tanyakan informasi publik UMB. Sistem akan menjawab hanya dari sumber resmi yang sudah diindeks dan menampilkan sitasi.

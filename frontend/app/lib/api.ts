@@ -1,4 +1,4 @@
-import type { AgentStep, ChatResponse, ProviderId, RetrievalMode, Source } from "./types";
+import type { AgentStep, ChatResponse, ProviderId, ProviderOption, RetrievalMode, Source } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
 
@@ -59,7 +59,7 @@ export const api = {
   providers: () =>
     apiJson<{
       default_provider: ProviderId;
-      providers: Array<{ id: ProviderId; label: string; configured: boolean; model: string }>;
+      providers: ProviderOption[];
       web_search?: { enabled: boolean; provider: string; configured: boolean; strict_domain: string };
     }>("/settings/providers"),
   createSession: (anonymousSessionId: string) =>

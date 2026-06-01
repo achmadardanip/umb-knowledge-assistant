@@ -4,6 +4,7 @@ from app.core.config import ProviderName, get_settings
 from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.base import BaseLLMProvider, ProviderConfigurationError
 from app.llm.gemini_provider import GeminiProvider
+from app.llm.hermes_provider import HermesProvider
 from app.llm.openai_provider import OpenAIProvider
 from app.llm.openrouter_provider import OpenRouterProvider
 
@@ -13,6 +14,7 @@ PROVIDERS: dict[str, type[BaseLLMProvider]] = {
     "openai": OpenAIProvider,
     "gemini": GeminiProvider,
     "anthropic": AnthropicProvider,
+    "hermes": HermesProvider,
 }
 
 
@@ -38,4 +40,3 @@ def ensure_provider_ready(provider_override: str | None = None) -> BaseLLMProvid
     except ProviderConfigurationError:
         raise
     return provider
-

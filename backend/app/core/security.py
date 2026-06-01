@@ -9,6 +9,7 @@ HIDDEN_REASONING_MARKERS = (
     "chain-of-thought",
     "hidden reasoning",
     "private reasoning",
+    "reasoning trace",
 )
 
 

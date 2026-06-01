@@ -6,6 +6,7 @@ export function NewChatButton({ onClick }: { onClick: () => void }) {
   return (
     <button
       className="flex w-full items-center justify-center gap-2 rounded bg-brand px-3 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-teal-800"
+      type="button"
       onClick={onClick}
       title="Mulai chat baru"
     >
@@ -14,4 +15,3 @@ export function NewChatButton({ onClick }: { onClick: () => void }) {
     </button>
   );
 }
-

@@ -19,7 +19,7 @@ except Exception:
     pass
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic"]
+ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes"]
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -45,7 +45,7 @@ def _float(name: str, default: float) -> float:
 
 def _provider(value: str | None) -> ProviderName:
     normalized = (value or "openrouter").strip().lower()
-    if normalized not in {"openrouter", "openai", "gemini", "anthropic"}:
+    if normalized not in {"openrouter", "openai", "gemini", "anthropic", "hermes"}:
         return "openrouter"
     return normalized  # type: ignore[return-value]
 
@@ -71,6 +71,11 @@ class Settings:
 
     anthropic_api_key: str | None = os.getenv("ANTHROPIC_API_KEY")
     anthropic_model: str = os.getenv("ANTHROPIC_MODEL", "claude-3-5-haiku-latest")
+
+    hermes_enabled: bool = _bool("HERMES_ENABLED", False)
+    hermes_base_url: str = os.getenv("HERMES_BASE_URL", "http://127.0.0.1:8642/v1")
+    hermes_api_key: str | None = os.getenv("HERMES_API_KEY")
+    hermes_model: str = os.getenv("HERMES_MODEL", "hermes-agent")
 
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "openai").strip().lower()
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")

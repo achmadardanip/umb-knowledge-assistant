@@ -1,5 +1,12 @@
-export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic";
+export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic" | "hermes";
 export type RetrievalMode = "indexed" | "web" | "hybrid";
+
+export type ProviderOption = {
+  id: ProviderId;
+  label: string;
+  configured: boolean;
+  model: string;
+};
 
 export type AgentStep = {
   id: string;
@@ -49,6 +56,8 @@ export type ChatMessage = {
     indexed_context_count?: number;
     web_context_count?: number;
     agent_tool_calls?: number;
+    retrieval_fallback_used?: boolean;
+    retrieval_warnings?: string[];
   };
 };
 
@@ -81,4 +90,6 @@ export type ChatResponse = {
   indexed_context_count?: number;
   web_context_count?: number;
   agent_tool_calls?: number;
+  retrieval_fallback_used?: boolean;
+  retrieval_warnings?: string[];
 };

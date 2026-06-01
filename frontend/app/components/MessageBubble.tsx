@@ -43,8 +43,8 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
       <aside className="h-full w-full max-w-md overflow-y-auto border-l border-line bg-white p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
-            <h2 className="text-lg font-semibold">Langkah-langkah penalaran</h2>
-            <p className="mt-1 text-xs leading-5 text-neutral-600">Panel ini hanya menampilkan progres operasional sistem, bukan hidden chain-of-thought model.</p>
+            <h2 className="text-lg font-semibold">Detail proses</h2>
+            <p className="mt-1 text-xs leading-5 text-neutral-600">Panel ini hanya menampilkan progres operasional sistem, bukan penalaran privat model.</p>
           </div>
           <button className="rounded p-2 text-neutral-600 hover:bg-panel" type="button" title="Tutup" onClick={onClose}>
             <X className="h-5 w-5" />
@@ -60,6 +60,7 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
             {typeof message.metadata.indexed_context_count === "number" ? <div>Indexed contexts: {message.metadata.indexed_context_count}</div> : null}
             {typeof message.metadata.web_context_count === "number" ? <div>Live web contexts: {message.metadata.web_context_count}</div> : null}
             {typeof message.metadata.agent_tool_calls === "number" ? <div>Tool calls: {message.metadata.agent_tool_calls}</div> : null}
+            {typeof message.metadata.retrieval_fallback_used === "boolean" ? <div>Fallback retrieval: {message.metadata.retrieval_fallback_used ? "dipakai" : "tidak"}</div> : null}
             {typeof message.metadata.cache_hit === "boolean" ? <div>Cache: {message.metadata.cache_hit ? "hit" : "miss"}</div> : null}
             {message.provider_used ? <div>Provider: {message.provider_used}</div> : null}
             {message.model_used ? <div>Model: {message.model_used}</div> : null}
@@ -213,7 +214,7 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
                     setStepsOpen(true);
                   }}
                 >
-                  Lihat langkah-langkah penalaran
+                  Lihat detail proses
                 </button>
               </div>
             ) : null}

@@ -77,6 +77,7 @@ Provider yang didukung:
 - OpenAI: `OPENAI_API_KEY`, `OPENAI_MODEL`
 - Gemini: `GEMINI_API_KEY`, `GEMINI_MODEL`
 - Claude/Anthropic: `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`
+- Hermes Agent API Server: `HERMES_ENABLED`, `HERMES_BASE_URL`, `HERMES_API_KEY`, `HERMES_MODEL`
 
 Frontend mengirim `provider_override` pada setiap request chat. API key tidak pernah dikirim ke frontend.
 

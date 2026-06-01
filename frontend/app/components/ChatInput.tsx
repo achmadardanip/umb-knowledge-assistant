@@ -6,7 +6,7 @@ import type { RetrievalMode } from "../lib/types";
 
 const MODES: Array<{ id: RetrievalMode; label: string; icon: typeof Database; title: string }> = [
   { id: "indexed", label: "Indexed", icon: Database, title: "Gunakan database RAG yang sudah diindeks" },
-  { id: "web", label: "Web", icon: Globe2, title: "Cari live di domain resmi UMB" },
+  { id: "web", label: "Web", icon: Globe2, title: "Cari live di domain resmi UMB, lalu fallback ke indexed jika kosong" },
   { id: "hybrid", label: "Hybrid", icon: Layers3, title: "Gabungkan indexed RAG dan live web UMB" }
 ];
 
@@ -38,7 +38,7 @@ export function ChatInput({
   }
 
   return (
-    <div className="border-t border-line bg-panel p-3">
+    <div className="relative z-10 shrink-0 border-t border-line bg-panel p-3">
       <div className="mx-auto max-w-4xl rounded border border-line bg-white p-2 shadow-sm">
         <textarea
           className="max-h-40 min-h-12 w-full resize-none bg-transparent px-2 py-2 text-sm outline-none"
@@ -59,6 +59,7 @@ export function ChatInput({
                   className={`flex h-8 items-center gap-1.5 rounded px-2 text-xs transition ${active ? "bg-white text-brand shadow-sm" : "text-neutral-600 hover:bg-white"}`}
                   type="button"
                   title={mode.title}
+                  aria-pressed={active}
                   disabled={disabled}
                   onClick={() => onRetrievalModeChange(mode.id)}
                 >
@@ -68,7 +69,7 @@ export function ChatInput({
               );
             })}
           </div>
-          <button className="grid h-10 w-10 place-items-center rounded bg-brand text-white disabled:opacity-50" onClick={submit} disabled={disabled || !value.trim()} title="Kirim">
+          <button className="grid h-10 w-10 place-items-center rounded bg-brand text-white disabled:opacity-50" type="button" onClick={submit} disabled={disabled || !value.trim()} title="Kirim">
             <SendHorizontal className="h-5 w-5" aria-hidden />
           </button>
         </div>

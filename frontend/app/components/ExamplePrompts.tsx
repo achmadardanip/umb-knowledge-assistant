@@ -12,11 +12,10 @@ export function ExamplePrompts({ onPick }: { onPick: (prompt: string) => void })
   return (
     <div className="grid gap-2 sm:grid-cols-2">
       {PROMPTS.map((prompt) => (
-        <button key={prompt} className="rounded border border-line bg-white px-3 py-3 text-left text-sm transition hover:border-brand" onClick={() => onPick(prompt)}>
+        <button key={prompt} className="rounded border border-line bg-white px-3 py-3 text-left text-sm transition hover:border-brand" type="button" onClick={() => onPick(prompt)}>
           {prompt}
         </button>
       ))}
     </div>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
 import { ShieldCheck } from "lucide-react";
-import type { ChatSession, ProviderId } from "../lib/types";
+import type { ChatSession, ProviderId, ProviderOption } from "../lib/types";
 import { ChatHistoryItem } from "./ChatHistoryItem";
 import { MemoryIndicator } from "./MemoryIndicator";
 import { NewChatButton } from "./NewChatButton";
@@ -11,6 +11,7 @@ export function ChatSidebar({
   sessions,
   activeSessionId,
   selectedProvider,
+  providerOptions,
   memoryEnabled,
   onProviderChange,
   onMemoryChange,
@@ -22,6 +23,7 @@ export function ChatSidebar({
   sessions: ChatSession[];
   activeSessionId: string | null;
   selectedProvider: ProviderId;
+  providerOptions?: ProviderOption[];
   memoryEnabled: boolean;
   onProviderChange: (provider: ProviderId) => void;
   onMemoryChange: (enabled: boolean) => void;
@@ -33,7 +35,7 @@ export function ChatSidebar({
   return (
     <aside className="flex h-full w-full flex-col gap-3 border-r border-line bg-panel p-3 md:w-80">
       <NewChatButton onClick={onNewChat} />
-      <ProviderSelector value={selectedProvider} onChange={onProviderChange} />
+      <ProviderSelector value={selectedProvider} options={providerOptions} onChange={onProviderChange} />
       <MemoryIndicator enabled={memoryEnabled} onChange={onMemoryChange} />
       <div className="flex min-h-0 flex-1 flex-col">
         <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-600">Riwayat Chat</div>
@@ -60,4 +62,3 @@ export function ChatSidebar({
     </aside>
   );
 }
-
