@@ -7,7 +7,7 @@ from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
 from app.db.models import Chunk, Source
-from app.discovery.scope_validator import is_allowed_host
+from app.discovery.scope_validator import is_allowed_host, validate_url_scope
 from app.retrieval.reranker import rerank_contexts
 
 
@@ -204,7 +204,7 @@ class HybridRetriever:
         filters = [Chunk.chunk_text.ilike(f"%{term}%") for term in terms[:8]]
         required_anchors = _required_anchors_for_query(terms)
         min_score = _min_relevance_score(terms)
-        db_query = self.db.query(Chunk, Source).outerjoin(Source, Chunk.source_id == Source.id)
+        db_query = self.db.query(Chunk, Source).join(Source, Chunk.source_id == Source.id).filter(Source.status == "indexed")
         if source_types:
             db_query = db_query.filter(Chunk.source_type.in_(source_types))
         rows = db_query.filter(or_(*filters)).limit(max(top_k * 20, 100)).all()
@@ -214,7 +214,7 @@ class HybridRetriever:
             meta = chunk.meta or {}
             url = meta.get("url") or (source.url if source else None)
             hostname = meta.get("hostname") or (source.hostname if source else None)
-            if not url or not is_allowed_host(hostname, self.root_domain):
+            if not url or not is_allowed_host(hostname, self.root_domain) or not validate_url_scope(url, self.root_domain).is_allowed:
                 continue
             metadata_text = " ".join(
                 str(value)

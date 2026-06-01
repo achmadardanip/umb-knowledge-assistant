@@ -202,6 +202,34 @@ Atau crawl domain secara langsung dengan konfirmasi:
 python -m app.ingestion.pipeline crawl --domain mercubuana.ac.id --max-pages 500 --max-depth 3 --confirm-authorized
 ```
 
+## Complete Public Indexing
+
+Untuk menuntaskan knowledge base publik UMB, gunakan workflow lengkap:
+
+```bash
+cd backend
+.venv/bin/python -m app.ingestion.complete_index audit --domain mercubuana.ac.id
+.venv/bin/python -m app.ingestion.complete_index run --domain mercubuana.ac.id --confirm-authorized
+.venv/bin/python -m app.ingestion.complete_index verify --domain mercubuana.ac.id
+```
+
+Definisi selesai: setiap URL publik yang dapat ditemukan di `mercubuana.ac.id/*` dan `*.mercubuana.ac.id/*` sudah masuk index RAG, atau ditandai terminal non-indexable dengan alasan jelas seperti `http_404`, `http_403`, `robots_disallowed`, `empty_content`, `unsupported_content_type`, `file_too_large`, `download_failed`, atau `extraction_failed`.
+
+Full run membutuhkan tool discovery eksternal (`sublist3r`, `katana`, `gau`, `waybackurls`). Install ke repo-local `.tools`:
+
+```bash
+./scripts/install_discovery_tools.sh
+```
+
+Jika tool belum tersedia dan hanya ingin menghabiskan backlog URL yang sudah ada di database:
+
+```bash
+cd backend
+.venv/bin/python -m app.ingestion.complete_index run --domain mercubuana.ac.id --confirm-authorized --offline-current-db-only
+```
+
+`verify` gagal jika masih ada URL allowed nonterminal yang belum diproses, source unsafe, atau source berstatus `indexed` tanpa chunk. Report ditulis ke `data/reports/index_completeness.json`. Runbook lengkap ada di `docs/complete_indexing.md`.
+
 ## Chat Session dan History
 
 Frontend menyimpan `anonymous_session_id`, `last_active_session_id`, `selected_provider`, dan preferensi memori di localStorage. Backend menyimpan:

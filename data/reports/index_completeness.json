@@ -1,0 +1,47 @@
+{
+  "domain": "mercubuana.ac.id",
+  "generated_at": "2026-06-01T13:25:24.568921+00:00",
+  "indexed_sources_total": 621,
+  "chunks_total": 1463,
+  "allowed_discovered_urls_total": 11420,
+  "rejected_discovered_urls_total": 8617,
+  "pending_allowed_nonterminal_total": 0,
+  "terminal_allowed_total": 10800,
+  "terminal_reasons": {
+    "download_failed": 935,
+    "empty_content": 3,
+    "extraction_failed": 18,
+    "http_401": 4,
+    "http_403": 2,
+    "http_404": 9256,
+    "http_error": 142,
+    "robots_disallowed": 104,
+    "transient_failure": 60,
+    "unsafe_scope": 110,
+    "unsupported_content_type": 166
+  },
+  "unsafe_indexed_sources_total": 0,
+  "unsafe_indexed_sources_sample": [],
+  "indexed_without_chunks_total": 0,
+  "indexed_without_chunks_sample": [],
+  "invalid_indexed_sources_total": 0,
+  "indexed_by_host": {
+    "pendaftaran.mercubuana.ac.id": 73,
+    "www.mercubuana.ac.id": 1,
+    "sso.mercubuana.ac.id": 1,
+    "sia.mercubuana.ac.id": 100,
+    "support.mercubuana.ac.id": 15,
+    "portal.mercubuana.ac.id": 1,
+    "feb.mercubuana.ac.id": 22,
+    "mercubuana.ac.id": 93,
+    "repository.mercubuana.ac.id": 62,
+    "semercu.mercubuana.ac.id": 2,
+    "lib.mercubuana.ac.id": 251
+  },
+  "pending_by_host": {},
+  "source_type_distribution": {
+    "html": 1388,
+    "pdf": 75
+  },
+  "verification_passed": true
+}

@@ -114,7 +114,7 @@ def test_archive_urls_are_not_indexed_unless_live_official_url_is_validated():
 
 
 def test_retrieval_returns_source_type_specific_metadata(db):
-    source = Source(url="https://mercubuana.ac.id/file.pdf", hostname="mercubuana.ac.id", title="PDF")
+    source = Source(url="https://mercubuana.ac.id/file.pdf", hostname="mercubuana.ac.id", title="PDF", status="indexed")
     db.add(source)
     db.flush()
     doc = DbDocument(source_id=source.id, raw_text="biaya pendaftaran", cleaned_text="biaya pendaftaran")

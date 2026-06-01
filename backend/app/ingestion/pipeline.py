@@ -24,6 +24,7 @@ from app.discovery.scope_validator import validate_url_scope
 from app.discovery.url_normalizer import normalize_url
 from app.ingestion.chunker import chunk_text
 from app.ingestion.embedder import EmbeddingConfigurationError, get_embedder
+from app.ingestion.index_state import is_terminal, mark_indexed, mark_retryable_failure, mark_terminal, source_has_chunks
 
 
 logger = logging.getLogger(__name__)
@@ -97,6 +98,10 @@ def upsert_source_document(db: Session, url: str, text: str, title: str | None, 
         chunk_size=get_settings().chunk_size,
         overlap=get_settings().chunk_overlap,
     )
+    if not chunks:
+        existing.status = "empty"
+        return 0
+
     embeddings = [None] * len(chunks)
     if embedder and chunks:
         try:
@@ -163,32 +168,43 @@ def crawl_and_index_urls(urls: list[str], *, max_pages: int, rate_limit: float) 
             discovery_source = discovered.discovery_source if discovered else None
             existing_exact = db.query(Source).filter(Source.url == url, Source.status == "indexed").first()
             if existing_exact or (discovered and discovered.indexed):
+                if existing_exact and source_has_chunks(db, existing_exact.url):
+                    if discovered:
+                        mark_indexed(discovered)
+                    db.commit()
+                    skipped += 1
+                    continue
                 if discovered:
-                    discovered.indexed = True
-                    discovered.crawled_at = discovered.crawled_at or utcnow()
-                db.commit()
-                skipped += 1
-                continue
-            if discovered and discovered.crawled_at is not None and not discovered.indexed:
+                    discovered.indexed = False
+            if discovered and is_terminal(discovered):
                 skipped += 1
                 continue
             page = fetch_page(url, timeout=settings.crawler_timeout_seconds)
             time.sleep(delay)
-            if not page or not page.text:
+            if not page:
                 failed += 1
                 if discovered:
-                    discovered.crawled_at = utcnow()
-                    if page:
-                        discovered.http_status = page.status_code
-                    discovered.meta = {**(discovered.meta or {}), "crawl_failed_reason": "empty_or_unreachable"}
+                    mark_retryable_failure(discovered, reason="fetch_failed", error="empty_or_unreachable")
+                db.commit()
+                continue
+            if not page.text:
+                failed += 1
+                if discovered:
+                    content_type = page.metadata.get("content_type")
+                    reason = "empty_content"
+                    if page.status_code in {401, 403, 404}:
+                        reason = f"http_{page.status_code}"
+                    elif page.status_code >= 400:
+                        reason = "http_error"
+                    elif content_type:
+                        reason = "unsupported_content_type"
+                    mark_terminal(discovered, reason=reason, http_status=page.status_code, final_url=page.url, content_type=content_type)
                 db.commit()
                 continue
             existing_source = db.query(Source).filter(Source.url == page.url, Source.status == "indexed").first()
-            if existing_source:
+            if existing_source and source_has_chunks(db, existing_source.url):
                 if discovered:
-                    discovered.indexed = True
-                    discovered.crawled_at = utcnow()
-                    discovered.http_status = page.status_code
+                    mark_indexed(discovered, http_status=page.status_code, final_url=page.url)
                 db.commit()
                 skipped += 1
                 continue
@@ -202,9 +218,10 @@ def crawl_and_index_urls(urls: list[str], *, max_pages: int, rate_limit: float) 
                 discovery_source=discovery_source,
             )
             if discovered:
-                discovered.indexed = chunks > 0
-                discovered.crawled_at = utcnow()
-                discovered.http_status = page.status_code
+                if chunks > 0:
+                    mark_indexed(discovered, http_status=page.status_code, final_url=page.url)
+                else:
+                    mark_terminal(discovered, reason="empty_content", http_status=page.status_code, final_url=page.url)
             indexed += 1
             if chunks > 0:
                 indexed_total += 1
@@ -234,14 +251,14 @@ def crawl_discovered(max_pages: int = 500, rate_limit: float = 2.0) -> dict:
                 for index in range(0, len(urls), 1000):
                     batch = urls[index : index + 1000]
                     rows = (
-                        db.query(DiscoveredURL.normalized_url, DiscoveredURL.crawled_at, DiscoveredURL.indexed)
+                        db.query(DiscoveredURL.normalized_url, DiscoveredURL.crawled_at, DiscoveredURL.indexed, DiscoveredURL.meta)
                         .filter(DiscoveredURL.normalized_url.in_(batch))
                         .all()
                     )
                     status_by_url = {row.normalized_url: row for row in rows}
                     for url in batch:
                         row = status_by_url.get(url)
-                        if row is None or (not row.indexed and row.crawled_at is None):
+                        if row is None or (not row.indexed and not is_terminal(row)):
                             unfinished.append(url)
                 urls = unfinished
         except Exception:
@@ -257,7 +274,7 @@ def crawl_discovered(max_pages: int = 500, rate_limit: float = 2.0) -> dict:
                 .limit(max_pages)
                 .all()
             )
-            urls = [row.normalized_url or row.url for row in rows]
+            urls = [row.normalized_url or row.url for row in rows if not is_terminal(row)]
     except Exception:
         urls = []
 
@@ -309,18 +326,30 @@ def crawl_domain(domain: str, max_pages: int = 500, max_depth: int = 3, confirm_
                 discovered = db.query(DiscoveredURL).filter(DiscoveredURL.normalized_url == normalize_url(url)).first()
             if not can_fetch(url):
                 if discovered:
-                    discovered.rejection_reason = "robots_disallowed"
-                    discovered.is_allowed = False
+                    mark_terminal(discovered, reason="robots_disallowed")
                 db.commit()
                 skipped += 1
                 continue
 
             page = fetch_page(url, timeout=settings.crawler_timeout_seconds)
             time.sleep(delay)
-            if not page or not page.text:
-                if page:
-                    discovered.http_status = page.status_code
-                    discovered.crawled_at = utcnow()
+            if not page:
+                if discovered:
+                    mark_retryable_failure(discovered, reason="fetch_failed", error="empty_or_unreachable")
+                db.commit()
+                skipped += 1
+                continue
+            if not page.text:
+                if discovered:
+                    content_type = page.metadata.get("content_type")
+                    reason = "empty_content"
+                    if page.status_code in {401, 403, 404}:
+                        reason = f"http_{page.status_code}"
+                    elif page.status_code >= 400:
+                        reason = "http_error"
+                    elif content_type:
+                        reason = "unsupported_content_type"
+                    mark_terminal(discovered, reason=reason, http_status=page.status_code, final_url=page.url, content_type=content_type)
                 db.commit()
                 skipped += 1
                 continue
@@ -334,10 +363,8 @@ def crawl_domain(domain: str, max_pages: int = 500, max_depth: int = 3, confirm_
                     queue.append((link, depth + 1))
 
             existing_source = db.query(Source).filter(Source.url == page.url, Source.status == "indexed").first()
-            if existing_source:
-                discovered.indexed = True
-                discovered.crawled_at = utcnow()
-                discovered.http_status = page.status_code
+            if existing_source and source_has_chunks(db, existing_source.url):
+                mark_indexed(discovered, http_status=page.status_code, final_url=page.url)
                 db.commit()
                 skipped += 1
                 continue
@@ -351,9 +378,10 @@ def crawl_domain(domain: str, max_pages: int = 500, max_depth: int = 3, confirm_
                 page.status_code,
                 discovery_source=discovered.discovery_source,
             )
-            discovered.indexed = chunks > 0
-            discovered.crawled_at = utcnow()
-            discovered.http_status = page.status_code
+            if chunks > 0:
+                mark_indexed(discovered, http_status=page.status_code, final_url=page.url)
+            else:
+                mark_terminal(discovered, reason="empty_content", http_status=page.status_code, final_url=page.url)
             indexed += 1
             db.commit()
 
