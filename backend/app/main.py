@@ -6,6 +6,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.api import (
     routes_chat,
     routes_discovery,
+    routes_faq,
     routes_feedback,
     routes_health,
     routes_memory,
@@ -42,4 +43,5 @@ app.include_router(routes_sources.router)
 app.include_router(routes_discovery.router)
 app.include_router(routes_multimodal.router)
 app.include_router(routes_feedback.router)
+app.include_router(routes_faq.router)
 
