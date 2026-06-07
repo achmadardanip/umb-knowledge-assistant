@@ -83,7 +83,11 @@ def classify_intent(question: str, recent_messages: list[dict] | None = None) ->
     if not text:
         return IntentResult("smalltalk", 0.5, "Pertanyaan kosong atau hanya spasi.")
 
-    if any(term in text for term in UNSAFE_TERMS):
+    from app.rag.guardrails import is_disallowed_request
+
+    # Single source of truth for unsafe detection: blocks credential-reveal /
+    # malicious intent but allows "lupa/reset password" how-to (handled below).
+    if is_disallowed_request(question):
         return IntentResult("unsafe_private_data", 0.9, "Mengandung permintaan kredensial, data pribadi, atau akses tidak aman.")
 
     if any(term in text for term in LOGIN_TERMS):
