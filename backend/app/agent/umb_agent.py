@@ -2,12 +2,14 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Callable, Literal
 
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.retrieval.hybrid_retriever import HybridRetriever
+from app.trust.va_jit import va_jit_reverify
 from app.web_search.live_retriever import UMBLiveWebRetriever
 
 try:
@@ -66,6 +68,53 @@ def _build_langchain_tools(indexed_tool, web_tool, citation_tool) -> list:
         Tool.from_function(web_tool, name="umb_live_web_search", description="Search and fetch live official UMB pages."),
         Tool.from_function(citation_tool, name="citation_validator", description="Validate that citations point to retrieved UMB sources."),
     ]
+
+
+def _va_jit_enabled() -> bool:
+    return get_settings().va_jit_enabled
+
+
+def _maybe_va_jit(query: str, contexts: list[dict], live_retriever, emit_step) -> list[dict]:
+    """Trigger a bounded live re-verification for volatile, stale facts (VA-JIT).
+
+    Fresh re-fetched contexts (freshness=1.0) are surfaced above the stale
+    indexed evidence; CGCV downstream then re-verifies claims against them — the
+    conformal buy-back, realized by sequencing on the shared context set.
+    """
+    settings = get_settings()
+    today = datetime.now(timezone.utc).date().isoformat()
+
+    def fetcher(reverify_query: str, *, budget: int) -> list[dict]:
+        try:
+            fresh = live_retriever.search(reverify_query, top_k=budget)
+        except Exception:
+            return []
+        for context in fresh:
+            context["freshness"] = 1.0
+            context["last_verified"] = today
+        return fresh
+
+    fresh = va_jit_reverify(
+        query,
+        contexts,
+        fetcher=fetcher,
+        budget=settings.va_jit_budget,
+        volatility_threshold=settings.va_jit_volatility_threshold,
+        freshness_threshold=settings.va_jit_freshness_threshold,
+    )
+    if not fresh:
+        return contexts
+    top_score = max((float(context.get("score") or 0.0) for context in contexts), default=0.0)
+    for context in fresh:
+        context["score"] = top_score + 1.0
+    emit_step(
+        "va_jit",
+        "Verifikasi langsung fakta dinamis",
+        "done",
+        f"{len(fresh)} sumber resmi diverifikasi ulang secara live",
+        {"va_jit_count": len(fresh)},
+    )
+    return _dedupe_contexts(fresh + contexts)
 
 
 def run_umb_agent(
@@ -202,6 +251,8 @@ def run_umb_agent(
         )
 
     contexts = _dedupe_contexts(contexts)
+    if _va_jit_enabled() and contexts:
+        contexts = _maybe_va_jit(query, contexts, live_retriever, emit_step)
     contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
     contexts = contexts[:top_k]
     emit_step(
