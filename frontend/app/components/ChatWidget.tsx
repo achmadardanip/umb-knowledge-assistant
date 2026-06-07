@@ -46,7 +46,7 @@ export function ChatWidget() {
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
   const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("openrouter");
   const [providerOptions, setProviderOptions] = useState<ProviderOption[]>([]);
-  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("hybrid");
+  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("indexed");
   const [memoryEnabledState, setMemoryEnabledState] = useState(true);
   const [sending, setSending] = useState(false);
   const [steps, setSteps] = useState<NonNullable<ChatMessage["visible_steps"]>>([]);

@@ -440,6 +440,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
         "provider_used": answer_payload.get("provider_used"),
         "model_used": answer_payload.get("model_used"),
         "memory_used": bool(memories),
+        "cache_hit": bool(answer_payload.get("cache_hit")),
         "chat_title": title,
         "visible_steps": visible_steps,
         "intent": intent_result.intent,
