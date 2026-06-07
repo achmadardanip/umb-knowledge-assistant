@@ -462,7 +462,9 @@ def chat(payload: ChatRequest, request: Request, db: Session = Depends(get_db)) 
 
 
 def _sse(event: str, data) -> str:
-    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False)}\n\n"
+    # default=str keeps datetime/UUID fields (e.g. source freshness) from breaking
+    # the SSE stream with "Object of type datetime is not JSON serializable".
+    return f"event: {event}\ndata: {json.dumps(data, ensure_ascii=False, default=str)}\n\n"
 
 
 @router.post("/chat/stream")

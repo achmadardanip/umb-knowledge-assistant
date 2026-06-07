@@ -10,6 +10,7 @@ self-hosted TEI later) — the model is swappable without touching this code.
 from __future__ import annotations
 
 import argparse
+import time
 
 from sqlalchemy.orm import Session
 
@@ -27,7 +28,16 @@ def backfill_embeddings(db: Session, embedder: BaseEmbedder | None = None, *, ba
     populated = 0
     for start in range(0, len(chunks), batch_size):
         batch = chunks[start : start + batch_size]
-        vectors = embedder.embed_texts([chunk.chunk_text for chunk in batch])
+        vectors = None
+        for attempt in range(5):
+            try:
+                vectors = embedder.embed_texts([chunk.chunk_text for chunk in batch])
+                break
+            except Exception:
+                if attempt == 4:
+                    db.commit()  # persist progress before giving up
+                    raise
+                time.sleep(30 * (attempt + 1))  # wait out the rate-limit window
         for chunk, vector in zip(batch, vectors):
             chunk.embedding = vector
             populated += 1

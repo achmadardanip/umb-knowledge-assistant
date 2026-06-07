@@ -22,7 +22,8 @@ class GeminiProvider(BaseLLMProvider):
         self.ensure_configured()
         prompt = "\n\n".join(f"{message['role'].upper()}: {message['content']}" for message in messages)
         response = requests.post(
-            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent?key={self.api_key}",
+            f"https://generativelanguage.googleapis.com/v1beta/models/{self.model}:generateContent",
+            headers={"x-goog-api-key": self.api_key},
             json={
                 "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                 "generationConfig": {"temperature": temperature},
