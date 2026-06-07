@@ -24,6 +24,7 @@ def providers() -> dict:
                 "configured": bool(settings.hermes_enabled and settings.hermes_api_key and settings.hermes_base_url),
                 "model": settings.hermes_model,
             },
+            {"id": "groq", "label": "Groq", "configured": bool(settings.groq_api_key), "model": settings.groq_model},
         ],
         "web_search": {
             "enabled": settings.web_search_enabled,

@@ -19,7 +19,7 @@ except Exception:
     pass
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes"]
+ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes", "groq"]
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -45,7 +45,7 @@ def _float(name: str, default: float) -> float:
 
 def _provider(value: str | None) -> ProviderName:
     normalized = (value or "openrouter").strip().lower()
-    if normalized not in {"openrouter", "openai", "gemini", "anthropic", "hermes"}:
+    if normalized not in {"openrouter", "openai", "gemini", "anthropic", "hermes", "groq"}:
         return "openrouter"
     return normalized  # type: ignore[return-value]
 
@@ -76,6 +76,10 @@ class Settings:
     hermes_base_url: str = os.getenv("HERMES_BASE_URL", "http://127.0.0.1:8642/v1")
     hermes_api_key: str | None = os.getenv("HERMES_API_KEY")
     hermes_model: str = os.getenv("HERMES_MODEL", "hermes-agent")
+
+    groq_api_key: str | None = os.getenv("GROQ_API_KEY")
+    groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "openai").strip().lower()
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")

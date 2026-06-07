@@ -4,6 +4,7 @@ from app.core.config import ProviderName, get_settings
 from app.llm.anthropic_provider import AnthropicProvider
 from app.llm.base import BaseLLMProvider, ProviderConfigurationError
 from app.llm.gemini_provider import GeminiProvider
+from app.llm.groq_provider import GroqProvider
 from app.llm.hermes_provider import HermesProvider
 from app.llm.openai_provider import OpenAIProvider
 from app.llm.openrouter_provider import OpenRouterProvider
@@ -15,6 +16,7 @@ PROVIDERS: dict[str, type[BaseLLMProvider]] = {
     "gemini": GeminiProvider,
     "anthropic": AnthropicProvider,
     "hermes": HermesProvider,
+    "groq": GroqProvider,
 }
 
 

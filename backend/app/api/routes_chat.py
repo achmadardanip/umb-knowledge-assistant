@@ -43,7 +43,7 @@ class ChatRequest(BaseModel):
     anonymous_session_id: str | None = None
     question: str = Field(min_length=1)
     top_k: int = 5
-    provider_override: Literal["openrouter", "openai", "gemini", "anthropic", "hermes"] | None = None
+    provider_override: Literal["openrouter", "openai", "gemini", "anthropic", "hermes", "groq"] | None = None
     memory_enabled: bool = True
     regenerate_from_message_id: str | None = None
     retrieval_mode: RetrievalMode = "hybrid"
