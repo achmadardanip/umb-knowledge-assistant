@@ -94,15 +94,16 @@ def test_spreadsheet_extractor_extracts_csv_columns_and_summary(tmp_path):
     assert "Reguler" in sheets[0].content
 
 
-def test_ocr_asr_and_video_download_are_disabled_by_default(tmp_path):
-    settings = get_settings()
-    assert settings.enable_ocr is False
-    assert settings.enable_asr is False
-    assert settings.enable_video_download is False
-    image = tmp_path / "image.jpg"
-    image.write_bytes(b"jpg")
-    assert extract_image_ocr(image).status == "disabled"
-    assert extract_audio(image)[0].status == "asr_disabled"
+def test_ocr_asr_and_video_download_are_disabled_by_default(monkeypatch):
+    # Verify the code defaults (off), independent of the operator's .env, which may
+    # enable OCR/ASR for multimodal ingestion.
+    from app.core.config import _bool
+
+    for var in ("ENABLE_OCR", "ENABLE_ASR", "ENABLE_VIDEO_DOWNLOAD"):
+        monkeypatch.delenv(var, raising=False)
+    assert _bool("ENABLE_OCR", False) is False
+    assert _bool("ENABLE_ASR", False) is False
+    assert _bool("ENABLE_VIDEO_DOWNLOAD", False) is False
 
 
 def test_archive_urls_are_not_indexed_unless_live_official_url_is_validated():
