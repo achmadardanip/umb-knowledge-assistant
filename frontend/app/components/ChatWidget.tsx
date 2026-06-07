@@ -165,6 +165,7 @@ export function ChatWidget() {
         model_used: result.model_used,
         not_found: result.not_found,
         visible_steps: result.visible_steps || [],
+        follow_up_questions: result.follow_up_questions || [],
         metadata: {
           memory_used: result.memory_used,
           intent: result.intent,
@@ -268,6 +269,24 @@ export function ChatWidget() {
                 return <MessageBubble key={message.id} message={message} onRegenerate={message.role === "assistant" && previousUser ? () => send(previousUser.content, message.id) : undefined} />;
               })
             )}
+            {!sending &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === "assistant" &&
+            (messages[messages.length - 1].follow_up_questions?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                <span className="w-full text-xs font-medium text-neutral-500">Pertanyaan lanjutan</span>
+                {messages[messages.length - 1].follow_up_questions!.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => send(q)}
+                    className="rounded-full border border-line bg-white px-3 py-1.5 text-sm transition hover:border-brand"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {sending ? <ThinkingSteps steps={steps} /> : null}
             {error ? <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div> : null}
           </div>

@@ -45,6 +45,7 @@ export type ChatMessage = {
   model_used?: string | null;
   not_found?: boolean;
   visible_steps?: Array<string | AgentStep>;
+  follow_up_questions?: string[];
   created_at?: string;
   metadata?: Record<string, unknown> & {
     intent?: string;
@@ -82,6 +83,7 @@ export type ChatResponse = {
   memory_used: boolean;
   chat_title: string;
   visible_steps?: AgentStep[];
+  follow_up_questions?: string[];
   intent?: string;
   retrieval_mode?: RetrievalMode;
   language_detected?: string;

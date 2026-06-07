@@ -17,6 +17,7 @@ from app.api.chat_guards import apply_chat_safeguards
 from app.chat.memory_service import get_active_memories, refresh_session_memory
 from app.chat.message_service import recent_messages, save_message
 from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
+from app.chat.followups import suggest_followups
 from app.chat.summarizer import compact_context
 from app.core.config import get_settings
 from app.db.database import get_db, get_session_local
@@ -46,6 +47,7 @@ class ChatRequest(BaseModel):
     memory_enabled: bool = True
     regenerate_from_message_id: str | None = None
     retrieval_mode: RetrievalMode = "hybrid"
+    audience: Literal["calon_mahasiswa", "mahasiswa", "orang_tua", "alumni", "dosen", "publik"] | None = None
     language: str | None = None
 
 
@@ -56,6 +58,21 @@ def _ensure_session(db: Session, payload: ChatRequest):
             raise HTTPException(status_code=404, detail="Session not found")
         return session
     return create_session(db, payload.anonymous_session_id)
+
+
+_AUDIENCE_HINT = {
+    "calon_mahasiswa": "Pengguna adalah calon mahasiswa; utamakan info pendaftaran, biaya, program studi, dan jalur masuk.",
+    "mahasiswa": "Pengguna adalah mahasiswa aktif; utamakan info akademik, SIA/SSO, jadwal kuliah, dan layanan kemahasiswaan.",
+    "orang_tua": "Pengguna adalah orang tua/wali; gunakan bahasa yang mudah dan soroti biaya, jadwal, serta kontak resmi.",
+    "alumni": "Pengguna adalah alumni; utamakan info ijazah, legalisir, tracer study, dan layanan alumni.",
+    "dosen": "Pengguna adalah dosen/staf; utamakan info kepegawaian, sistem akademik, dan layanan internal yang bersifat publik.",
+    "publik": "Pengguna adalah masyarakat umum.",
+}
+
+
+def _with_audience(question: str, audience: str | None) -> str:
+    hint = _AUDIENCE_HINT.get(audience or "")
+    return f"[Konteks pengguna] {hint}\n\nPertanyaan: {question}" if hint else question
 
 
 def _provider_meta(provider_override: str | None) -> tuple[str, str]:
@@ -359,7 +376,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
                 )
                 emit("answer", "Menyusun jawaban berbasis sumber resmi", "running", f"Mengirim {len(contexts)} chunk relevan, bukan seluruh dokumen")
                 answer_payload = generate_answer(
-                    question=payload.question,
+                    question=_with_audience(payload.question, payload.audience),
                     contexts=contexts,
                     recent_messages=history,
                     memories=memories,
@@ -441,6 +458,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
         "model_used": answer_payload.get("model_used"),
         "memory_used": bool(memories),
         "cache_hit": bool(answer_payload.get("cache_hit")),
+        "follow_up_questions": suggest_followups(payload.question, language_detected),
         "chat_title": title,
         "visible_steps": visible_steps,
         "intent": intent_result.intent,
