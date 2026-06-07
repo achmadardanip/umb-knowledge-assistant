@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import re
 from dataclasses import dataclass
+from datetime import datetime, timezone
 
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -14,6 +15,8 @@ from app.retrieval.dense import dense_search
 from app.retrieval.fusion import reciprocal_rank_fusion, tahf_score
 from app.retrieval.reranker import rerank_contexts
 from app.trust.authority import host_authority
+from app.trust.freshness import freshness_from_age
+from app.trust.volatility import query_volatility
 
 
 KEYWORD_BOOST_TERMS = {
@@ -123,6 +126,7 @@ class RetrievedContext:
     timestamp_end: float | None = None
     extraction_method: str | None = None
     extraction_confidence: float | None = None
+    fetched_at: datetime | None = None
 
     def as_dict(self) -> dict:
         return self.__dict__.copy()
@@ -204,13 +208,27 @@ class HybridRetriever:
         self._dense_enabled = get_settings().dense_retrieval_enabled if dense_enabled is None else dense_enabled
 
     def search(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
-        keyword_contexts = self._keyword_search(query, top_k=top_k, source_types=source_types)
+        volatility = query_volatility(query)
+        keyword_contexts = self._apply_freshness(
+            self._keyword_search(query, top_k=top_k, source_types=source_types), volatility
+        )
         if not self._dense_enabled:
             return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
-        dense_contexts = self._dense_search(query, top_k=top_k, source_types=source_types)
+        dense_contexts = self._apply_freshness(
+            self._dense_search(query, top_k=top_k, source_types=source_types), volatility
+        )
         if not dense_contexts:
             return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
         return self._fuse_and_rank(keyword_contexts, dense_contexts, top_k)
+
+    def _apply_freshness(self, contexts: list[dict], volatility: float) -> list[dict]:
+        now = datetime.now(timezone.utc)
+        for context in contexts:
+            fetched_at = context.get("fetched_at")
+            context["freshness"] = freshness_from_age(fetched_at, volatility, now=now)
+            if fetched_at is not None and hasattr(fetched_at, "date"):
+                context["last_verified"] = fetched_at.date().isoformat()
+        return contexts
 
     def _dense_search(self, query: str, *, top_k: int, source_types: list[str] | None) -> list[dict]:
         try:
@@ -319,6 +337,7 @@ class HybridRetriever:
                     timestamp_end=chunk.timestamp_end or meta.get("timestamp_end"),
                     extraction_method=chunk.extraction_method or meta.get("extraction_method"),
                     extraction_confidence=chunk.extraction_confidence if chunk.extraction_confidence is not None else meta.get("extraction_confidence"),
+                    fetched_at=getattr(source, "fetched_at", None),
                 ).as_dict()
             )
         return contexts

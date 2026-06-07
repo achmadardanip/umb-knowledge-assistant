@@ -136,6 +136,12 @@ class Settings:
     # Dense semantic retrieval. Off until chunk embeddings are backfilled.
     dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
 
+    # Volatility-Aware Just-in-Time verification. Off (needs live web + cost budget).
+    va_jit_enabled: bool = _bool("VA_JIT_ENABLED", False)
+    va_jit_budget: int = _int("VA_JIT_BUDGET", 2)
+    va_jit_volatility_threshold: float = _float("VA_JIT_VOLATILITY_THRESHOLD", 0.7)
+    va_jit_freshness_threshold: float = _float("VA_JIT_FRESHNESS_THRESHOLD", 0.5)
+
     web_search_enabled: bool = _bool("WEB_SEARCH_ENABLED", False)
     web_search_provider: str = os.getenv("WEB_SEARCH_PROVIDER", "tavily").strip().lower()
     tavily_api_key: str | None = os.getenv("TAVILY_API_KEY")

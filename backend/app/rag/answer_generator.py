@@ -50,6 +50,8 @@ def _build_sources(contexts: list[dict]) -> list[dict]:
                 "extraction_method": context.get("extraction_method"),
                 "extraction_confidence": context.get("extraction_confidence"),
                 "discovery_source": context.get("discovery_source"),
+                "last_verified": context.get("last_verified"),
+                "authority": context.get("authority"),
             }
         )
     return sources

@@ -80,6 +80,7 @@ def dense_search(
                 "extraction_confidence": chunk.extraction_confidence
                 if chunk.extraction_confidence is not None
                 else meta.get("extraction_confidence"),
+                "fetched_at": getattr(source, "fetched_at", None),
             }
         )
     return results
