@@ -180,6 +180,14 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[880px] rounded px-4 py-3 ${isUser ? "bg-brand text-white" : "bg-white text-ink border border-line"}`}>
         {isUser ? <div className="whitespace-pre-wrap text-sm leading-6">{message.content}</div> : <MarkdownAnswer content={message.content} onCitationClick={selectCitation} />}
+        {!isUser && message.not_found ? (
+          <div className="mt-3 rounded border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
+            Belum ada jawaban resmi yang cocok. Untuk bantuan lebih lanjut, hubungi dukungan resmi UMB:{" "}
+            <a href="https://mercubuana.ac.id" target="_blank" rel="noreferrer" className="font-medium underline">Situs Resmi UMB</a>
+            {" • "}
+            <a href="https://pmb.mercubuana.ac.id" target="_blank" rel="noreferrer" className="font-medium underline">PMB UMB</a>
+          </div>
+        ) : null}
         {!isUser ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
             {message.confidence ? <span className={`rounded px-2 py-1 ${confidenceClass(message.confidence)}`}>{message.confidence}</span> : null}

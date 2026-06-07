@@ -53,6 +53,7 @@ type ChatPayload = {
   regenerate_from_message_id?: string | null;
   retrieval_mode?: RetrievalMode;
   language?: string | null;
+  audience?: string | null;
 };
 
 export const api = {
