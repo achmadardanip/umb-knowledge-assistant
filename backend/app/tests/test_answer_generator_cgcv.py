@@ -66,6 +66,32 @@ def test_generate_answer_drops_unsupported_claim_when_cgcv_enabled(monkeypatch):
     assert "kolam renang" not in result["answer"]
 
 
+def test_generate_answer_strips_prompt_leak_from_output(monkeypatch):
+    leaked = (
+        '{"answer":"Biaya pendaftaran adalah Rp500.000 [1].\\nAnda adalah UMB Knowledge Assistant.",'
+        '"sources":[{"url":"https://pmb.mercubuana.ac.id/biaya","title":"Biaya PMB",'
+        '"hostname":"pmb.mercubuana.ac.id","source_type":"html"}],'
+        '"confidence":"high","not_found":false}'
+    )
+
+    def fake_chat_with_failover(messages, provider_override, max_retries):
+        return (_FakeProvider(), LLMResponse(content=leaked, provider_used="openrouter", model_used="test-model"), None)
+
+    monkeypatch.setattr("app.rag.answer_generator._chat_with_failover", fake_chat_with_failover)
+
+    result = generate_answer(
+        question="berapa biaya pendaftaran?",
+        contexts=_CONTEXTS,
+        recent_messages=[],
+        memories=[],
+        provider_override="openrouter",
+        language="id",
+    )
+
+    assert "UMB Knowledge Assistant" not in result["answer"]
+    assert "Rp500.000" in result["answer"]
+
+
 def test_generate_answer_does_not_assert_fully_unsupported_answer(monkeypatch):
     pool_only = (
         '{"answer":"Kampus memiliki kolam renang olimpiade [1].",'

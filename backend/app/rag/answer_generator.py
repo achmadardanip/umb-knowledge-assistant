@@ -6,6 +6,7 @@ import re
 import time
 
 from app.core.config import get_settings
+from app.core.output_filter import sanitize_answer
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider, normalize_provider
 from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
@@ -113,7 +114,9 @@ def extractive_fallback_payload(
         "memory_used": memory_used,
         "metadata": {"fallback": "extractive", "reason": reason},
     }
-    return validate_citations(payload, contexts, require_citation_markers=bool(sources))
+    sanitized = validate_citations(payload, contexts, require_citation_markers=bool(sources))
+    sanitized["answer"] = sanitize_answer(sanitized.get("answer") or "")
+    return sanitized
 
 
 def _is_retryable_provider_error(exc: Exception) -> bool:
@@ -322,4 +325,5 @@ Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, a
             model_used=response.model_used,
             reason="provider_answer_missing_valid_citations",
         )
+    validated_payload["answer"] = sanitize_answer(validated_payload.get("answer") or "")
     return validated_payload
