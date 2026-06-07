@@ -6,9 +6,14 @@ from dataclasses import dataclass
 from sqlalchemy import or_
 from sqlalchemy.orm import Session
 
+from app.core.config import get_settings
 from app.db.models import Chunk, Source
 from app.discovery.scope_validator import is_allowed_host, validate_url_scope
+from app.ingestion.embedder import get_embedder
+from app.retrieval.dense import dense_search
+from app.retrieval.fusion import reciprocal_rank_fusion, tahf_score
 from app.retrieval.reranker import rerank_contexts
+from app.trust.authority import host_authority
 
 
 KEYWORD_BOOST_TERMS = {
@@ -192,11 +197,70 @@ def _term_count(text: str, term: str) -> int:
 
 
 class HybridRetriever:
-    def __init__(self, db: Session, root_domain: str = "mercubuana.ac.id"):
+    def __init__(self, db: Session, root_domain: str = "mercubuana.ac.id", embedder=None, dense_enabled: bool | None = None):
         self.db = db
         self.root_domain = root_domain
+        self._embedder = embedder
+        self._dense_enabled = get_settings().dense_retrieval_enabled if dense_enabled is None else dense_enabled
 
     def search(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
+        keyword_contexts = self._keyword_search(query, top_k=top_k, source_types=source_types)
+        if not self._dense_enabled:
+            return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
+        dense_contexts = self._dense_search(query, top_k=top_k, source_types=source_types)
+        if not dense_contexts:
+            return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
+        return self._fuse_and_rank(keyword_contexts, dense_contexts, top_k)
+
+    def _dense_search(self, query: str, *, top_k: int, source_types: list[str] | None) -> list[dict]:
+        try:
+            embedder = self._embedder or get_embedder()
+            query_embedding = embedder.embed_query(query)
+        except Exception:
+            return []  # dense is best-effort; the keyword path still answers
+        return dense_search(
+            self.db,
+            query_embedding,
+            top_k=max(top_k * 4, 20),
+            root_domain=self.root_domain,
+            source_types=source_types,
+        )
+
+    def _fuse_and_rank(self, keyword_contexts: list[dict], dense_contexts: list[dict], top_k: int) -> list[dict]:
+        by_id: dict[str, dict] = {}
+        for context in keyword_contexts + dense_contexts:
+            chunk_id = context.get("chunk_id")
+            if chunk_id and chunk_id not in by_id:
+                by_id[chunk_id] = context
+        keyword_ranked = [context.get("chunk_id") for context in keyword_contexts if context.get("chunk_id")]
+        dense_ranked = [context.get("chunk_id") for context in dense_contexts if context.get("chunk_id")]
+        fused = reciprocal_rank_fusion([keyword_ranked, dense_ranked])
+        if not fused:
+            return []
+        scores = [score for _, score in fused]
+        low, high = min(scores), max(scores)
+        spread = high - low
+        settings = get_settings()
+        alpha = settings.tahf_authority_weight
+        beta = settings.tahf_freshness_weight
+        ranked: list[dict] = []
+        for chunk_id, rrf in fused:
+            context = by_id.get(chunk_id)
+            if not context:
+                continue
+            relevance = (rrf - low) / spread if spread > 0 else 1.0
+            authority = host_authority(context.get("hostname"), self.root_domain)
+            context_freshness = context.get("freshness")
+            context_freshness = 1.0 if context_freshness is None else float(context_freshness)
+            context["relevance"] = relevance
+            context["authority"] = authority
+            context["freshness"] = context_freshness
+            context["score"] = tahf_score(relevance, authority, context_freshness, alpha=alpha, beta=beta)
+            ranked.append(context)
+        ranked.sort(key=lambda item: item.get("score", 0.0), reverse=True)
+        return ranked[:top_k]
+
+    def _keyword_search(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
         terms = _terms(query)
         if not terms:
             return []
@@ -257,4 +321,4 @@ class HybridRetriever:
                     extraction_confidence=chunk.extraction_confidence if chunk.extraction_confidence is not None else meta.get("extraction_confidence"),
                 ).as_dict()
             )
-        return rerank_contexts(contexts)[:top_k]
+        return contexts

@@ -1,4 +1,16 @@
+"""Trust-Aware Hybrid Fusion (TAHF) re-ranking.
+
+Final score = relevance (lexical/rerank) + source-type/confidence nudge
++ alpha*authority + beta*freshness. Authority and freshness are stashed on each
+context to power the "why this source" UX and the C²GV support score. Freshness
+defaults to neutral (1.0) until valid-time/crawl timestamps are wired (M3).
+"""
+
 from __future__ import annotations
+
+from app.core.config import get_settings
+from app.retrieval.fusion import tahf_score
+from app.trust.authority import host_authority
 
 
 def confidence_boost(source_type: str | None, extraction_confidence: float | None) -> float:
@@ -14,10 +26,18 @@ def confidence_boost(source_type: str | None, extraction_confidence: float | Non
     return score
 
 
-def rerank_contexts(contexts: list[dict]) -> list[dict]:
+def rerank_contexts(contexts: list[dict], *, root_domain: str = "mercubuana.ac.id") -> list[dict]:
+    settings = get_settings()
+    alpha = settings.tahf_authority_weight
+    beta = settings.tahf_freshness_weight
     for context in contexts:
-        context["score"] = float(context.get("score", 0.0)) + confidence_boost(
+        relevance = float(context.get("score", 0.0)) + confidence_boost(
             context.get("source_type"), context.get("extraction_confidence")
         )
+        authority = host_authority(context.get("hostname"), root_domain)
+        context_freshness = context.get("freshness")
+        context_freshness = 1.0 if context_freshness is None else float(context_freshness)
+        context["authority"] = authority
+        context["freshness"] = context_freshness
+        context["score"] = tahf_score(relevance, authority, context_freshness, alpha=alpha, beta=beta)
     return sorted(contexts, key=lambda item: item.get("score", 0.0), reverse=True)
-

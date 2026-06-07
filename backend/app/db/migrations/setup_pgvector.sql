@@ -225,5 +225,11 @@ CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_question_hash ON rag_answer_cache
 CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_intent ON rag_answer_cache(intent);
 CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_expires_at ON rag_answer_cache(expires_at);
 
--- Enable this after choosing a stable embedding dimension, for example 1536.
--- CREATE INDEX IF NOT EXISTS ix_chunks_embedding_hnsw ON chunks USING hnsw (embedding vector_cosine_ops);
+-- Dense retrieval (pgvector HNSW ANN). Run once, after backfilling embeddings
+-- (python -m app.ingestion.embed_backfill) and choosing the embedding model's
+-- dimension: OpenAI text-embedding-3-small = 1536, BGE-M3 (multilingual) = 1024.
+-- 1) Pin the column to the chosen dimension (replace 1536 as needed):
+--    ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(1536);
+-- 2) Build the approximate-nearest-neighbour index used by app/retrieval/dense.py:
+--    CREATE INDEX IF NOT EXISTS ix_chunks_embedding_hnsw
+--      ON chunks USING hnsw (embedding vector_cosine_ops);
