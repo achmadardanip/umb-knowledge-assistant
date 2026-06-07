@@ -11,6 +11,8 @@ from app.llm.provider_factory import get_provider, normalize_provider
 from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
 from app.rag.language import language_instruction
 from app.rag.prompts import SYSTEM_PROMPT, build_context_block
+from app.verification.claim_gate import verify_claims
+from app.verification.entailment import LLMJudgeEntailmentChecker
 
 
 logger = logging.getLogger(__name__)
@@ -75,28 +77,6 @@ def _unique_contexts_by_source(contexts: list[dict]) -> list[dict]:
         seen.add(key)
         unique_contexts.append(context)
     return unique_contexts
-
-
-def _ensure_sentence_citation_markers(answer: str, source_count: int) -> str:
-    if not answer or source_count < 1 or re.search(r"\[\d+\]", answer):
-        return answer
-    lines: list[str] = []
-    in_code = False
-    for raw_line in answer.splitlines():
-        line = raw_line.rstrip()
-        stripped = line.strip()
-        if stripped.startswith("```"):
-            in_code = not in_code
-            lines.append(raw_line)
-            continue
-        if in_code or not stripped or stripped.startswith("#"):
-            lines.append(raw_line)
-            continue
-        if stripped.endswith((".", "!", "?", ":")) or stripped.startswith(("-", "*", "1.", "2.", "3.", "4.", "5.")):
-            line = f"{line} [1]"
-        lines.append(line)
-    repaired = "\n".join(lines).strip()
-    return repaired if re.search(r"\[\d+\]", repaired) else f"{answer.strip()} [1]"
 
 
 def extractive_fallback_payload(
@@ -195,6 +175,67 @@ def _chat_with_failover(messages: list[dict], provider_override: str | None, max
     return None, None, last_error
 
 
+def _cgcv_enabled() -> bool:
+    return get_settings().cgcv_enabled
+
+
+def build_default_entailment_checker(provider_override: str | None) -> LLMJudgeEntailmentChecker:
+    """Entailment via the configured provider. Swappable for MiniCheck/NLI via the model gateway."""
+
+    def chat(messages: list[dict]) -> str:
+        return get_provider(provider_override).chat(messages).content
+
+    return LLMJudgeEntailmentChecker(chat=chat)
+
+
+def _contexts_by_citation(sources: list[dict], contexts: list[dict]) -> dict[int, dict]:
+    contexts_by_url = {context.get("url"): context for context in contexts if context.get("url")}
+    mapping: dict[int, dict] = {}
+    for source in sources:
+        citation_id = source.get("citation_id")
+        url = source.get("url")
+        if citation_id is None or not url:
+            continue
+        context = contexts_by_url.get(url)
+        if context and context.get("chunk_text"):
+            mapping[int(citation_id)] = context
+    return mapping
+
+
+_CONFIDENCE_ORDER = {"low": 0, "medium": 1, "high": 2}
+
+
+def _min_confidence(first: str | None, second: str | None) -> str:
+    first = first or "medium"
+    second = second or "medium"
+    return first if _CONFIDENCE_ORDER.get(first, 1) <= _CONFIDENCE_ORDER.get(second, 1) else second
+
+
+def _apply_cgcv(payload: dict, contexts: list[dict], provider_override: str | None) -> dict:
+    """Verify each cited claim by entailment; drop unsupported claims, abstain if too few survive."""
+    settings = get_settings()
+    sources = payload.get("sources") or []
+    checker = build_default_entailment_checker(provider_override)
+    result = verify_claims(
+        payload.get("answer") or "",
+        _contexts_by_citation(sources, contexts),
+        checker,
+        threshold=settings.cgcv_entailment_threshold,
+        min_supported=settings.cgcv_min_supported_claims,
+    )
+    if result.not_found:
+        return {**payload, "answer": FALLBACK_ANSWER, "sources": [], "confidence": "low", "not_found": True}
+    surviving_ids = {citation_id for claim in result.supported_claims for citation_id in claim.citation_ids}
+    filtered_sources = [source for source in sources if int(source.get("citation_id") or 0) in surviving_ids] or sources
+    return {
+        **payload,
+        "answer": result.answer,
+        "sources": filtered_sources,
+        "confidence": _min_confidence(payload.get("confidence"), result.confidence),
+        "not_found": False,
+    }
+
+
 def generate_answer(
     *,
     question: str,
@@ -268,8 +309,9 @@ Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, a
     payload["memory_used"] = memory_used
     if not payload.get("sources"):
         payload["sources"] = _build_sources(contexts[:3])
-    payload["answer"] = _ensure_sentence_citation_markers(payload.get("answer") or "", len(payload.get("sources") or []))
     validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
+    if not validated_payload.get("not_found") and _cgcv_enabled():
+        validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
     if validated_payload.get("not_found") and settings.llm_fallback_extractive:
         return extractive_fallback_payload(
             contexts=contexts,

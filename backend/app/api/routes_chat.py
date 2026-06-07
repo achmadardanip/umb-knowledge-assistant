@@ -9,10 +9,11 @@ from typing import Literal
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import StreamingResponse
 
 from app.agent.umb_agent import RetrievalMode, run_umb_agent
+from app.api.chat_guards import apply_chat_safeguards
 from app.chat.memory_service import get_active_memories, refresh_session_memory
 from app.chat.message_service import recent_messages, save_message
 from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
@@ -455,7 +456,8 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
 
 
 @router.post("/chat")
-def chat(payload: ChatRequest, db: Session = Depends(get_db)) -> dict:
+def chat(payload: ChatRequest, request: Request, db: Session = Depends(get_db)) -> dict:
+    apply_chat_safeguards(request, question=payload.question, anonymous_session_id=payload.anonymous_session_id)
     return process_chat(payload, db)
 
 
@@ -464,7 +466,9 @@ def _sse(event: str, data) -> str:
 
 
 @router.post("/chat/stream")
-def chat_stream(payload: ChatRequest):
+def chat_stream(payload: ChatRequest, request: Request):
+    apply_chat_safeguards(request, question=payload.question, anonymous_session_id=payload.anonymous_session_id)
+
     def generator():
         queue: Queue[tuple[str, object]] = Queue()
 

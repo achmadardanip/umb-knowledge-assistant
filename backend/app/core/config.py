@@ -117,6 +117,25 @@ class Settings:
     llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", True)
     llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "openai")
 
+    # Corroboration-Gated Claim Verification (CGCV). Off by default until the
+    # evaluation harness can measure its faithfulness/abstention impact; the
+    # conformal layer (C²GV) will later set the threshold from a calibration set.
+    cgcv_enabled: bool = _bool("CGCV_ENABLED", False)
+    cgcv_entailment_threshold: float = _float("CGCV_ENTAILMENT_THRESHOLD", 0.5)
+    cgcv_min_supported_claims: int = _int("CGCV_MIN_SUPPORTED_CLAIMS", 1)
+
+    # Safety floor (OWASP LLM10 / LLM01).
+    rate_limit_enabled: bool = _bool("RATE_LIMIT_ENABLED", True)
+    rate_limit_max_requests: int = _int("RATE_LIMIT_MAX_REQUESTS", 30)
+    rate_limit_window_seconds: int = _int("RATE_LIMIT_WINDOW_SECONDS", 60)
+    max_question_chars: int = _int("MAX_QUESTION_CHARS", 4000)
+
+    # Trust-Aware Hybrid Fusion priors: S(d) = rel(d) + alpha*authority + beta*freshness.
+    tahf_authority_weight: float = _float("TAHF_AUTHORITY_WEIGHT", 1.0)
+    tahf_freshness_weight: float = _float("TAHF_FRESHNESS_WEIGHT", 0.5)
+    # Dense semantic retrieval. Off until chunk embeddings are backfilled.
+    dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
+
     web_search_enabled: bool = _bool("WEB_SEARCH_ENABLED", False)
     web_search_provider: str = os.getenv("WEB_SEARCH_PROVIDER", "tavily").strip().lower()
     tavily_api_key: str | None = os.getenv("TAVILY_API_KEY")
