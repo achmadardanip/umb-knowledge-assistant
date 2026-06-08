@@ -33,6 +33,14 @@ KEYWORD_BOOST_TERMS = {
     "perpustakaan",
     "repository",
     "fakultas",
+    "fasilkom",
+    "dekan",
+    "dosen",
+    "struktural",
+    "prodi",
+    "jurusan",
+    "informatika",
+    "komputer",
 }
 
 STOPWORDS = {
@@ -55,6 +63,7 @@ STOPWORDS = {
     "universitas",
     "mercu",
     "buana",
+    "studi",
 }
 
 QUERY_EXPANSIONS = {
@@ -63,6 +72,13 @@ QUERY_EXPANSIONS = {
     "pmb": ["pendaftaran", "daftar", "penerimaan mahasiswa baru", "calon mahasiswa"],
     "baru": ["penerimaan", "calon mahasiswa"],
     "program": ["program studi", "prodi", "fakultas"],
+    "prodi": ["program studi", "jurusan"],
+    "jurusan": ["program studi", "prodi"],
+    "fasilkom": ["fakultas ilmu komputer", "ilmu komputer", "struktural dosen fasilkom"],
+    "komputer": ["ilmu komputer", "fakultas ilmu komputer", "fasilkom"],
+    "informatika": ["teknik informatika", "fakultas ilmu komputer", "fasilkom"],
+    "dekan": ["struktural", "pimpinan fakultas", "fakultas"],
+    "dosen": ["struktural dan dosen", "dosen tetap", "fasilkom"],
     "akademik": ["perkuliahan", "program akademik"],
     "perpus": ["perpustakaan", "library", "lib", "digilib", "repository"],
     "perpustakaan": ["perpus", "library", "lib", "digilib", "repository"],
@@ -103,6 +119,63 @@ SIA_REQUIRED_ANCHORS = (
     "sistem informasi akademik",
     "single sign on",
 )
+
+# Official login/password help content (Support Center, SSO portal) we want surfaced.
+HELP_ANCHORS = (
+    "reset password",
+    "lupa password",
+    "ubah password",
+    "ganti kata sandi",
+    "aktivasi akun",
+    "panduan login",
+    "knowledgebase",
+    "faq",
+    "kata sandi",
+)
+
+# Per-student record pages on sia. (not help content) — demote for login/password queries.
+NOISY_SIA_RECORD_MARKERS = (
+    "pengalamanmhs",
+    "biomhs",
+    "peraturanskp",
+    "/lst/",
+    "pengalaman mahasiswa",
+    "/detail/",
+)
+
+FASILKOM_REQUIRED_ANCHORS = (
+    "fasilkom",
+    "fakultas ilmu komputer",
+    "ilmu komputer",
+)
+
+LIBRARY_TERMS = {
+    "perpus",
+    "perpustakaan",
+    "library",
+    "lib",
+    "repository",
+    "digilib",
+}
+
+NOISY_ACADEMIC_HOST_MARKERS = (
+    "lib.",
+    "repository.",
+    "publikasi.",
+)
+
+NOISY_ACADEMIC_TEXT_MARKERS = (
+    "perpustakaan",
+    "repository",
+    "literasi informasi",
+    "berita perpustakaan",
+    "workshop",
+    "seminar",
+    "event",
+)
+
+FACULTY_PROGRAM_TERMS = {"program", "program studi", "prodi", "jurusan"}
+FACULTY_ROLE_TERMS = {"dekan", "dosen", "struktural", "wakil dekan", "ketua program studi", "kaprodi"}
 
 
 @dataclass
@@ -169,6 +242,55 @@ def _score_metadata(text: str, terms: list[str]) -> float:
     return score
 
 
+def _contains_any(text: str, needles: tuple[str, ...] | set[str]) -> bool:
+    return any(_term_count(text, needle) > 0 for needle in needles)
+
+
+def _is_library_query(terms: list[str]) -> bool:
+    return any(term in LIBRARY_TERMS for term in terms)
+
+
+def _is_fasilkom_query(terms: list[str]) -> bool:
+    return any(term in {"fasilkom", "fakultas ilmu komputer", "ilmu komputer"} for term in terms)
+
+
+def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[str]) -> float:
+    lowered = combined_text.lower()
+    host = (hostname or "").lower()
+    score = 0.0
+    if _is_login_related_query(terms):
+        # Surface official help (Support Center / SSO portal / help anchors)...
+        if any(marker in host for marker in ("support.", "sso.")) or _contains_any(lowered, HELP_ANCHORS):
+            score += 25.0
+        # ...and demote per-student record pages that merely mention "sia".
+        if any(marker in lowered for marker in NOISY_SIA_RECORD_MARKERS):
+            score -= 22.0
+    if _is_fasilkom_query(terms):
+        if _contains_any(lowered, FASILKOM_REQUIRED_ANCHORS):
+            score += 30.0
+        if any(term in FACULTY_ROLE_TERMS for term in terms) and _contains_any(
+            lowered, ("struktural", "dosen", "dekan", "wakil dekan", "ketua program studi", "kaprodi")
+        ):
+            score += 14.0
+        if any(term in FACULTY_PROGRAM_TERMS for term in terms) and _contains_any(
+            lowered, ("program studi", "prodi", "jurusan", "teknik informatika", "sistem informasi")
+        ):
+            score += 12.0
+        if not _is_library_query(terms):
+            if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS):
+                score -= 25.0
+            if any(marker in lowered for marker in NOISY_ACADEMIC_TEXT_MARKERS) and not _contains_any(
+                lowered, FASILKOM_REQUIRED_ANCHORS
+            ):
+                score -= 18.0
+    elif any(term in FACULTY_PROGRAM_TERMS | {"fakultas"} for term in terms) and not _is_library_query(terms):
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, ("program studi", "prodi", "fakultas", "jurusan")
+        ):
+            score -= 8.0
+    return score
+
+
 def _is_login_related_query(terms: list[str]) -> bool:
     return any(term in LOGIN_RELATED_TERMS for term in terms)
 
@@ -179,6 +301,8 @@ def _has_required_anchor(text: str, anchors: tuple[str, ...]) -> bool:
 
 
 def _required_anchors_for_query(terms: list[str]) -> tuple[str, ...]:
+    if _is_fasilkom_query(terms):
+        return FASILKOM_REQUIRED_ANCHORS
     if any(term in SIA_REQUIRED_ANCHORS for term in terms):
         return SIA_REQUIRED_ANCHORS
     if _is_login_related_query(terms):
@@ -313,7 +437,11 @@ class HybridRetriever:
             combined_text = f"{chunk.chunk_text}\n{metadata_text}"
             if required_anchors and not _has_required_anchor(combined_text, required_anchors):
                 continue
-            score = _score_text(chunk.chunk_text, terms) + _score_metadata(metadata_text, terms)
+            score = (
+                _score_text(chunk.chunk_text, terms)
+                + _score_metadata(metadata_text, terms)
+                + _score_topic_priority(combined_text, hostname, terms)
+            )
             if score < min_score:
                 continue
             contexts.append(

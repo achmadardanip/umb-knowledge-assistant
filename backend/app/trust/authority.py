@@ -30,6 +30,8 @@ HIGH_AUTHORITY_SUBDOMAINS = {
     "karir",
     "international",
     "elearning",
+    "support",
+    "bti",
 }
 
 
