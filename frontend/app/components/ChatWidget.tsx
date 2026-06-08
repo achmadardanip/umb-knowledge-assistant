@@ -13,7 +13,7 @@ import {
   setRetrievalMode,
   setSelectedProvider
 } from "../lib/localStorage";
-import type { ChatMessage, ChatSession, ProviderId, ProviderOption, RetrievalMode } from "../lib/types";
+import type { ChatMessage, ChatResponse, ChatSession, ProviderId, ProviderOption, RetrievalMode } from "../lib/types";
 import { useChatMessages } from "../hooks/useChatMessages";
 import { useChatSessions } from "../hooks/useChatSessions";
 import { ChatInput } from "./ChatInput";
@@ -23,6 +23,12 @@ import { ExamplePrompts } from "./ExamplePrompts";
 import { MessageBubble } from "./MessageBubble";
 import { RenameChatDialog } from "./RenameChatDialog";
 import { ThinkingSteps } from "./ThinkingSteps";
+
+declare global {
+  interface Window {
+    puter?: { ai?: { chat?: (messages: unknown, opts?: unknown) => Promise<unknown> } };
+  }
+}
 
 const MIN_PROGRESS_MS = 1200;
 
@@ -123,6 +129,22 @@ export function ChatWidget() {
     return created.session_id;
   }
 
+  async function runPuterChat(payload: Parameters<typeof api.chatPrepare>[0]): Promise<ChatResponse> {
+    const prep = await api.chatPrepare(payload);
+    if (prep.mode === "final" || !prep.prepare_id || !prep.messages) {
+      return prep as ChatResponse; // terminal: clarify / blocked / cache / not_found
+    }
+    (prep.visible_steps || []).forEach((step) => setSteps((current) => mergeStep(current, step)));
+    let text = "";
+    try {
+      const resp = (await window.puter!.ai!.chat!(prep.messages, { model: "gpt-4o-mini" })) as any;
+      text = typeof resp === "string" ? resp : resp?.message?.content ?? resp?.text ?? String(resp ?? "");
+    } catch {
+      throw new Error("Puter.js gagal menghasilkan jawaban di browser. Pilih provider lain atau coba lagi.");
+    }
+    return api.chatFinalize({ prepare_id: prep.prepare_id, answer: text, model_used: "gpt-4o-mini" });
+  }
+
   async function send(question: string, regenerateFromMessageId?: string | null) {
     if (!anonymousId) return;
     setError(null);
@@ -133,24 +155,27 @@ export function ChatWidget() {
     setMessages((current) => [...current, optimisticUser]);
     try {
       const sessionId = await ensureSession();
-      const result = await api.chatStream(
-        {
-          session_id: sessionId,
-          anonymous_session_id: anonymousId,
-          question,
-          top_k: 5,
-          provider_override: selectedProviderState,
-          memory_enabled: memoryEnabledState,
-          regenerate_from_message_id: regenerateFromMessageId || null,
-          retrieval_mode: retrievalModeState
-        },
-        {
-          onStep: (step) => {
-            setSteps((current) => mergeStep(current, step));
-          },
-          onError: (message) => setError(message)
-        }
-      );
+      // "puter" is a browser-side provider; the backend never sees it as a provider_override.
+      const usePuter =
+        selectedProviderState === "puter" && typeof window !== "undefined" && Boolean(window.puter?.ai?.chat);
+      const requestPayload = {
+        session_id: sessionId,
+        anonymous_session_id: anonymousId,
+        question,
+        top_k: 5,
+        provider_override: selectedProviderState === "puter" ? null : selectedProviderState,
+        memory_enabled: memoryEnabledState,
+        regenerate_from_message_id: regenerateFromMessageId || null,
+        retrieval_mode: retrievalModeState
+      };
+      const result = usePuter
+        ? await runPuterChat(requestPayload)
+        : await api.chatStream(requestPayload, {
+            onStep: (step) => {
+              setSteps((current) => mergeStep(current, step));
+            },
+            onError: (message) => setError(message)
+          });
       const elapsed = Date.now() - startedAt;
       if (elapsed < MIN_PROGRESS_MS) {
         await wait(MIN_PROGRESS_MS - elapsed);

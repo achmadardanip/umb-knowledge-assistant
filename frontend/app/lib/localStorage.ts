@@ -24,7 +24,7 @@ export function getAnonymousSessionId() {
 }
 
 export function getSelectedProvider(): ProviderId {
-  return (window.localStorage.getItem(KEYS.provider) as ProviderId | null) || "openrouter";
+  return (window.localStorage.getItem(KEYS.provider) as ProviderId | null) || "puter";
 }
 
 export function setSelectedProvider(provider: ProviderId) {

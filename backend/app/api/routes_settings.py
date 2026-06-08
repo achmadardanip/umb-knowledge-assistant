@@ -25,6 +25,7 @@ def providers() -> dict:
                 "model": settings.hermes_model,
             },
             {"id": "groq", "label": "Groq", "configured": bool(settings.groq_api_key), "model": settings.groq_model},
+            {"id": "puter", "label": "Puter (gratis, tanpa API key)", "configured": True, "model": "browser"},
         ],
         "web_search": {
             "enabled": settings.web_search_enabled,
