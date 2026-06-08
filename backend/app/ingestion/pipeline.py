@@ -48,7 +48,7 @@ def _upsert_discovered_url(db: Session, url: str, *, discovery_source: str, is_a
     return existing
 
 
-def upsert_source_document(db: Session, url: str, text: str, title: str | None, metadata: dict, http_status: int, discovery_source: str | None = None) -> int:
+def upsert_source_document(db: Session, url: str, text: str, title: str | None, metadata: dict, http_status: int, discovery_source: str | None = None, min_words: int = 25) -> int:
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower()
     path = parsed.path or "/"
@@ -97,6 +97,7 @@ def upsert_source_document(db: Session, url: str, text: str, title: str | None, 
         metadata=chunk_metadata,
         chunk_size=get_settings().chunk_size,
         overlap=get_settings().chunk_overlap,
+        min_words=min_words,
     )
     if not chunks:
         existing.status = "empty"

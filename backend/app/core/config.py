@@ -153,6 +153,9 @@ class Settings:
     web_search_timeout_seconds: int = _int("WEB_SEARCH_TIMEOUT_SECONDS", 10)
     web_search_strict_domain: str = os.getenv("WEB_SEARCH_STRICT_DOMAIN", "mercubuana.ac.id")
     web_search_cache_answers: bool = _bool("WEB_SEARCH_CACHE_ANSWERS", False)
+    # Persist live web-derived answer contexts into the KB so similar future
+    # questions are served from the indexed KB (no second web round-trip / LLM call).
+    web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
 
     agent_mode_enabled: bool = _bool("AGENT_MODE_ENABLED", True)
     agent_max_tool_iterations: int = _int("AGENT_MAX_TOOL_ITERATIONS", 3)

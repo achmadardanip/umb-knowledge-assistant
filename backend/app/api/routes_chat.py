@@ -26,6 +26,7 @@ from app.db.database import get_db, get_session_local
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider
 from app.rag.answer_cache import build_cache_key, get_cached_answer, store_cached_answer
+from app.ingestion.web_kb_ingest import persist_web_contexts
 from app.rag.answer_generator import generate_answer
 from app.rag.guardrails import guardrail_response
 from app.rag.intent_classifier import classify_intent
@@ -476,6 +477,22 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
             db.rollback()
             emit("provider", "Memilih provider AI", "error", str(exc))
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Web -> KB ingest: persist the live web sources we just answered from, so a
+    # similar future question is served straight from the indexed KB (no web round
+    # trip, no LLM). Best-effort inside a savepoint; never breaks the answer.
+    web_kb_ingested = 0
+    if settings.web_kb_ingest_enabled and not answer_payload.get("not_found") and not answer_payload.get("cache_hit"):
+        web_used = [c for c in contexts if c.get("discovery_source") == "live_web_search"]
+        if web_used:
+            emit("kb_ingest", "Menyimpan sumber web ke KB", "running", f"{len(web_used)} konteks web kandidat")
+            try:
+                with db.begin_nested():
+                    web_kb_ingested = persist_web_contexts(db, web_used)
+                emit("kb_ingest", "Menyimpan sumber web ke KB", "done",
+                     f"{web_kb_ingested} chunk web disimpan ke KB untuk pertanyaan serupa berikutnya")
+            except Exception as exc:  # never fail the user's answer on ingest issues
+                emit("kb_ingest", "Menyimpan sumber web ke KB", "error", str(exc))
 
     emit("save_answer", "Menyimpan jawaban dan metadata", "running")
     metadata = {
