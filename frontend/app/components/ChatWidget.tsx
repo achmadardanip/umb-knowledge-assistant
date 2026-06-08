@@ -47,7 +47,6 @@ export function ChatWidget() {
   const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("openrouter");
   const [providerOptions, setProviderOptions] = useState<ProviderOption[]>([]);
   const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("indexed");
-  const [audienceState, setAudienceState] = useState<string>("");
   const [memoryEnabledState, setMemoryEnabledState] = useState(true);
   const [sending, setSending] = useState(false);
   const [steps, setSteps] = useState<NonNullable<ChatMessage["visible_steps"]>>([]);
@@ -143,8 +142,7 @@ export function ChatWidget() {
           provider_override: selectedProviderState,
           memory_enabled: memoryEnabledState,
           regenerate_from_message_id: regenerateFromMessageId || null,
-          retrieval_mode: retrievalModeState,
-          audience: audienceState || null
+          retrieval_mode: retrievalModeState
         },
         {
           onStep: (step) => {
@@ -253,22 +251,6 @@ export function ChatWidget() {
           <div className="mx-auto max-w-4xl">
             <h1 className="text-xl font-semibold">{activeTitle}</h1>
             <p className="text-sm text-neutral-600">Asisten informasi publik berbasis sumber resmi Universitas Mercu Buana</p>
-            <div className="mt-2 flex items-center gap-2">
-              <label htmlFor="audience" className="text-xs text-neutral-500">Saya seorang:</label>
-              <select
-                id="audience"
-                value={audienceState}
-                onChange={(event) => setAudienceState(event.target.value)}
-                className="rounded border border-line bg-white px-2 py-1 text-xs text-neutral-700"
-              >
-                <option value="">Umum / Publik</option>
-                <option value="calon_mahasiswa">Calon Mahasiswa</option>
-                <option value="mahasiswa">Mahasiswa</option>
-                <option value="orang_tua">Orang Tua / Wali</option>
-                <option value="alumni">Alumni</option>
-                <option value="dosen">Dosen / Staf</option>
-              </select>
-            </div>
           </div>
         </header>
         <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28 md:pb-5">

@@ -18,6 +18,7 @@ from app.chat.memory_service import get_active_memories, refresh_session_memory
 from app.chat.message_service import recent_messages, save_message
 from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
 from app.chat.followups import suggest_followups
+from app.chat.role_inference import infer_audience
 from app.chat.summarizer import compact_context
 from app.core.config import get_settings
 from app.db.database import get_db, get_session_local
@@ -376,7 +377,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
                 )
                 emit("answer", "Menyusun jawaban berbasis sumber resmi", "running", f"Mengirim {len(contexts)} chunk relevan, bukan seluruh dokumen")
                 answer_payload = generate_answer(
-                    question=_with_audience(payload.question, payload.audience),
+                    question=_with_audience(payload.question, payload.audience or infer_audience(payload.question)),
                     contexts=contexts,
                     recent_messages=history,
                     memories=memories,
