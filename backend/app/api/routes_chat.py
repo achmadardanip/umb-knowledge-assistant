@@ -17,6 +17,7 @@ from app.api.chat_guards import apply_chat_safeguards
 from app.chat.memory_service import get_active_memories, refresh_session_memory
 from app.chat.message_service import recent_messages, save_message
 from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
+from app.chat.clarify import clarification_suggestions, clarifying_questions
 from app.chat.followups import suggest_followups
 from app.chat.role_inference import infer_audience
 from app.chat.summarizer import compact_context
@@ -293,6 +294,75 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
             "agent_tool_calls": 0,
         }
     emit("guardrail", "Memvalidasi keamanan pertanyaan", "done", "Pertanyaan aman untuk diproses")
+
+    # Ask clarifying questions for vague/ambiguous queries *before* spending retrieval
+    # or the rate-limited LLM. Skipped for out-of-scope and for regenerate requests.
+    clarifiers: list[str] = []
+    if intent_result.intent != "out_of_scope" and not payload.regenerate_from_message_id:
+        clarifiers = clarifying_questions(payload.question, recent_messages=history, language=language_detected)
+    if clarifiers:
+        is_en = language_detected.startswith("en")
+        emit("clarify", "Meminta klarifikasi konteks", "done",
+             "Pertanyaan terlalu umum/ambigu; menanyakan detail tanpa memanggil LLM")
+        suggestions = clarification_suggestions(payload.question, recent_messages=history, language=language_detected)
+        lead = (
+            "Your question is still quite general. So I can answer accurately from official UMB sources, could you clarify:"
+            if is_en
+            else "Pertanyaan Anda masih cukup umum. Agar saya bisa menjawab dengan tepat dari sumber resmi UMB, boleh perjelas dulu:"
+        )
+        answer_text = lead + "\n\n" + "\n".join(f"• {q}" for q in clarifiers)
+        clarify_meta = {
+            "memory_used": False,
+            "intent": intent_result.intent,
+            "retrieval_mode": payload.retrieval_mode,
+            "language_detected": language_detected,
+            "retrieved_context_count": 0,
+            "prompt_context_chunk_count": 0,
+            "indexed_context_count": 0,
+            "web_context_count": 0,
+            "agent_tool_calls": 0,
+            "clarification": True,
+        }
+        emit("save_answer", "Menyimpan jawaban dan metadata", "running")
+        assistant = save_message(
+            db,
+            session_id=session.id,
+            role="assistant",
+            content=answer_text,
+            sources=[],
+            confidence_score="low",
+            provider_used="system",
+            model_used="clarification",
+            not_found=False,
+            visible_steps=visible_steps,
+            metadata=clarify_meta,
+        )
+        emit("save_answer", "Menyimpan jawaban dan metadata", "done", f"Message {assistant.id}")
+        assistant.visible_steps = visible_steps
+        db.commit()
+        return {
+            "session_id": session.id,
+            "message_id": assistant.id,
+            "answer": answer_text,
+            "sources": [],
+            "confidence": "low",
+            "not_found": False,
+            "provider_used": "system",
+            "model_used": "clarification",
+            "memory_used": False,
+            "cache_hit": False,
+            "follow_up_questions": suggestions,
+            "chat_title": title,
+            "visible_steps": visible_steps,
+            "intent": intent_result.intent,
+            "retrieval_mode": payload.retrieval_mode,
+            "language_detected": language_detected,
+            "retrieved_context_count": 0,
+            "prompt_context_chunk_count": 0,
+            "indexed_context_count": 0,
+            "web_context_count": 0,
+            "agent_tool_calls": 0,
+        }
 
     retrieval_query = _build_retrieval_query(payload.question, history, title)
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
