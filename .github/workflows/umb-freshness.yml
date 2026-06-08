@@ -38,6 +38,7 @@ jobs:
       ENABLE_VIDEO_DOWNLOAD: "false"
       SCHEDULED_CRAWL_MAX_PAGES: ${{ inputs.crawl_max_pages || '500' }}
       SCHEDULED_MULTIMODAL_MAX_FILES: ${{ inputs.multimodal_max_files || '200' }}
+      GRAPH_PATH: ../data/graph/umb_graph.json
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -75,7 +76,7 @@ jobs:
 
       - name: Prepare runtime data directories
         run: |
-          mkdir -p ../data/discovery ../data/multimodal ../data/downloads/raw
+          mkdir -p ../data/discovery ../data/multimodal ../data/downloads/raw ../data/graph
 
       - name: Merge and filter discovered URLs
         run: python -m app.discovery.discovery_pipeline merge-filter --domain mercubuana.ac.id
@@ -91,6 +92,9 @@ jobs:
       - name: Incremental multimodal ingestion
         run: python -m app.multimodal.multimodal_pipeline run-all --max-files "$SCHEDULED_MULTIMODAL_MAX_FILES"
 
+      - name: Rebuild GraphRAG knowledge graph
+        run: python -m app.graph.build_graph
+
       - name: Upload sanitized reports
         uses: actions/upload-artifact@v4
         if: always()
@@ -99,4 +103,5 @@ jobs:
           path: |
             data/discovery/discovery_report.json
             data/multimodal/extraction_report.json
+            data/graph/umb_graph.json
           if-no-files-found: ignore
