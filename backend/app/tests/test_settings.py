@@ -20,6 +20,8 @@ def test_hermes_provider_is_off_by_default(monkeypatch):
         hermes_model="hermes-agent",
         groq_api_key=None,
         groq_model="llama-3.3-70b-versatile",
+        huggingface_api_key=None,
+        huggingface_model="meta-llama/Llama-3.1-8B-Instruct",
         web_search_enabled=True,
         web_search_provider="tavily",
         tavily_api_key="key",

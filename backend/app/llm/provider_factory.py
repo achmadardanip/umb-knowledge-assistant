@@ -6,6 +6,7 @@ from app.llm.base import BaseLLMProvider, ProviderConfigurationError
 from app.llm.gemini_provider import GeminiProvider
 from app.llm.groq_provider import GroqProvider
 from app.llm.hermes_provider import HermesProvider
+from app.llm.huggingface_provider import HuggingFaceProvider
 from app.llm.openai_provider import OpenAIProvider
 from app.llm.openrouter_provider import OpenRouterProvider
 
@@ -17,6 +18,7 @@ PROVIDERS: dict[str, type[BaseLLMProvider]] = {
     "anthropic": AnthropicProvider,
     "hermes": HermesProvider,
     "groq": GroqProvider,
+    "huggingface": HuggingFaceProvider,
 }
 
 

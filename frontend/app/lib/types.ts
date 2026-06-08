@@ -1,4 +1,4 @@
-export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic" | "hermes" | "groq" | "puter";
+export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic" | "hermes" | "groq" | "puter" | "huggingface";
 export type RetrievalMode = "indexed" | "web" | "hybrid";
 
 export type ProviderOption = {
