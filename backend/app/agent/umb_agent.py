@@ -250,6 +250,34 @@ def run_umb_agent(
             {"indexed_context_count": len(indexed_contexts), "web_context_count": len(web_contexts)},
         )
 
+    graph_settings = get_settings()
+    if graph_settings.graph_rag_enabled and retrieval_mode != "web" and contexts:
+        try:
+            from app.graph.graph_store import expansion_contexts, load_graph
+
+            graph = load_graph(graph_settings.graph_path)
+            if graph is not None:
+                exclude_ids = {c.get("chunk_id") for c in contexts if c.get("chunk_id")}
+                graph_ctx = expansion_contexts(
+                    db,
+                    query,
+                    graph,
+                    root_domain=root_domain,
+                    limit=graph_settings.graph_expansion_top_k,
+                    exclude_chunk_ids=exclude_ids,
+                )
+                if graph_ctx:
+                    contexts = contexts + graph_ctx
+                    emit_step(
+                        "graph_rag",
+                        "Memperluas konteks via knowledge graph",
+                        "done",
+                        f"{len(graph_ctx)} konteks tambahan dari relasi entitas",
+                        {"graph_context_count": len(graph_ctx)},
+                    )
+        except Exception as exc:  # graph is best-effort; never break retrieval
+            logging.getLogger(__name__).warning("GraphRAG expansion skipped: %s", exc)
+
     contexts = _dedupe_contexts(contexts)
     if _va_jit_enabled() and contexts:
         contexts = _maybe_va_jit(query, contexts, live_retriever, emit_step)

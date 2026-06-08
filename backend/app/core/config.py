@@ -157,6 +157,12 @@ class Settings:
     # questions are served from the indexed KB (no second web round-trip / LLM call).
     web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
 
+    # GraphRAG: entity co-occurrence graph over indexed chunks, used to expand
+    # retrieval along entity relations (multi-hop). Built offline to JSON.
+    graph_rag_enabled: bool = _bool("GRAPH_RAG_ENABLED", True)
+    graph_path: str = os.getenv("GRAPH_PATH", "data/graph/umb_graph.json")
+    graph_expansion_top_k: int = _int("GRAPH_EXPANSION_TOP_K", 3)
+
     agent_mode_enabled: bool = _bool("AGENT_MODE_ENABLED", True)
     agent_max_tool_iterations: int = _int("AGENT_MAX_TOOL_ITERATIONS", 3)
     llm_title_generation_enabled: bool = _bool("LLM_TITLE_GENERATION_ENABLED", False)
