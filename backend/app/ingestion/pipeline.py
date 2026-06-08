@@ -48,7 +48,19 @@ def _upsert_discovered_url(db: Session, url: str, *, discovery_source: str, is_a
     return existing
 
 
-def upsert_source_document(db: Session, url: str, text: str, title: str | None, metadata: dict, http_status: int, discovery_source: str | None = None, min_words: int = 25) -> int:
+def upsert_source_document(
+    db: Session,
+    url: str,
+    text: str,
+    title: str | None,
+    metadata: dict,
+    http_status: int,
+    discovery_source: str | None = None,
+    min_words: int = 25,
+    source_type: str = "html",
+    extraction_method: str = "trafilatura+beautifulsoup",
+    extraction_confidence: float = 0.9,
+) -> int:
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower()
     path = parsed.path or "/"
@@ -87,10 +99,10 @@ def upsert_source_document(db: Session, url: str, text: str, title: str | None, 
         "hostname": hostname,
         "path": path,
         "title": title,
-        "source_type": "html",
+        "source_type": source_type,
         "discovery_source": discovery_source,
-        "extraction_method": "trafilatura+beautifulsoup",
-        "extraction_confidence": 0.9,
+        "extraction_method": extraction_method,
+        "extraction_confidence": extraction_confidence,
     }
     chunks = chunk_text(
         text,

@@ -163,6 +163,18 @@ class Settings:
     # questions are served from the indexed KB (no second web round-trip / LLM call).
     web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
 
+    firecrawl_api_key: str | None = os.getenv("FIRECRAWL_API_KEY")
+    firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "https://api.firecrawl.dev/v2").rstrip("/")
+    firecrawl_default_limit: int = _int("FIRECRAWL_DEFAULT_LIMIT", 500)
+    firecrawl_timeout_seconds: int = _int("FIRECRAWL_TIMEOUT_SECONDS", 60)
+    firecrawl_max_retries: int = _int("FIRECRAWL_MAX_RETRIES", 3)
+    firecrawl_retry_backoff_seconds: float = _float("FIRECRAWL_RETRY_BACKOFF_SECONDS", 2.0)
+    firecrawl_delay_seconds: float = _float("FIRECRAWL_DELAY_SECONDS", 1.0)
+    firecrawl_max_concurrency: int = _int("FIRECRAWL_MAX_CONCURRENCY", 2)
+    firecrawl_poll_interval_seconds: float = _float("FIRECRAWL_POLL_INTERVAL_SECONDS", 10.0)
+    firecrawl_max_wait_seconds: int = _int("FIRECRAWL_MAX_WAIT_SECONDS", 1800)
+    firecrawl_zero_data_retention: bool = _bool("FIRECRAWL_ZERO_DATA_RETENTION", True)
+
     # GraphRAG: entity co-occurrence graph over indexed chunks, used to expand
     # retrieval along entity relations (multi-hop). Built offline to JSON.
     graph_rag_enabled: bool = _bool("GRAPH_RAG_ENABLED", True)

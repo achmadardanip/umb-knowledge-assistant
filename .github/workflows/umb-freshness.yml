@@ -81,6 +81,17 @@ jobs:
       - name: Merge and filter discovered URLs
         run: python -m app.discovery.discovery_pipeline merge-filter --domain mercubuana.ac.id
 
+      - name: Firecrawl map + search discovery (optional)
+        env:
+          FIRECRAWL_API_KEY: ${{ secrets.FIRECRAWL_API_KEY }}
+          FIRECRAWL_BASE_URL: ${{ secrets.FIRECRAWL_BASE_URL || 'https://api.firecrawl.dev/v2' }}
+        run: |
+          if [ -n "$FIRECRAWL_API_KEY" ] || [ -n "${{ secrets.FIRECRAWL_BASE_URL }}" ]; then
+            python -m app.ingestion.firecrawl_pipeline discover --domain mercubuana.ac.id --confirm-authorized --limit 1000 || echo "Firecrawl discovery skipped/failed (non-fatal)."
+          else
+            echo "Firecrawl not configured (set FIRECRAWL_API_KEY or FIRECRAWL_BASE_URL secret); skipping map discovery."
+          fi
+
       - name: Incremental crawl indexed public pages
         run: |
           if [ -s ../data/discovery/urls_filtered.txt ]; then

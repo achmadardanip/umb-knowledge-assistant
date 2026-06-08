@@ -10,6 +10,8 @@ __pycache__/
 node_modules/
 .next/
 *.tsbuildinfo
+# Firecrawl run report (regenerated each run)
+data/reports/firecrawl_index.json
 dist/
 build/
 coverage/
