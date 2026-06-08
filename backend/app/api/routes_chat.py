@@ -746,6 +746,12 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         metadata=metadata,
     )
     assistant.visible_steps = prepared.visible_steps
+    # Keep session memory current on the browser-LLM path too (rule-based, self-gates
+    # on session.memory_enabled). Without this, Puter conversations never summarise.
+    try:
+        refresh_session_memory(db, prepared.session_id)
+    except Exception:  # memory is best-effort; never break the answer
+        pass
     db.commit()
     return {
         "session_id": prepared.session_id,

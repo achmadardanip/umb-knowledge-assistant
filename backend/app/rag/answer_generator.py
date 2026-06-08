@@ -95,15 +95,23 @@ def extractive_fallback_payload(
     snippets = []
     for index, context in enumerate(fallback_contexts[:3], start=1):
         text = " ".join((context.get("chunk_text") or "").split())
-        if text:
-            snippets.append(f"{text[:650]} [{index}]")
+        if not text:
+            continue
+        title = context.get("title") or context.get("hostname") or "Sumber resmi"
+        snippets.append(f"**{title}** — {text[:240].rstrip()}… [{index}]")
     answer = FALLBACK_ANSWER
     if snippets:
-        answer = (
-            "Saya menemukan konteks resmi yang relevan, tetapi provider AI sedang tidak tersedia atau terkena limit. "
-            "Ringkasan berbasis kutipan teratas:\n\n"
-            + "\n\n".join(f"- {snippet}" for snippet in snippets)
-        )
+        if reason and "missing_valid_citations" in reason:
+            lead = (
+                "Saya belum dapat memverifikasi jawaban yang utuh untuk pertanyaan ini dari sumber resmi yang terindeks, "
+                "jadi saya tidak menebak. Berikut kutipan paling relevan dari sumber resmi UMB:"
+            )
+        else:
+            lead = (
+                "Sumber resmi yang relevan ditemukan, namun jawaban lengkap belum dapat disusun saat ini. "
+                "Berikut kutipan paling relevan dari sumber resmi UMB:"
+            )
+        answer = lead + "\n\n" + "\n\n".join(f"- {snippet}" for snippet in snippets)
     payload = {
         "answer": answer,
         "sources": sources,
@@ -130,7 +138,16 @@ def _is_retryable_provider_error(exc: Exception) -> bool:
 def _json_text(content: str) -> str:
     text = (content or "").strip()
     fenced = re.match(r"^```(?:json)?\s*(.*?)\s*```$", text, flags=re.IGNORECASE | re.DOTALL)
-    return fenced.group(1).strip() if fenced else text
+    if fenced:
+        text = fenced.group(1).strip()
+    if text.startswith("{"):
+        return text
+    # Browser models sometimes wrap the JSON in prose; extract the outermost object.
+    start = text.find("{")
+    end = text.rfind("}")
+    if start != -1 and end > start:
+        return text[start : end + 1]
+    return text
 
 
 def _provider_candidates(provider_override: str | None) -> list[str | None]:
@@ -286,7 +303,8 @@ Kembalikan JSON valid sesuai format yang diminta.
 Gunakan hanya URL dari konteks resmi.
 Setiap kalimat faktual penting pada field answer harus mencantumkan marker sitasi bernomor seperti [1] atau [2].
 Nomor marker harus sesuai urutan sources yang Anda kembalikan.
-Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, atau tag <think> pada field mana pun."""
+Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, atau tag <think> pada field mana pun.
+Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran untuk langkah/daftar, **tebalkan** istilah penting, dan susun jawaban yang ringkas serta mudah dibaca."""
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_prompt}]
     return messages, contexts

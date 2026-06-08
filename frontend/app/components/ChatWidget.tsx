@@ -31,6 +31,8 @@ declare global {
 }
 
 const MIN_PROGRESS_MS = 1200;
+// Puter.js model (keyless, free in-browser). Override with NEXT_PUBLIC_PUTER_MODEL.
+const PUTER_MODEL = process.env.NEXT_PUBLIC_PUTER_MODEL || "gpt-5.5";
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
@@ -137,12 +139,12 @@ export function ChatWidget() {
     (prep.visible_steps || []).forEach((step) => setSteps((current) => mergeStep(current, step)));
     let text = "";
     try {
-      const resp = (await window.puter!.ai!.chat!(prep.messages, { model: "gpt-4o-mini" })) as any;
+      const resp = (await window.puter!.ai!.chat!(prep.messages, { model: PUTER_MODEL })) as any;
       text = typeof resp === "string" ? resp : resp?.message?.content ?? resp?.text ?? String(resp ?? "");
     } catch {
       throw new Error("Puter.js gagal menghasilkan jawaban di browser. Pilih provider lain atau coba lagi.");
     }
-    return api.chatFinalize({ prepare_id: prep.prepare_id, answer: text, model_used: "gpt-4o-mini" });
+    return api.chatFinalize({ prepare_id: prep.prepare_id, answer: text, model_used: PUTER_MODEL });
   }
 
   async function send(question: string, regenerateFromMessageId?: string | null) {

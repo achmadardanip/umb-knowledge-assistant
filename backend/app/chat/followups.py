@@ -6,7 +6,16 @@ rate limits), bilingual (ID/EN), with sensible defaults.
 
 from __future__ import annotations
 
+import re
+
 _RULES: list[tuple[tuple[str, ...], dict[str, list[str]]]] = [
+    (
+        ("dekan", "rektor", "wakil rektor", "kaprodi", "ketua program studi", "struktur organisasi", "dosen", "fasilkom"),
+        {
+            "id": ["Apa saja program studi di fakultas ini?", "Bagaimana cara menghubungi fakultas/prodi?", "Di mana lokasi kampus fakultas ini?"],
+            "en": ["What study programs does this faculty offer?", "How do I contact the faculty/department?", "Where is this faculty located?"],
+        },
+    ),
     (
         ("daftar", "pendaftaran", "admission", "register", "pmb", "mahasiswa baru"),
         {
@@ -61,6 +70,7 @@ def suggest_followups(question: str, language: str | None = "id", limit: int = 3
     lang = "en" if (language or "id").lower().startswith("en") else "id"
     text = (question or "").lower()
     for keywords, by_lang in _RULES:
-        if any(keyword in text for keyword in keywords):
+        # Word-boundary match so e.g. "sia" does not match inside "siapa".
+        if any(re.search(rf"\b{re.escape(keyword)}\b", text) for keyword in keywords):
             return by_lang.get(lang, by_lang["id"])[:limit]
     return _DEFAULTS[lang][:limit]

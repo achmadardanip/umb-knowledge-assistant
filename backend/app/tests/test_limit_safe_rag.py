@@ -300,7 +300,7 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
 
     assert result["not_found"] is False
     assert result["sources"][0]["hostname"] == "lib.mercubuana.ac.id"
-    assert "Ringkasan berbasis kutipan teratas" in result["answer"]
+    assert "kutipan paling relevan" in result["answer"]
     assert "[1]" in result["answer"]
 
 
