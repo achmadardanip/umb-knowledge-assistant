@@ -13,7 +13,7 @@ from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
 from app.rag.language import language_instruction
 from app.rag.prompts import SYSTEM_PROMPT, build_context_block
 from app.verification.claim_gate import verify_claims
-from app.verification.entailment import LLMJudgeEntailmentChecker
+from app.verification.entailment import EntailmentChecker, LexicalEntailmentChecker, LLMJudgeEntailmentChecker
 
 
 logger = logging.getLogger(__name__)
@@ -184,8 +184,13 @@ def _cgcv_enabled() -> bool:
     return get_settings().cgcv_enabled
 
 
-def build_default_entailment_checker(provider_override: str | None) -> LLMJudgeEntailmentChecker:
-    """Entailment via the configured provider. Swappable for MiniCheck/NLI via the model gateway."""
+def build_default_entailment_checker(provider_override: str | None) -> EntailmentChecker:
+    """Entailment engine for CGCV. Default 'lexical' is free (no LLM call) so the trust
+    gate runs on every answer without burning rate-limited quota; 'llm' uses a provider
+    judge. Swappable for MiniCheck/NLI via the model gateway later."""
+    settings = get_settings()
+    if settings.cgcv_entailment_mode == "lexical":
+        return LexicalEntailmentChecker()
 
     def chat(messages: list[dict]) -> str:
         return get_provider(provider_override).chat(messages).content
@@ -241,20 +246,20 @@ def _apply_cgcv(payload: dict, contexts: list[dict], provider_override: str | No
     }
 
 
-def generate_answer(
+def build_generation_messages(
     *,
     question: str,
     contexts: list[dict],
     recent_messages: list[dict] | None = None,
     memories: list[dict] | None = None,
-    provider_override: str | None = None,
     language: str | None = None,
-) -> dict:
-    settings = get_settings()
-    memory_used = bool(memories)
-    if not contexts:
-        return fallback_payload(memory_used=memory_used)
+) -> tuple[list[dict], list[dict]]:
+    """Build the grounded LLM prompt. Returns (messages, truncated_contexts).
 
+    Shared by the server-side providers and the browser (Puter.js) path so both
+    answer from the *same* official-context-only prompt.
+    """
+    settings = get_settings()
     contexts = contexts[: max(1, settings.rag_top_k_max)]
     context_block = build_context_block(contexts)
     memory_block = "\n".join(memory.get("content", "") for memory in (memories or []))[:2000]
@@ -284,6 +289,75 @@ Nomor marker harus sesuai urutan sources yang Anda kembalikan.
 Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, atau tag <think> pada field mana pun."""
 
     messages = [{"role": "system", "content": SYSTEM_PROMPT}, {"role": "user", "content": user_prompt}]
+    return messages, contexts
+
+
+def finalize_generated_answer(
+    content: str,
+    contexts: list[dict],
+    *,
+    provider_used: str | None,
+    model_used: str | None,
+    memory_used: bool = False,
+    provider_override: str | None = None,
+) -> dict:
+    """Verify + clean a raw LLM answer (server-side trust gate).
+
+    Runs the JSON parse, citation validation, CGCV claim gate, extractive fallback,
+    and output sanitiser. Applied identically whether ``content`` came from a server
+    provider or from a browser LLM (Puter.js), so the browser path is just as gated.
+    """
+    settings = get_settings()
+    try:
+        payload = json.loads(_json_text(content))
+    except json.JSONDecodeError:
+        payload = {
+            "answer": (content or "").strip(),
+            "sources": _build_sources(contexts[:3]),
+            "confidence": "medium",
+            "not_found": False,
+        }
+    payload["provider_used"] = provider_used
+    payload["model_used"] = model_used
+    payload["memory_used"] = memory_used
+    if not payload.get("sources"):
+        payload["sources"] = _build_sources(contexts[:3])
+    validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
+    if not validated_payload.get("not_found") and _cgcv_enabled():
+        validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
+    if validated_payload.get("not_found") and settings.llm_fallback_extractive:
+        return extractive_fallback_payload(
+            contexts=contexts,
+            memory_used=memory_used,
+            provider_used=provider_used,
+            model_used=model_used,
+            reason="provider_answer_missing_valid_citations",
+        )
+    validated_payload["answer"] = sanitize_answer(validated_payload.get("answer") or "")
+    return validated_payload
+
+
+def generate_answer(
+    *,
+    question: str,
+    contexts: list[dict],
+    recent_messages: list[dict] | None = None,
+    memories: list[dict] | None = None,
+    provider_override: str | None = None,
+    language: str | None = None,
+) -> dict:
+    settings = get_settings()
+    memory_used = bool(memories)
+    if not contexts:
+        return fallback_payload(memory_used=memory_used)
+
+    messages, contexts = build_generation_messages(
+        question=question,
+        contexts=contexts,
+        recent_messages=recent_messages,
+        memories=memories,
+        language=language,
+    )
     max_retries = max(settings.llm_max_retries, 0)
     provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries)
 
@@ -300,30 +374,11 @@ Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, a
             raise last_error
         raise RuntimeError("Provider returned no response.")
 
-    try:
-        payload = json.loads(_json_text(response.content))
-    except json.JSONDecodeError:
-        payload = {
-            "answer": response.content.strip(),
-            "sources": _build_sources(contexts[:3]),
-            "confidence": "medium",
-            "not_found": False,
-        }
-    payload["provider_used"] = response.provider_used
-    payload["model_used"] = response.model_used
-    payload["memory_used"] = memory_used
-    if not payload.get("sources"):
-        payload["sources"] = _build_sources(contexts[:3])
-    validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
-    if not validated_payload.get("not_found") and _cgcv_enabled():
-        validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
-    if validated_payload.get("not_found") and settings.llm_fallback_extractive:
-        return extractive_fallback_payload(
-            contexts=contexts,
-            memory_used=memory_used,
-            provider_used=response.provider_used,
-            model_used=response.model_used,
-            reason="provider_answer_missing_valid_citations",
-        )
-    validated_payload["answer"] = sanitize_answer(validated_payload.get("answer") or "")
-    return validated_payload
+    return finalize_generated_answer(
+        response.content,
+        contexts,
+        provider_used=response.provider_used,
+        model_used=response.model_used,
+        memory_used=memory_used,
+        provider_override=provider_override,
+    )

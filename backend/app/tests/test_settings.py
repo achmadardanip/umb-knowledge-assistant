@@ -18,6 +18,8 @@ def test_hermes_provider_is_off_by_default(monkeypatch):
         hermes_api_key=None,
         hermes_base_url="http://127.0.0.1:8642/v1",
         hermes_model="hermes-agent",
+        groq_api_key=None,
+        groq_model="llama-3.3-70b-versatile",
         web_search_enabled=True,
         web_search_provider="tavily",
         tavily_api_key="key",

@@ -19,6 +19,7 @@ from app.chat.message_service import recent_messages, save_message
 from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
 from app.chat.clarify import clarification_suggestions, clarifying_questions
 from app.chat.followups import suggest_followups
+from app.chat.prepare_store import PreparedGeneration, prepare_store
 from app.chat.role_inference import infer_audience
 from app.chat.summarizer import compact_context
 from app.core.config import get_settings
@@ -27,7 +28,7 @@ from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider
 from app.rag.answer_cache import build_cache_key, get_cached_answer, store_cached_answer
 from app.ingestion.web_kb_ingest import persist_web_contexts
-from app.rag.answer_generator import generate_answer
+from app.rag.answer_generator import build_generation_messages, finalize_generated_answer, generate_answer
 from app.rag.guardrails import guardrail_response
 from app.rag.intent_classifier import classify_intent
 from app.rag.language import detect_language
@@ -144,7 +145,7 @@ def _fallback_answer_for_language(language: str | None) -> str:
     return "Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia."
 
 
-def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
+def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_generation: bool = False) -> dict:
     visible_steps: list[dict] = []
     settings = get_settings()
 
@@ -446,6 +447,56 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None) -> dict:
                     "skipped" if not cache_enabled else "done",
                     "Cache tidak aktif untuk mode live/hybrid" if not cache_enabled else "Cache miss",
                 )
+                if defer_generation:
+                    messages, prepared_contexts = build_generation_messages(
+                        question=_with_audience(payload.question, payload.audience or infer_audience(payload.question)),
+                        contexts=contexts,
+                        recent_messages=history,
+                        memories=memories,
+                        language=language_detected,
+                    )
+                    if settings.web_kb_ingest_enabled:
+                        web_used = [c for c in contexts if c.get("discovery_source") == "live_web_search"]
+                        if web_used:
+                            try:
+                                with db.begin_nested():
+                                    persist_web_contexts(db, web_used)
+                            except Exception:  # best-effort; never block prepare
+                                pass
+                    prepared = PreparedGeneration(
+                        session_id=session.id,
+                        raw_question=payload.question,
+                        contexts=prepared_contexts,
+                        language=language_detected,
+                        intent=intent_result.intent,
+                        retrieval_mode=payload.retrieval_mode,
+                        memory_used=bool(memories),
+                        top_k=top_k,
+                        indexed_context_count=agent_result.indexed_context_count if agent_result else 0,
+                        web_context_count=agent_result.web_context_count if agent_result else 0,
+                        agent_tool_calls=agent_result.agent_tool_calls if agent_result else 0,
+                        visible_steps=visible_steps,
+                    )
+                    prepare_id = prepare_store.put(prepared)
+                    emit("prepare", "Menyiapkan prompt untuk LLM di browser (Puter.js)", "done",
+                         f"{len(prepared_contexts)} konteks resmi disertakan; generasi tanpa API key di browser")
+                    db.commit()
+                    return {
+                        "mode": "generate",
+                        "prepare_id": prepare_id,
+                        "messages": messages,
+                        "session_id": session.id,
+                        "chat_title": title,
+                        "language_detected": language_detected,
+                        "intent": intent_result.intent,
+                        "retrieval_mode": payload.retrieval_mode,
+                        "visible_steps": visible_steps,
+                        "retrieved_context_count": len(contexts),
+                        "prompt_context_chunk_count": min(len(contexts), top_k),
+                        "indexed_context_count": prepared.indexed_context_count,
+                        "web_context_count": prepared.web_context_count,
+                        "agent_tool_calls": prepared.agent_tool_calls,
+                    }
                 emit("answer", "Menyusun jawaban berbasis sumber resmi", "running", f"Mengirim {len(contexts)} chunk relevan, bukan seluruh dokumen")
                 answer_payload = generate_answer(
                     question=_with_audience(payload.question, payload.audience or infer_audience(payload.question)),
@@ -603,3 +654,118 @@ def chat_stream(payload: ChatRequest, request: Request):
             yield _sse(event, data)
 
     return StreamingResponse(generator(), media_type="text/event-stream")
+
+
+class ChatFinalizeRequest(BaseModel):
+    prepare_id: str
+    answer: str = Field(min_length=1)
+    model_used: str | None = None
+
+
+@router.post("/chat/prepare")
+def chat_prepare(payload: ChatRequest, request: Request, db: Session = Depends(get_db)) -> dict:
+    """Run the full RAG pipeline up to (not incl.) generation for the browser LLM path.
+
+    Returns either a terminal answer (mode='final': smalltalk/blocked/clarify/cache/
+    not_found — no LLM needed) or mode='generate' with the grounded prompt messages
+    and a prepare_id the browser uses after calling puter.ai.chat(...).
+    """
+    apply_chat_safeguards(request, question=payload.question, anonymous_session_id=payload.anonymous_session_id)
+    result = process_chat(payload, db, defer_generation=True)
+    if result.get("mode") == "generate":
+        return result
+    return {**result, "mode": "final"}
+
+
+@router.post("/chat/finalize")
+def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -> dict:
+    """Verify + persist a browser-generated (Puter.js) answer against server-vetted
+    contexts. The same trust gate as server providers: citation validation + CGCV +
+    output safety, so the keyless browser path is not a verification bypass."""
+    prepared = prepare_store.pop(payload.prepare_id)
+    if prepared is None:
+        raise HTTPException(status_code=410, detail="Sesi generasi kedaluwarsa. Silakan kirim ulang pertanyaan.")
+
+    settings = get_settings()
+    model_used = payload.model_used or "puter-browser"
+    answer_payload = finalize_generated_answer(
+        payload.answer,
+        prepared.contexts,
+        provider_used="puter",
+        model_used=model_used,
+        memory_used=prepared.memory_used,
+    )
+    final_model = answer_payload.get("model_used") or model_used
+
+    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found"):
+        try:
+            cache_key = build_cache_key(
+                question=prepared.raw_question,
+                intent=prepared.intent,
+                provider_used="puter",
+                model_used=final_model,
+                contexts=prepared.contexts,
+                memory_enabled=prepared.memory_used,
+            )
+            store_cached_answer(
+                db,
+                cache_key=cache_key,
+                question=prepared.raw_question,
+                intent=prepared.intent,
+                provider_used="puter",
+                model_used=final_model,
+                answer_payload=answer_payload,
+                ttl_seconds=settings.rag_answer_cache_ttl_seconds,
+            )
+        except Exception:  # caching is best-effort
+            db.rollback()
+
+    metadata = {
+        "memory_used": prepared.memory_used,
+        "intent": prepared.intent,
+        "retrieval_mode": prepared.retrieval_mode,
+        "language_detected": prepared.language,
+        "retrieved_context_count": len(prepared.contexts),
+        "prompt_context_chunk_count": min(len(prepared.contexts), prepared.top_k),
+        "indexed_context_count": prepared.indexed_context_count,
+        "web_context_count": prepared.web_context_count,
+        "agent_tool_calls": prepared.agent_tool_calls,
+        "cache_hit": False,
+    }
+    assistant = save_message(
+        db,
+        session_id=prepared.session_id,
+        role="assistant",
+        content=answer_payload["answer"],
+        sources=answer_payload.get("sources") or [],
+        confidence_score=answer_payload.get("confidence"),
+        provider_used="puter",
+        model_used=final_model,
+        not_found=bool(answer_payload.get("not_found")),
+        visible_steps=prepared.visible_steps,
+        metadata=metadata,
+    )
+    assistant.visible_steps = prepared.visible_steps
+    db.commit()
+    return {
+        "session_id": prepared.session_id,
+        "message_id": assistant.id,
+        "answer": answer_payload["answer"],
+        "sources": answer_payload.get("sources") or [],
+        "confidence": answer_payload.get("confidence"),
+        "not_found": bool(answer_payload.get("not_found")),
+        "provider_used": "puter",
+        "model_used": final_model,
+        "memory_used": prepared.memory_used,
+        "cache_hit": False,
+        "follow_up_questions": suggest_followups(prepared.raw_question, prepared.language),
+        "visible_steps": prepared.visible_steps,
+        "intent": prepared.intent,
+        "retrieval_mode": prepared.retrieval_mode,
+        "language_detected": prepared.language,
+        "retrieved_context_count": len(prepared.contexts),
+        "prompt_context_chunk_count": min(len(prepared.contexts), prepared.top_k),
+        "indexed_context_count": prepared.indexed_context_count,
+        "web_context_count": prepared.web_context_count,
+        "agent_tool_calls": prepared.agent_tool_calls,
+    }

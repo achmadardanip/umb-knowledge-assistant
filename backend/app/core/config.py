@@ -124,7 +124,9 @@ class Settings:
     # Corroboration-Gated Claim Verification (CGCV). Off by default until the
     # evaluation harness can measure its faithfulness/abstention impact; the
     # conformal layer (C²GV) will later set the threshold from a calibration set.
-    cgcv_enabled: bool = _bool("CGCV_ENABLED", False)
+    cgcv_enabled: bool = _bool("CGCV_ENABLED", True)
+    # 'lexical' = free offline entailment (no LLM call); 'llm' = provider judge.
+    cgcv_entailment_mode: str = os.getenv("CGCV_ENTAILMENT_MODE", "lexical").strip().lower()
     cgcv_entailment_threshold: float = _float("CGCV_ENTAILMENT_THRESHOLD", 0.5)
     cgcv_min_supported_claims: int = _int("CGCV_MIN_SUPPORTED_CLAIMS", 1)
 

@@ -54,16 +54,10 @@ _TOPICS: list[tuple[str, tuple[str, ...], tuple[str, ...], list[str], list[str],
         ["Biaya kuliah S1 Teknik Informatika kelas karyawan", "Biaya kuliah S1 Manajemen reguler", "Biaya kuliah S2 Magister Manajemen"],
         ["Tuition for S1 Informatics employee class", "Tuition for S1 Management regular class", "Tuition for the S2 Master of Management"],
     ),
-    (
-        "pendaftaran",
-        ("pendaftaran", "cara daftar", "mau daftar", "ingin daftar", "jalur masuk", "cara masuk",
-         "registration", "how to register", "admission", "enroll"),
-        _JENJANG_WORDS + ("reguler", "karyawan", "beasiswa", "pmb", "transfer", "pindahan", "gelombang"),
-        ["Untuk jenjang apa (S1/S2/S3)?", "Lewat jalur reguler, karyawan, atau beasiswa?"],
-        ["Which level (S1/S2/S3)?", "Via the regular, employee, or scholarship path?"],
-        ["Cara daftar S1 reguler", "Cara daftar kelas karyawan (P2K)", "Pendaftaran jenjang S2 Pascasarjana"],
-        ["How to register for S1 regular", "How to register for the employee class (P2K)", "Admission for S2 postgraduate"],
-    ),
+    # NOTE: "pendaftaran" is intentionally NOT a clarification topic — the registration
+    # *process* has a useful general answer, so we answer it directly (ChatGPT-like)
+    # rather than interrogate. Bare/contentless forms ("mau daftar") still hit the
+    # generic clarifier. Only genuinely parameter-dependent topics clarify below.
     (
         "jadwal",
         ("jadwal", "schedule", "kapan"),
