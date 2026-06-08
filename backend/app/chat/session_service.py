@@ -37,6 +37,7 @@ def rename_session(db: Session, session_id: str, title: str) -> ChatSession | No
     if not session:
         return None
     session.title = (title or "New Chat").strip()[:200]
+    session.meta = {**(session.meta or {}), "manual_title": True}
     session.updated_at = utcnow()
     db.commit()
     db.refresh(session)
@@ -60,6 +61,38 @@ def maybe_autotitle_session(db: Session, session_id: str, question: str) -> str:
     message_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_id, ChatMessage.role == "user").count()
     if session.title == "New Chat" and message_count <= 1:
         session.title = generate_title_from_question(question)
+        session.meta = {**(session.meta or {}), "auto_title": True}
+        session.updated_at = utcnow()
+        db.flush()
+    return session.title
+
+
+def maybe_contextualize_session_title(
+    db: Session,
+    session_id: str,
+    question: str,
+    recent_messages: list[dict] | None = None,
+) -> str:
+    session = get_session(db, session_id)
+    if not session:
+        return "New Chat"
+    if (session.meta or {}).get("manual_title"):
+        return session.title
+    message_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_id, ChatMessage.role == "user").count()
+    if message_count < 2 or message_count > 6:
+        return session.title
+    text = " ".join(
+        [
+            session.title or "",
+            question or "",
+            *[(message.get("content") or "") for message in (recent_messages or []) if message.get("role") == "user"],
+        ]
+    ).lower()
+    if ("fasilkom" in text or "fakultas ilmu komputer" in text) and any(
+        term in text for term in ("dosen", "dekan", "program studi", "prodi", "fakultas ini", "struktural")
+    ):
+        session.title = "Informasi Fasilkom UMB"
+        session.meta = {**(session.meta or {}), "auto_title": True, "title_context": "fasilkom"}
         session.updated_at = utcnow()
         db.flush()
     return session.title
@@ -69,6 +102,8 @@ def maybe_refine_title_with_llm(db: Session, session_id: str, question: str, pro
     session = get_session(db, session_id)
     if not session:
         return "New Chat"
+    if (session.meta or {}).get("manual_title"):
+        return session.title
     message_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_id, ChatMessage.role == "user").count()
     if message_count > 1:
         return session.title

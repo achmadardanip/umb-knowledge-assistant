@@ -16,7 +16,13 @@ from app.agent.umb_agent import RetrievalMode, run_umb_agent
 from app.api.chat_guards import apply_chat_safeguards
 from app.chat.memory_service import get_active_memories, refresh_session_memory
 from app.chat.message_service import recent_messages, save_message
-from app.chat.session_service import create_session, get_session, maybe_autotitle_session, maybe_refine_title_with_llm
+from app.chat.session_service import (
+    create_session,
+    get_session,
+    maybe_autotitle_session,
+    maybe_contextualize_session_title,
+    maybe_refine_title_with_llm,
+)
 from app.chat.clarify import clarification_suggestions, clarifying_questions
 from app.chat.followups import suggest_followups
 from app.chat.prepare_store import PreparedGeneration, prepare_store
@@ -79,6 +85,73 @@ def _with_audience(question: str, audience: str | None) -> str:
     return f"[Konteks pengguna] {hint}\n\nPertanyaan: {question}" if hint else question
 
 
+_FASILKOM_MARKERS = ("fasilkom", "fakultas ilmu komputer")
+_FACULTY_REFERENCE_TERMS = ("fakultas ini", "fakultas tersebut", "di fakultas ini", "prodi ini", "program studi ini")
+_FACULTY_PROGRAM_TERMS = ("program studi", "prodi", "jurusan", "program")
+_FACULTY_ROLE_TERMS = ("dekan", "wakil dekan", "dosen", "struktural", "ketua program studi", "kaprodi")
+
+
+def _lower_blob(*parts) -> str:
+    return " ".join(str(part or "") for part in parts).lower()
+
+
+def _history_blob(history: list[dict], chat_title: str | None = None) -> str:
+    fragments = [chat_title or ""]
+    for message in history or []:
+        fragments.append(message.get("content") or "")
+        for source in (message.get("sources") or [])[:3]:
+            if not isinstance(source, dict):
+                continue
+            fragments.extend([source.get("title") or "", source.get("hostname") or "", source.get("url") or ""])
+    return _lower_blob(*fragments)
+
+
+def _mentions_fasilkom(text: str) -> bool:
+    lowered = (text or "").lower()
+    return any(marker in lowered for marker in _FASILKOM_MARKERS)
+
+
+def _needs_faculty_context(question: str) -> bool:
+    lowered = (question or "").lower()
+    return any(term in lowered for term in _FACULTY_REFERENCE_TERMS)
+
+
+def _contextual_query_hints(question: str, history: list[dict], chat_title: str | None = None) -> list[str]:
+    question_lc = (question or "").lower()
+    context_lc = _history_blob(history, chat_title)
+    has_fasilkom_context = _mentions_fasilkom(question_lc) or (_needs_faculty_context(question_lc) and _mentions_fasilkom(context_lc))
+    if not has_fasilkom_context:
+        return []
+
+    hints = ["Konteks entitas: Fakultas Ilmu Komputer (Fasilkom) Universitas Mercu Buana."]
+    if any(term in question_lc for term in _FACULTY_REFERENCE_TERMS):
+        hints.append("Maksud frasa seperti 'fakultas ini' adalah Fakultas Ilmu Komputer/Fasilkom.")
+    if any(term in question_lc for term in _FACULTY_ROLE_TERMS):
+        hints.append("Prioritaskan halaman struktural dan dosen Fasilkom/Fakultas Ilmu Komputer.")
+    if any(term in question_lc for term in _FACULTY_PROGRAM_TERMS):
+        hints.append("Cari program studi/prodi Fakultas Ilmu Komputer/Fasilkom, bukan berita, event, repository, atau perpustakaan.")
+    return hints
+
+
+def _context_matches_fasilkom(context: dict) -> bool:
+    combined = _lower_blob(
+        context.get("title"),
+        context.get("hostname"),
+        context.get("url"),
+        context.get("chunk_text"),
+    )
+    return _mentions_fasilkom(combined)
+
+
+def _filter_contexts_for_question(query: str, contexts: list[dict]) -> tuple[list[dict], str | None]:
+    if not contexts or not _mentions_fasilkom(query):
+        return contexts, None
+    focused = [context for context in contexts if _context_matches_fasilkom(context)]
+    if focused:
+        return focused, f"{len(contexts) - len(focused)} konteks non-Fasilkom disaring"
+    return [], "Tidak ada konteks yang cocok dengan Fakultas Ilmu Komputer/Fasilkom"
+
+
 def _provider_meta(provider_override: str | None) -> tuple[str, str]:
     provider = get_provider(provider_override)
     return provider.provider_name, provider.model
@@ -117,7 +190,7 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
             if hint and hint not in source_hints:
                 source_hints.append(hint)
 
-    parts = [question]
+    parts = [question, *_contextual_query_hints(question, prior_messages, chat_title)]
     if chat_title and chat_title != "New Chat":
         parts.append(f"Judul chat: {chat_title}")
     if recent_user_turns:
@@ -139,7 +212,17 @@ def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
     return detail, {"hosts": dict(host_counts), "source_types": dict(type_counts), "top_hosts": top_hosts}
 
 
-def _fallback_answer_for_language(language: str | None) -> str:
+def _fallback_answer_for_language(language: str | None, query: str | None = None) -> str:
+    if _mentions_fasilkom(query or ""):
+        if (language or "").lower().startswith("en"):
+            return (
+                "I have not found sufficiently relevant official sources about the Faculty of Computer Science/Fasilkom "
+                "in the current index. Please index the faculty, structure, or study-program pages first."
+            )
+        return (
+            "Saya belum menemukan sumber resmi yang cukup relevan tentang Fakultas Ilmu Komputer/Fasilkom dari indeks saat ini. "
+            "Coba indeks halaman fakultas, struktural, atau program studi UMB terlebih dahulu."
+        )
     if (language or "").lower().startswith("en"):
         return "I have not found official information related to that question in the available public Universitas Mercu Buana sources."
     return "Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia."
@@ -166,6 +249,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
 
     emit("history", "Memeriksa konteks percakapan", "running")
     history = recent_messages(db, session.id, limit=settings.chat_history_max_messages)
+    title = maybe_contextualize_session_title(db, session.id, payload.question, history)
     emit("history", "Memeriksa konteks percakapan", "done", f"{len(history)} pesan terakhir digunakan")
 
     emit("language", "Mendeteksi bahasa pertanyaan", "running")
@@ -182,12 +266,19 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         {"intent": intent_result.intent, "confidence": intent_result.confidence},
     )
 
-    if intent_result.intent == "smalltalk":
-        answer_text = (
-            "Hello, I can help search official public information from Universitas Mercu Buana. Please ask about admissions, study programs, fees, SSO/SIA, library, or academic services."
-            if language_detected.startswith("en")
-            else "Halo, saya siap membantu mencari informasi publik resmi Universitas Mercu Buana. Silakan tanyakan topik seperti pendaftaran, program studi, biaya, SSO/SIA, perpustakaan, atau layanan akademik."
-        )
+    if intent_result.intent in {"smalltalk", "capability_query"}:
+        if intent_result.intent == "capability_query":
+            answer_text = (
+                "I can help search official public UMB information from indexed or live official sources, such as faculties, study programs, lecturers or faculty structure, admissions, fees, scholarships, SSO/SIA, library services, campus activities, and other official pages. For academic or administrative decisions, please verify with the relevant UMB unit."
+                if language_detected.startswith("en")
+                else "Saya bisa membantu mencari informasi publik resmi UMB dari sumber resmi yang sudah diindeks atau mode live, seperti fakultas, program studi, dosen/struktur fakultas, pendaftaran, biaya, beasiswa, SSO/SIA, perpustakaan, kegiatan kampus, dan halaman resmi lain. Untuk keputusan akademik atau administratif, tetap verifikasi ke unit resmi UMB."
+            )
+        else:
+            answer_text = (
+                "Hello, I can help search official public information from Universitas Mercu Buana. Please ask about admissions, study programs, fees, SSO/SIA, library, or academic services."
+                if language_detected.startswith("en")
+                else "Halo, saya siap membantu mencari informasi publik resmi Universitas Mercu Buana. Silakan tanyakan topik seperti pendaftaran, program studi, biaya, SSO/SIA, perpustakaan, atau layanan akademik."
+            )
         answer_payload = {
             "answer": answer_text,
             "sources": [],
@@ -197,7 +288,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             "model_used": "rule-based-intent",
             "memory_used": False,
         }
-        emit("answer", "Menjawab sapaan tanpa provider AI", "done", "Tidak memakai RAG/LLM karena intent smalltalk")
+        emit("answer", "Menjawab tanpa provider AI", "done", f"Tidak memakai RAG/LLM karena intent {intent_result.intent}")
         emit("save_answer", "Menyimpan jawaban dan metadata", "running")
         assistant = save_message(
             db,
@@ -402,6 +493,16 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             emit("umb_live_web_search", "Mencari sumber live resmi UMB", "error", str(exc))
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         contexts = agent_result.contexts
+        filtered_contexts, filter_detail = _filter_contexts_for_question(retrieval_query, contexts)
+        if filter_detail:
+            emit(
+                "context_filter",
+                "Memfilter konteks sesuai entitas percakapan",
+                "done" if filtered_contexts else "skipped",
+                filter_detail,
+                {"before": len(contexts), "after": len(filtered_contexts), "entity": "fasilkom"},
+            )
+            contexts = filtered_contexts
     summary_detail, summary_metadata = _context_summary(contexts)
     emit("retrieval", "Mencari sumber resmi UMB", "done" if contexts else "skipped", summary_detail, summary_metadata)
 
@@ -412,7 +513,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     if not contexts:
         emit("answer", "Menyusun jawaban fallback", "done", "Tidak ada konteks resmi yang cukup")
         answer_payload = {
-            "answer": _fallback_answer_for_language(language_detected),
+            "answer": _fallback_answer_for_language(language_detected, retrieval_query),
             "sources": [],
             "confidence": "low",
             "not_found": True,

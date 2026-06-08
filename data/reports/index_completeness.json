@@ -1,24 +1,24 @@
 {
   "domain": "mercubuana.ac.id",
-  "generated_at": "2026-06-01T13:25:24.568921+00:00",
-  "indexed_sources_total": 621,
-  "chunks_total": 1463,
-  "allowed_discovered_urls_total": 11420,
-  "rejected_discovered_urls_total": 8617,
-  "pending_allowed_nonterminal_total": 0,
-  "terminal_allowed_total": 10800,
+  "generated_at": "2026-06-07T11:59:46.557605+00:00",
+  "indexed_sources_total": 697,
+  "chunks_total": 1611,
+  "allowed_discovered_urls_total": 13003,
+  "rejected_discovered_urls_total": 9065,
+  "pending_allowed_nonterminal_total": 1450,
+  "terminal_allowed_total": 10857,
   "terminal_reasons": {
     "download_failed": 935,
-    "empty_content": 3,
+    "empty_content": 9,
     "extraction_failed": 18,
     "http_401": 4,
-    "http_403": 2,
-    "http_404": 9256,
+    "http_403": 5,
+    "http_404": 9274,
     "http_error": 142,
     "robots_disallowed": 104,
     "transient_failure": 60,
     "unsafe_scope": 110,
-    "unsupported_content_type": 166
+    "unsupported_content_type": 196
   },
   "unsafe_indexed_sources_total": 0,
   "unsafe_indexed_sources_sample": [],
@@ -33,15 +33,38 @@
     "support.mercubuana.ac.id": 15,
     "portal.mercubuana.ac.id": 1,
     "feb.mercubuana.ac.id": 22,
-    "mercubuana.ac.id": 93,
+    "mercubuana.ac.id": 104,
+    "publikasi.mercubuana.ac.id": 65,
     "repository.mercubuana.ac.id": 62,
     "semercu.mercubuana.ac.id": 2,
     "lib.mercubuana.ac.id": 251
   },
-  "pending_by_host": {},
-  "source_type_distribution": {
-    "html": 1388,
-    "pdf": 75
+  "pending_by_host": {
+    "publikasi.mercubuana.ac.id": 1321,
+    "repository.mercubuana.ac.id": 110,
+    "mercubuana.ac.id": 19
   },
-  "verification_passed": true
+  "source_type_distribution": {
+    "html": 1481,
+    "pdf": 130
+  },
+  "verification_passed": false,
+  "run": {
+    "processed_total": 0,
+    "processed": {},
+    "excluded_sources": 0,
+    "max_pages": 120,
+    "max_passes": 1,
+    "max_attempts": 2
+  },
+  "discovery": {
+    "mode": "offline_current_db_only",
+    "tools": {
+      "sublist3r": "available",
+      "katana": "available",
+      "gau": "available",
+      "waybackurls": "available",
+      "hakrawler": "available"
+    }
+  }
 }

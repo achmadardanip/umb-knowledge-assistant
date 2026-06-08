@@ -38,6 +38,33 @@ function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
 }
 
+function textFromUnknown(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value == null) return "";
+  if (Array.isArray(value)) return value.map(textFromUnknown).filter(Boolean).join("\n");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const candidates = [
+      record.answer,
+      record.content,
+      record.text,
+      (record.message as Record<string, unknown> | undefined)?.content,
+      ((record.choices as Array<Record<string, unknown>> | undefined)?.[0]?.message as Record<string, unknown> | undefined)
+        ?.content
+    ];
+    for (const candidate of candidates) {
+      const text = textFromUnknown(candidate);
+      if (text.trim()) return text;
+    }
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "";
+    }
+  }
+  return String(value);
+}
+
 function mergeStep(current: NonNullable<ChatMessage["visible_steps"]>, incoming: string | NonNullable<ChatMessage["visible_steps"]>[number]) {
   if (typeof incoming === "string") {
     return current.includes(incoming) ? current : [...current, incoming];
@@ -140,7 +167,7 @@ export function ChatWidget() {
     let text = "";
     try {
       const resp = (await window.puter!.ai!.chat!(prep.messages, { model: PUTER_MODEL })) as any;
-      text = typeof resp === "string" ? resp : resp?.message?.content ?? resp?.text ?? String(resp ?? "");
+      text = textFromUnknown(resp);
     } catch {
       throw new Error("Puter.js gagal menghasilkan jawaban di browser. Pilih provider lain atau coba lagi.");
     }
@@ -185,7 +212,7 @@ export function ChatWidget() {
       const assistant: ChatMessage = {
         id: result.message_id,
         role: "assistant",
-        content: result.answer,
+        content: textFromUnknown((result as unknown as Record<string, unknown>).answer),
         sources: result.sources,
         confidence: result.confidence,
         provider_used: result.provider_used,

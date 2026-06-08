@@ -82,6 +82,203 @@ def _unique_contexts_by_source(contexts: list[dict]) -> list[dict]:
     return unique_contexts
 
 
+_FASILKOM_MARKERS = ("fasilkom", "fakultas ilmu komputer", "ilmu komputer")
+_PROGRAM_QUERIES = ("program studi", "prodi", "jurusan")
+_LECTURER_QUERIES = ("dosen", "pengajar", "lecturer")
+_DEAN_QUERIES = ("dekan", "dean")
+_FACULTY_REFERENCE_QUERIES = ("fakultas ini", "fakultas tersebut", "program studi ini", "prodi ini")
+_PROGRAM_CANDIDATES = (
+    "Teknik Informatika",
+    "Sistem Informasi",
+    "Magister Ilmu Komputer",
+    "Doktor Ilmu Komputer",
+)
+_ROLE_BOUNDARY_RE = re.compile(
+    r"\b(wakil\s+dekan|ketua\s+program\s+studi|kaprodi|sekretaris|program\s+studi|dosen\s+tetap|pendidikan|nidn|jabatan)\b",
+    flags=re.IGNORECASE,
+)
+_DEGREE_TOKEN = (
+    r"(?:Prof\.?|Dr\.?|Ir\.?|S\.Kom|S\.T\.?|ST|M\.Kom|MMSI|M\.MSI|MTI|M\.TI|M\.T\.I|M\.T|"
+    r"M\.Sc|Ph\.D|MM|M\.M|M\.Si|S\.Si|S\.E|SE|S\.H|M\.Hum|M\.Eng|IPM)"
+)
+_PERSON_WITH_DEGREES_RE = re.compile(
+    rf"((?:[A-Z][A-Z.'-]*|[A-Z][a-zA-Z.'-]+)(?:\s+(?:[A-Z][A-Z.'-]*|[A-Z][a-zA-Z.'-]+)){{0,7}}\s*,\s*{_DEGREE_TOKEN}(?:\s*,\s*{_DEGREE_TOKEN})*)"
+)
+
+
+def _context_text(context: dict) -> str:
+    return " ".join(
+        str(value or "")
+        for value in [context.get("title"), context.get("hostname"), context.get("url"), context.get("chunk_text")]
+    )
+
+
+def _is_fasilkom_text(text: str) -> bool:
+    lowered = (text or "").lower()
+    return any(marker in lowered for marker in _FASILKOM_MARKERS)
+
+
+def _fasilkom_contexts(contexts: list[dict]) -> list[dict]:
+    focused = [context for context in contexts if _is_fasilkom_text(_context_text(context))]
+    return focused or []
+
+
+def _question_has(question: str, terms: tuple[str, ...]) -> bool:
+    lowered = (question or "").lower()
+    return any(term in lowered for term in terms)
+
+
+def _clean_dean_candidate(raw: str) -> str | None:
+    candidate = re.sub(r"\s+", " ", raw or "").strip(" :-–—|,;")
+    candidate = re.sub(r"^(?:fakultas ilmu komputer|fasilkom|universitas mercu buana)\s+", "", candidate, flags=re.IGNORECASE)
+    candidate = re.sub(r"^(?:dekan|dean)\s+", "", candidate, flags=re.IGNORECASE)
+    boundary = _ROLE_BOUNDARY_RE.search(candidate)
+    if boundary:
+        candidate = candidate[: boundary.start()].strip(" :-–—|,;")
+    candidate = re.sub(r"\s+", " ", candidate).strip(" :-–—|,;")
+    if not candidate or len(candidate.split()) < 2:
+        return None
+    lowered = candidate.lower()
+    if any(term in lowered for term in ("fakultas", "program studi", "dosen tetap", "universitas")):
+        return None
+    return candidate
+
+
+def _extract_dean_name(contexts: list[dict]) -> str | None:
+    for context in contexts:
+        text = context.get("chunk_text") or ""
+        lines = [line.strip() for line in re.split(r"[\r\n]+", text) if line.strip()]
+        if not lines:
+            lines = [text]
+        for index, line in enumerate(lines):
+            lowered = line.lower()
+            if "dekan" not in lowered or "wakil dekan" in lowered:
+                continue
+            match = re.search(
+                r"\bdekan(?:\s+fakultas\s+ilmu\s+komputer|\s+fasilkom)?\s*[:\-–—]?\s+(.{3,140})",
+                line,
+                flags=re.IGNORECASE,
+            )
+            if match:
+                cleaned = _clean_dean_candidate(match.group(1))
+                if cleaned:
+                    return cleaned
+            if index + 1 < len(lines):
+                cleaned = _clean_dean_candidate(lines[index + 1])
+                if cleaned:
+                    return cleaned
+    return None
+
+
+def _clean_person_with_degrees(raw: str) -> str | None:
+    candidate = re.sub(r"\s+", " ", raw or "").strip(" ,;")
+    if "," not in candidate:
+        return None
+    name, degrees = candidate.split(",", 1)
+    name = name.strip()
+    lowered = name.lower()
+    for marker in ("pendidikan", "dosen tetap fakultas ilmu komputer", "dosen tetap", "fakultas ilmu komputer", "nama dosen", "nama"):
+        pos = lowered.rfind(marker)
+        if pos != -1:
+            name = name[pos + len(marker) :].strip()
+            lowered = name.lower()
+    if not name or any(term in lowered for term in ("fakultas", "program studi", "pendidikan", "dosen")):
+        return None
+    if len(name.split()) > 6:
+        name = " ".join(name.split()[-4:])
+    if name.isupper():
+        name = name.title()
+    normalized_degrees = re.sub(r"\s+", " ", degrees).strip(" ,;")
+    if not normalized_degrees:
+        return None
+    return f"{name}, {normalized_degrees}"
+
+
+def _extract_lecturer_names(contexts: list[dict], limit: int = 40) -> list[str]:
+    names: list[str] = []
+    seen: set[str] = set()
+    for context in contexts:
+        text = context.get("chunk_text") or ""
+        dosen_start = text.lower().find("dosen tetap")
+        if dosen_start != -1:
+            text = text[dosen_start:]
+        for match in _PERSON_WITH_DEGREES_RE.findall(text):
+            cleaned = _clean_person_with_degrees(match)
+            if not cleaned:
+                continue
+            key = re.sub(r"[^a-z0-9]+", "", cleaned.lower())
+            if key in seen:
+                continue
+            seen.add(key)
+            names.append(cleaned)
+            if len(names) >= limit:
+                return names
+    return names
+
+
+def _extract_programs(contexts: list[dict]) -> list[str]:
+    found: list[str] = []
+    combined = "\n".join(context.get("chunk_text") or "" for context in contexts)
+    for program in _PROGRAM_CANDIDATES:
+        if re.search(rf"\b{re.escape(program)}\b", combined, flags=re.IGNORECASE):
+            found.append(program)
+    return found
+
+
+def _structured_fasilkom_payload(
+    *,
+    question: str,
+    contexts: list[dict],
+    memory_used: bool,
+) -> dict | None:
+    focused_contexts = _unique_contexts_by_source(_fasilkom_contexts(contexts))[:3]
+    asks_fasilkom_topic = _is_fasilkom_text(question) or (
+        bool(focused_contexts)
+        and (
+            _question_has(question, _FACULTY_REFERENCE_QUERIES)
+            or _question_has(question, _PROGRAM_QUERIES)
+            or _question_has(question, _LECTURER_QUERIES)
+            or _question_has(question, _DEAN_QUERIES)
+        )
+    )
+    if not asks_fasilkom_topic:
+        return None
+    if not focused_contexts:
+        return None
+
+    title = focused_contexts[0].get("title") or "sumber resmi Fasilkom"
+    answer: str | None = None
+    if _question_has(question, _DEAN_QUERIES):
+        dean_name = _extract_dean_name(focused_contexts)
+        if dean_name:
+            answer = f"Dekan Fakultas Ilmu Komputer/Fasilkom yang tercantum pada sumber resmi adalah **{dean_name}** [1]."
+    elif _question_has(question, _LECTURER_QUERIES):
+        names = _extract_lecturer_names(focused_contexts)
+        if names:
+            rendered = "\n".join(f"{index}. {name}" for index, name in enumerate(names, start=1))
+            answer = f"Data berikut berasal dari halaman resmi **{title}** [1].\n\n{rendered}"
+    elif _question_has(question, _PROGRAM_QUERIES):
+        programs = _extract_programs(focused_contexts)
+        if programs:
+            rendered = "\n".join(f"{index}. {program}" for index, program in enumerate(programs, start=1))
+            answer = f"Berdasarkan sumber resmi, program studi di Fakultas Ilmu Komputer/Fasilkom yang tercantum adalah [1]:\n\n{rendered}"
+
+    if not answer:
+        return None
+    payload = {
+        "answer": answer,
+        "sources": _build_sources(focused_contexts),
+        "confidence": "high",
+        "not_found": False,
+        "provider_used": "system",
+        "model_used": "structured-fasilkom-extractor",
+        "memory_used": memory_used,
+    }
+    validated = validate_citations(payload, focused_contexts, require_citation_markers=True)
+    validated["answer"] = sanitize_answer(validated.get("answer") or "")
+    return validated
+
+
 def extractive_fallback_payload(
     *,
     contexts: list[dict],
@@ -303,6 +500,7 @@ Kembalikan JSON valid sesuai format yang diminta.
 Gunakan hanya URL dari konteks resmi.
 Setiap kalimat faktual penting pada field answer harus mencantumkan marker sitasi bernomor seperti [1] atau [2].
 Nomor marker harus sesuai urutan sources yang Anda kembalikan.
+Untuk daftar dari satu sumber yang sama, kelompokkan sitasi pada kalimat pengantar/penutup daftar agar jawaban tetap rapi.
 Jangan sertakan chain-of-thought, thought/action/observation, reasoning trace, atau tag <think> pada field mana pun.
 Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran untuk langkah/daftar, **tebalkan** istilah penting, dan susun jawaban yang ringkas serta mudah dibaca."""
 
@@ -368,6 +566,14 @@ def generate_answer(
     memory_used = bool(memories)
     if not contexts:
         return fallback_payload(memory_used=memory_used)
+
+    structured_payload = _structured_fasilkom_payload(
+        question=question,
+        contexts=contexts,
+        memory_used=memory_used,
+    )
+    if structured_payload:
+        return structured_payload
 
     messages, contexts = build_generation_messages(
         question=question,

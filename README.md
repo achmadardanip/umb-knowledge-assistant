@@ -44,12 +44,14 @@ SUPABASE_POOLER_DATABASE_URL=postgresql+psycopg://postgres.<SUPABASE_PROJECT_REF
 
 Secret ini akan dipakai oleh workflow freshness sebagai `DATABASE_URL`. Secret `DATABASE_URL` tetap bisa dipakai untuk runtime lokal/server yang dapat menjangkau host direct Supabase.
 
-Untuk development lokal, aplikasi otomatis fallback ke SQLite `backend/local-dev.db` jika direct Supabase tidak bisa dijangkau, misalnya karena host direct hanya resolve ke IPv6. Fallback ini dikontrol oleh:
+Untuk pipeline indexing production/demo, gunakan Supabase PostgreSQL saja dan matikan fallback SQLite agar tidak ada data KB tersimpan lokal tanpa sengaja:
 
 ```env
-LOCAL_SQLITE_FALLBACK_ENABLED=true
+LOCAL_SQLITE_FALLBACK_ENABLED=false
 LOCAL_SQLITE_PATH=local-dev.db
 ```
+
+Jika perlu eksperimen development terisolasi, fallback SQLite tetap tersedia, tetapi jangan dipakai untuk ingestion knowledge base resmi.
 
 ## pgvector
 
@@ -201,6 +203,30 @@ Atau crawl domain secara langsung dengan konfirmasi:
 ```bash
 python -m app.ingestion.pipeline crawl --domain mercubuana.ac.id --max-pages 500 --max-depth 3 --confirm-authorized
 ```
+
+## Firecrawl to Supabase KB
+
+Firecrawl dipakai untuk discovery dan extraction UMB-wide ke Supabase. Simpan key hanya di `.env` atau deployment secrets, jangan commit ke repository:
+
+```env
+FIRECRAWL_API_KEY=
+FIRECRAWL_BASE_URL=https://api.firecrawl.dev/v2
+FIRECRAWL_DEFAULT_LIMIT=500
+FIRECRAWL_ZERO_DATA_RETENTION=true
+```
+
+Karena key Firecrawl pernah ditempel di chat, rotasi key tersebut setelah setup selesai.
+
+Command staged-safe pertama:
+
+```bash
+cd backend
+.venv/bin/python -m app.ingestion.firecrawl_pipeline discover --domain mercubuana.ac.id --confirm-authorized --limit 500
+.venv/bin/python -m app.ingestion.firecrawl_pipeline run --domain mercubuana.ac.id --confirm-authorized --limit 500
+.venv/bin/python -m app.ingestion.firecrawl_pipeline verify --domain mercubuana.ac.id
+```
+
+Pipeline ini hanya menerima URL valid `mercubuana.ac.id` dan `*.mercubuana.ac.id`, menolak path sensitif/static asset, menghormati robots untuk targeted scrape, melewati URL yang sudah punya chunk, dan menyimpan teks/chunk ke Supabase. Link dan image dari Firecrawl disimpan sebagai metadata; media biner tidak diunduh atau disimpan.
 
 ## Complete Public Indexing
 

@@ -9,6 +9,8 @@ import { api } from "../lib/api";
 import type { ChatMessage } from "../lib/types";
 import { SourceCard } from "./SourceCard";
 
+const MAX_VISIBLE_SOURCES = 3;
+
 function confidenceClass(confidence?: string | null) {
   if (confidence === "high") return "bg-emerald-100 text-emerald-800";
   if (confidence === "medium") return "bg-amber-100 text-amber-800";
@@ -91,11 +93,27 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
   );
 }
 
-function markdownWithCitationLinks(content: string) {
-  return (content || "").replace(/\[(\d+)\]/g, "[$&](#citation-$1)");
+function markdownWithCitationLinks(content: unknown) {
+  return String(content || "").replace(/\[(\d+)\]/g, "[$&](#citation-$1)");
 }
 
-function MarkdownAnswer({ content, onCitationClick }: { content: string; onCitationClick: (id: number) => void }) {
+function displayText(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value == null) return "";
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    if (typeof record.answer === "string") return record.answer;
+    if (typeof record.content === "string") return record.content;
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "";
+    }
+  }
+  return String(value);
+}
+
+function MarkdownAnswer({ content, onCitationClick }: { content: unknown; onCitationClick: (id: number) => void }) {
   return (
     <div className="text-sm leading-6">
       <ReactMarkdown
@@ -155,6 +173,10 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<"helpful" | "not_helpful" | null>(null);
   const [highlightedCitationId, setHighlightedCitationId] = useState<number | null>(null);
+  const [showAllSources, setShowAllSources] = useState(false);
+  const answerText = displayText(message.content);
+  const sources = message.sources || [];
+  const visibleSources = showAllSources ? sources : sources.slice(0, MAX_VISIBLE_SOURCES);
 
   async function sendFeedback(rating: "helpful" | "not_helpful") {
     setFeedback(rating);
@@ -166,20 +188,21 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
   }
 
   async function copyAnswer() {
-    await navigator.clipboard.writeText(message.content);
+    await navigator.clipboard.writeText(answerText);
     setCopied(true);
     window.setTimeout(() => setCopied(false), 1200);
   }
 
   function selectCitation(id: number) {
     setHighlightedCitationId(id);
+    if (id > MAX_VISIBLE_SOURCES) setShowAllSources(true);
     window.setTimeout(() => document.getElementById(`citation-${id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
   }
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div className={`max-w-[880px] rounded px-4 py-3 ${isUser ? "bg-brand text-white" : "bg-white text-ink border border-line"}`}>
-        {isUser ? <div className="whitespace-pre-wrap text-sm leading-6">{message.content}</div> : <MarkdownAnswer content={message.content} onCitationClick={selectCitation} />}
+        {isUser ? <div className="whitespace-pre-wrap text-sm leading-6">{answerText}</div> : <MarkdownAnswer content={answerText} onCitationClick={selectCitation} />}
         {!isUser && message.not_found ? (
           <div className="mt-3 rounded border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
             Belum ada jawaban resmi yang cocok. Untuk bantuan lebih lanjut, hubungi dukungan resmi UMB:{" "}
@@ -228,16 +251,25 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
             ) : null}
           </div>
         ) : null}
-        {!isUser && message.sources?.length ? (
+        {!isUser && sources.length ? (
           <div className="mt-3 grid gap-2 md:grid-cols-2">
-            {message.sources.map((source, index) => {
+            {visibleSources.map((source, index) => {
               const citationId = source.citation_id ?? index + 1;
               return (
-                <div key={`${source.url}-${source.page_number ?? ""}-${source.slide_number ?? ""}-${source.sheet_name ?? ""}`} id={`citation-${citationId}`}>
+                <div key={`${source.url}-${source.page_number ?? ""}-${source.slide_number ?? ""}-${source.sheet_name ?? ""}-${index}`} id={`citation-${citationId}`}>
                   <SourceCard source={{ ...source, citation_id: citationId }} highlighted={highlightedCitationId === citationId} />
                 </div>
               );
             })}
+            {sources.length > MAX_VISIBLE_SOURCES ? (
+              <button
+                type="button"
+                className="rounded border border-line bg-white px-3 py-2 text-left text-sm text-neutral-700 transition hover:border-brand md:col-span-2"
+                onClick={() => setShowAllSources((value) => !value)}
+              >
+                {showAllSources ? "Sembunyikan sumber tambahan" : `Tampilkan ${sources.length - MAX_VISIBLE_SOURCES} sumber lainnya`}
+              </button>
+            ) : null}
           </div>
         ) : null}
       </div>

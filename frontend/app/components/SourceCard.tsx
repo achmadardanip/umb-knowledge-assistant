@@ -11,7 +11,7 @@ function meta(source: Source) {
     source.row_range ? `baris ${source.row_range}` : null,
     source.timestamp_start != null ? `${source.timestamp_start}s-${source.timestamp_end ?? ""}s` : null,
     source.extraction_method || null,
-    source.extraction_confidence != null ? `conf ${source.extraction_confidence}` : null
+    source.extraction_confidence != null ? `ekstraksi ${source.extraction_confidence}` : null
   ].filter(Boolean);
   return parts.join(" | ");
 }
