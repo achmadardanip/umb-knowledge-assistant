@@ -113,6 +113,20 @@ CREATE TABLE IF NOT EXISTS chunks (
   created_at TIMESTAMPTZ DEFAULT now()
 );
 
+CREATE TABLE IF NOT EXISTS chunk_embeddings (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  chunk_id UUID NOT NULL REFERENCES chunks(id) ON DELETE CASCADE,
+  profile VARCHAR(100) NOT NULL,
+  provider VARCHAR(50) NOT NULL,
+  model VARCHAR(255) NOT NULL,
+  dimension INTEGER NOT NULL CHECK (dimension = 384),
+  version VARCHAR(50) NOT NULL DEFAULT '1',
+  embedding vector(384) NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  CONSTRAINT uq_chunk_embeddings_chunk_profile UNIQUE (chunk_id, profile)
+);
+
 CREATE TABLE IF NOT EXISTS chat_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   user_id TEXT,
@@ -214,6 +228,11 @@ CREATE INDEX IF NOT EXISTS ix_extracted_segments_segment_type ON extracted_segme
 CREATE INDEX IF NOT EXISTS ix_chunks_fts ON chunks USING GIN (to_tsvector('simple', coalesce(chunk_text, '')));
 CREATE INDEX IF NOT EXISTS ix_chunks_source_type ON chunks(source_type);
 CREATE INDEX IF NOT EXISTS ix_chunks_asset_id ON chunks(asset_id);
+CREATE INDEX IF NOT EXISTS ix_chunk_embeddings_chunk_id ON chunk_embeddings(chunk_id);
+CREATE INDEX IF NOT EXISTS ix_chunk_embeddings_profile ON chunk_embeddings(profile);
+CREATE INDEX IF NOT EXISTS ix_chunk_embeddings_profile_chunk ON chunk_embeddings(profile, chunk_id);
+CREATE INDEX IF NOT EXISTS ix_chunk_embeddings_embedding_hnsw
+  ON chunk_embeddings USING hnsw (embedding vector_cosine_ops);
 CREATE INDEX IF NOT EXISTS ix_chat_sessions_anonymous_session_id ON chat_sessions(anonymous_session_id);
 CREATE INDEX IF NOT EXISTS ix_chat_sessions_last_message_at ON chat_sessions(last_message_at);
 CREATE INDEX IF NOT EXISTS ix_chat_messages_session_id ON chat_messages(session_id);
@@ -225,11 +244,5 @@ CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_question_hash ON rag_answer_cache
 CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_intent ON rag_answer_cache(intent);
 CREATE INDEX IF NOT EXISTS ix_rag_answer_cache_expires_at ON rag_answer_cache(expires_at);
 
--- Dense retrieval (pgvector HNSW ANN). Run once, after backfilling embeddings
--- (python -m app.ingestion.embed_backfill) and choosing the embedding model's
--- dimension: OpenAI text-embedding-3-small = 1536, BGE-M3 (multilingual) = 1024.
--- 1) Pin the column to the chosen dimension (replace 1536 as needed):
---    ALTER TABLE chunks ALTER COLUMN embedding TYPE vector(1536);
--- 2) Build the approximate-nearest-neighbour index used by app/retrieval/dense.py:
---    CREATE INDEX IF NOT EXISTS ix_chunks_embedding_hnsw
---      ON chunks USING hnsw (embedding vector_cosine_ops);
+-- Legacy cloud vectors remain in chunks.embedding. New local E5 vectors use
+-- chunk_embeddings.embedding vector(384), which has its own HNSW index above.

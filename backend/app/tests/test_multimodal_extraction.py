@@ -13,7 +13,8 @@ from app.multimodal.presentation_extractor import extract_pptx
 from app.multimodal.spreadsheet_extractor import extract_spreadsheet
 from app.multimodal.video_extractor import extract_video_metadata
 from app.retrieval.hybrid_retriever import HybridRetriever
-from app.db.models import Chunk, Document as DbDocument, Source
+from app.db.models import Chunk, ChunkEmbedding, Document as DbDocument, Source
+from app.ingestion import pipeline
 from app.ingestion.pipeline import upsert_source_document
 
 
@@ -165,6 +166,69 @@ def test_subdomain_chunk_metadata_preserves_hostname_path_and_retrieves(db):
     assert contexts[0]["hostname"] == "pmb.mercubuana.ac.id"
 
 
+def test_html_ingestion_stores_local_embedding_in_sidecar(db, monkeypatch):
+    class _LocalEmbedder:
+        storage = "sidecar"
+        provider_name = "local_e5"
+        model = "intfloat/multilingual-e5-small"
+        dimension = 384
+        profile = "local-e5-small-v1"
+        version = "1"
+
+        def embed_texts(self, texts):
+            return [[1.0] + [0.0] * 383 for _ in texts]
+
+    monkeypatch.setattr(pipeline, "get_embedder", lambda: _LocalEmbedder())
+    text = " ".join(["informasi", "pendaftaran", "mahasiswa", "baru"] * 12)
+
+    upsert_source_document(
+        db,
+        "https://pmb.mercubuana.ac.id/local-embedding",
+        text,
+        "PMB UMB",
+        {},
+        200,
+        discovery_source="katana",
+    )
+    db.commit()
+
+    chunk = db.query(Chunk).one()
+    sidecar = db.query(ChunkEmbedding).one()
+    assert chunk.embedding is None
+    assert sidecar.chunk_id == chunk.id
+    assert sidecar.profile == "local-e5-small-v1"
+
+
+def test_html_ingestion_falls_back_to_keyword_only_when_sidecar_migration_is_missing(db, monkeypatch):
+    class _LocalEmbedder:
+        storage = "sidecar"
+        provider_name = "local_e5"
+        model = "intfloat/multilingual-e5-small"
+        dimension = 384
+        profile = "local-e5-small-v1"
+        version = "1"
+
+        def embed_texts(self, texts):
+            return [[1.0] + [0.0] * 383 for _ in texts]
+
+    ChunkEmbedding.__table__.drop(db.get_bind())
+    monkeypatch.setattr(pipeline, "get_embedder", lambda: _LocalEmbedder())
+
+    created = upsert_source_document(
+        db,
+        "https://pmb.mercubuana.ac.id/no-sidecar",
+        " ".join(["informasi", "pendaftaran", "mahasiswa", "baru"] * 12),
+        "PMB UMB",
+        {},
+        200,
+        discovery_source="katana",
+    )
+    db.commit()
+
+    assert created == 1
+    assert db.query(Chunk).one().embedding is None
+
+
 def test_retrieval_expands_daftar_query_to_pendaftaran_subdomain(db):
     upsert_source_document(
         db,
@@ -192,7 +256,7 @@ def test_retrieval_expands_daftar_query_to_pendaftaran_subdomain(db):
     )
     db.commit()
 
-    contexts = HybridRetriever(db).search("Bagaimana cara daftar mahasiswa baru?", top_k=1)
+    contexts = HybridRetriever(db, dense_enabled=False).search("Bagaimana cara daftar mahasiswa baru?", top_k=1)
 
     assert contexts[0]["url"] == "https://pendaftaran.mercubuana.ac.id/"
     assert contexts[0]["hostname"] == "pendaftaran.mercubuana.ac.id"

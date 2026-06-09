@@ -63,6 +63,52 @@ CREATE EXTENSION IF NOT EXISTS vector;
 
 File lengkap tersedia di `backend/app/db/migrations/setup_pgvector.sql`.
 
+Untuk database yang sudah ada, local E5 memakai tabel sidecar non-destruktif
+`chunk_embeddings`; vector Gemini/OpenAI lama di `chunks.embedding` tidak diubah:
+
+```bash
+psql "$(printf '%s' "$DATABASE_URL" | sed 's#^postgresql+psycopg://#postgresql://#')" \
+  -f backend/app/db/migrations/add_chunk_embeddings.sql
+```
+
+Migration tersebut sengaja dijalankan manual. Aplikasi tidak mengubah schema
+Supabase saat startup.
+
+## Local E5 Embeddings
+
+Local embedding pertama yang didukung adalah
+`intfloat/multilingual-e5-small` (384 dimensi):
+
+```bash
+cd backend
+.venv/bin/pip install -r requirements-local.txt
+```
+
+```env
+EMBEDDING_PROVIDER=local_e5
+EMBEDDING_MODEL=intfloat/multilingual-e5-small
+EMBEDDING_PROFILE=local-e5-small-v1
+LOCAL_EMBEDDING_DIMENSION=384
+LOCAL_EMBEDDING_DEVICE=auto
+```
+
+Audit kandidat tanpa model inference atau database write:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill \
+  --dry-run --only-keyword-only --limit 100
+```
+
+Setelah migration dan evaluasi siap, jalankan backfill secara eksplisit:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill \
+  --only-keyword-only --batch-size 32
+```
+
+Cloud embeddings dan provider generation tetap tersedia. Jangan aktifkan
+`DENSE_RETRIEVAL_ENABLED=true` sebelum profile lokal selesai di-backfill.
+
 ## Setup Provider AI
 
 Default provider adalah OpenRouter:
@@ -293,7 +339,16 @@ cd backend
 python -m app.evaluation.evaluate_rag --top-k 5 --out data/evaluation_report.json
 ```
 
-Report mencakup sources found, citation count, not_found rate, provider used, memory_used=false, dan distribusi source type.
+Bandingkan mode retrieval sebelum mengaktifkan dense secara default:
+
+```bash
+PYTHONPATH=. .venv/bin/python -m app.evaluation.evaluate_rag \
+  --strategies keyword,dense,hybrid --top-k 5 \
+  --out data/evaluation_comparison.json
+```
+
+Report mencakup retrieval hit rate, labelled source-target hit rate, abstention,
+host yang ditemukan, dan fixture grounding/citation offline.
 
 ## Testing
 
@@ -317,7 +372,8 @@ Test mencakup scope validation, private path rejection, URL normalization, provi
 
 ## Limitasi MVP
 
-- Vector search siap secara schema, tetapi retriever MVP memakai keyword scoring portable agar test dan local setup tetap ringan. Supabase pgvector SQL sudah disediakan untuk perluasan.
+- Dense retrieval bersifat opt-in. PostgreSQL memakai HNSW pgvector untuk profile E5 384 dimensi; SQLite test/dev memakai cosine scan.
+- Legacy cloud vectors tanpa provenance tetap disimpan di `chunks.embedding` dan tidak dicampur dengan profile lokal.
 - Multimodal DB indexing penuh disiapkan melalui model dan metadata, sementara CLI MVP menghasilkan extraction report dan chunk-ready output.
 - ASR/OCR/yt-dlp metadata membutuhkan dependency sistem tambahan jika diaktifkan.
 - Belum ada authentication user account atau admin dashboard.

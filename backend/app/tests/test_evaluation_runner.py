@@ -1,5 +1,5 @@
 from app.db.models import Chunk, Document, Source
-from app.evaluation.evaluate_rag import evaluate
+from app.evaluation.evaluate_rag import evaluate, evaluate_grounding_cases
 
 
 def _insert_indexed_chunk(db):
@@ -52,3 +52,26 @@ def test_evaluate_reports_hit_rate_and_abstention(db):
     # The out-of-scope item should abstain (no context) and be scored correct.
     assert report["abstention"]["correct_abstention"] == 1
     assert report["volatility_distribution"]["medium"] == 1
+
+
+def test_evaluate_reports_labelled_target_hits(db):
+    _insert_indexed_chunk(db)
+    questions = [
+        {
+            "id": "q1",
+            "question": "Bagaimana cara daftar mahasiswa baru?",
+            "category": "admission",
+            "expected_hosts": ["pmb.mercubuana.ac.id"],
+        }
+    ]
+
+    report = evaluate(questions, db=db, top_k=5, strategy="keyword")
+
+    assert report["labelled_target_questions"] == 1
+    assert report["labelled_target_hit_rate"] == 1.0
+
+
+def test_grounding_fixture_is_classified_offline():
+    report = evaluate_grounding_cases()
+    assert report["total_cases"] == 4
+    assert report["classification_accuracy"] == 1.0

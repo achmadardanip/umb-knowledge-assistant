@@ -87,6 +87,12 @@ class Settings:
 
     embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "openai").strip().lower()
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+    embedding_profile: str = os.getenv("EMBEDDING_PROFILE", "local-e5-small-v1").strip()
+    embedding_version: str = os.getenv("EMBEDDING_VERSION", "1").strip()
+    local_embedding_model: str = os.getenv("LOCAL_EMBEDDING_MODEL", "intfloat/multilingual-e5-small").strip()
+    local_embedding_dimension: int = _int("LOCAL_EMBEDDING_DIMENSION", 384)
+    local_embedding_batch_size: int = _int("LOCAL_EMBEDDING_BATCH_SIZE", 32)
+    local_embedding_device: str = os.getenv("LOCAL_EMBEDDING_DEVICE", "auto").strip().lower()
 
     discovery_enabled: bool = _bool("DISCOVERY_ENABLED", True)
     discovery_domain: str = os.getenv("DISCOVERY_DOMAIN", "mercubuana.ac.id")

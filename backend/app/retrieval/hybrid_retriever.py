@@ -345,6 +345,14 @@ class HybridRetriever:
             return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
         return self._fuse_and_rank(keyword_contexts, dense_contexts, top_k)
 
+    def search_dense(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
+        volatility = query_volatility(query)
+        contexts = self._apply_freshness(
+            self._dense_search(query, top_k=top_k, source_types=source_types),
+            volatility,
+        )
+        return rerank_contexts(contexts, root_domain=self.root_domain)[:top_k]
+
     def _apply_freshness(self, contexts: list[dict], volatility: float) -> list[dict]:
         now = datetime.now(timezone.utc)
         for context in contexts:
@@ -358,15 +366,21 @@ class HybridRetriever:
         try:
             embedder = self._embedder or get_embedder()
             query_embedding = embedder.embed_query(query)
+            embedding_profile = (
+                getattr(embedder, "profile", None)
+                if getattr(embedder, "storage", "legacy") == "sidecar"
+                else None
+            )
+            return dense_search(
+                self.db,
+                query_embedding,
+                top_k=max(top_k * 4, 20),
+                root_domain=self.root_domain,
+                source_types=source_types,
+                embedding_profile=embedding_profile,
+            )
         except Exception:
             return []  # dense is best-effort; the keyword path still answers
-        return dense_search(
-            self.db,
-            query_embedding,
-            top_k=max(top_k * 4, 20),
-            root_domain=self.root_domain,
-            source_types=source_types,
-        )
 
     def _fuse_and_rank(self, keyword_contexts: list[dict], dense_contexts: list[dict], top_k: int) -> list[dict]:
         by_id: dict[str, dict] = {}

@@ -28,6 +28,7 @@ from app.discovery.url_discovery import discovery_dir
 from app.discovery.url_normalizer import normalize_url
 from app.ingestion.chunker import chunk_segments
 from app.ingestion.embedder import EmbeddingConfigurationError, get_embedder
+from app.ingestion.embedding_store import ensure_embedding_storage, store_chunk_embedding, validate_embedding_batch
 from app.ingestion.index_state import (
     attempt_count,
     is_pending,
@@ -279,30 +280,33 @@ def _index_asset_url(db: Session, row: DiscoveredURL, *, max_attempts: int) -> s
         if embedder and chunks:
             try:
                 embeddings = embedder.embed_texts([chunk.chunk_text for chunk in chunks])
+                validate_embedding_batch(embedder, embeddings, len(chunks))
+                ensure_embedding_storage(db, embedder)
             except Exception as exc:
                 logger.warning("Embedding failed for %s; indexing keyword-only asset chunks: %s", result.url, exc)
-        for chunk, embedding in zip(chunks, embeddings):
-            chunk_values = {
-                "source_id": source.id,
-                "asset_id": asset.id,
-                "segment_id": extracted.id,
-                "chunk_text": chunk.chunk_text,
-                "chunk_index": chunk.chunk_index,
-                "token_count": chunk.token_count,
-                "meta": chunk.metadata,
-                "source_type": chunk.source_type,
-                "page_number": chunk.page_number,
-                "slide_number": chunk.slide_number,
-                "sheet_name": chunk.sheet_name,
-                "row_range": chunk.row_range,
-                "timestamp_start": chunk.timestamp_start,
-                "timestamp_end": chunk.timestamp_end,
-                "extraction_method": chunk.extraction_method,
-                "extraction_confidence": chunk.extraction_confidence,
-            }
+                embeddings = [None] * len(chunks)
+        for chunk, embedding in zip(chunks, embeddings, strict=True):
+            chunk_row = Chunk(
+                source_id=source.id,
+                asset_id=asset.id,
+                segment_id=extracted.id,
+                chunk_text=chunk.chunk_text,
+                chunk_index=chunk.chunk_index,
+                token_count=chunk.token_count,
+                meta=chunk.metadata,
+                source_type=chunk.source_type,
+                page_number=chunk.page_number,
+                slide_number=chunk.slide_number,
+                sheet_name=chunk.sheet_name,
+                row_range=chunk.row_range,
+                timestamp_start=chunk.timestamp_start,
+                timestamp_end=chunk.timestamp_end,
+                extraction_method=chunk.extraction_method,
+                extraction_confidence=chunk.extraction_confidence,
+            )
+            db.add(chunk_row)
             if embedding is not None:
-                chunk_values["embedding"] = embedding
-            db.add(Chunk(**chunk_values))
+                store_chunk_embedding(db, chunk_row, embedding, embedder)
             indexed_chunks += 1
 
     if indexed_chunks <= 0:

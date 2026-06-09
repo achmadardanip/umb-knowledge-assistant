@@ -24,6 +24,7 @@ from app.discovery.scope_validator import validate_url_scope
 from app.discovery.url_normalizer import normalize_url
 from app.ingestion.chunker import chunk_text
 from app.ingestion.embedder import EmbeddingConfigurationError, get_embedder
+from app.ingestion.embedding_store import ensure_embedding_storage, store_chunk_embedding, validate_embedding_batch
 from app.ingestion.index_state import is_terminal, mark_indexed, mark_retryable_failure, mark_terminal, source_has_chunks
 
 
@@ -119,27 +120,26 @@ def upsert_source_document(
     if embedder and chunks:
         try:
             embeddings = embedder.embed_texts([chunk.chunk_text for chunk in chunks])
+            validate_embedding_batch(embedder, embeddings, len(chunks))
+            ensure_embedding_storage(db, embedder)
         except Exception as exc:
             logger.warning("Embedding failed for %s; indexing keyword-only chunks: %s", url, exc)
-    for chunk, embedding in zip(chunks, embeddings):
-        chunk_values = {
-            "document_id": document.id,
-            "source_id": existing.id,
-            "chunk_text": chunk.chunk_text,
-            "chunk_index": chunk.chunk_index,
-            "token_count": chunk.token_count,
-            "meta": chunk.metadata,
-            "source_type": chunk.source_type,
-            "extraction_method": chunk.extraction_method,
-            "extraction_confidence": chunk.extraction_confidence,
-        }
-        if embedding is not None:
-            chunk_values["embedding"] = embedding
-        db.add(
-            Chunk(
-                **chunk_values,
-            )
+            embeddings = [None] * len(chunks)
+    for chunk, embedding in zip(chunks, embeddings, strict=True):
+        chunk_row = Chunk(
+            document_id=document.id,
+            source_id=existing.id,
+            chunk_text=chunk.chunk_text,
+            chunk_index=chunk.chunk_index,
+            token_count=chunk.token_count,
+            meta=chunk.metadata,
+            source_type=chunk.source_type,
+            extraction_method=chunk.extraction_method,
+            extraction_confidence=chunk.extraction_confidence,
         )
+        db.add(chunk_row)
+        if embedding is not None:
+            store_chunk_embedding(db, chunk_row, embedding, embedder)
     return len(chunks)
 
 

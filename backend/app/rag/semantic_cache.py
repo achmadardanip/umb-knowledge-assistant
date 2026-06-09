@@ -22,7 +22,10 @@ class SemanticCache:
         best_payload: dict | None = None
         best_similarity = 0.0
         for embedding, payload in self._entries:
-            similarity = cosine_similarity(query_embedding, embedding)
+            try:
+                similarity = cosine_similarity(query_embedding, embedding)
+            except ValueError:
+                continue
             if similarity > best_similarity:
                 best_similarity = similarity
                 best_payload = payload

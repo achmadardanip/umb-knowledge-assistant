@@ -1,0 +1,38 @@
+[
+  {
+    "id": "supported_fee",
+    "answer": "Biaya pendaftaran program sarjana adalah Rp500.000 [1].",
+    "contexts_by_citation": {
+      "1": {
+        "chunk_text": "Biaya pendaftaran program sarjana Universitas Mercu Buana adalah Rp500.000."
+      }
+    },
+    "expected_faithful": true
+  },
+  {
+    "id": "unsupported_fee",
+    "answer": "Biaya pendaftaran program sarjana adalah Rp2.000.000 [1].",
+    "contexts_by_citation": {
+      "1": {
+        "chunk_text": "Biaya pendaftaran program sarjana Universitas Mercu Buana adalah Rp500.000."
+      }
+    },
+    "expected_faithful": false
+  },
+  {
+    "id": "uncited_claim",
+    "answer": "Mahasiswa dapat melihat nilai melalui SIA.",
+    "contexts_by_citation": {
+      "1": {
+        "chunk_text": "Mahasiswa dapat melihat nilai melalui Sistem Informasi Akademik."
+      }
+    },
+    "expected_faithful": false
+  },
+  {
+    "id": "grounded_abstention",
+    "answer": "",
+    "contexts_by_citation": {},
+    "expected_faithful": true
+  }
+]
