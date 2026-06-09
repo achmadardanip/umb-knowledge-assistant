@@ -10,11 +10,11 @@ try:
     from dotenv import dotenv_values, load_dotenv
 
     for env_file in (Path.cwd() / ".env", Path.cwd().parent / ".env"):
-        load_dotenv(env_file, override=True)
+        load_dotenv(env_file, override=False)
         if env_file.exists():
             for key, value in dotenv_values(env_file, encoding="utf-8-sig").items():
                 if key and value is not None:
-                    os.environ[key.lstrip("\ufeff")] = value
+                    os.environ.setdefault(key.lstrip("\ufeff"), value)
 except Exception:
     pass
 
@@ -151,6 +151,16 @@ class Settings:
     tahf_freshness_weight: float = _float("TAHF_FRESHNESS_WEIGHT", 0.5)
     # Dense semantic retrieval. Off until chunk embeddings are backfilled.
     dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
+    # Optional local multilingual cross-encoder, gated by offline ranking/latency evaluation.
+    reranker_enabled: bool = _bool("RERANKER_ENABLED", False)
+    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_bge").strip().lower()
+    reranker_model: str = os.getenv("RERANKER_MODEL", "BAAI/bge-reranker-v2-m3").strip()
+    reranker_device: str = os.getenv("RERANKER_DEVICE", "auto").strip().lower()
+    reranker_candidate_k: int = _int("RERANKER_CANDIDATE_K", 20)
+    reranker_batch_size: int = _int("RERANKER_BATCH_SIZE", 4)
+    reranker_max_length: int = _int("RERANKER_MAX_LENGTH", 512)
+    reranker_model_weight: float = _float("RERANKER_MODEL_WEIGHT", 0.8)
+    reranker_prewarm_enabled: bool = _bool("RERANKER_PREWARM_ENABLED", True)
 
     # Volatility-Aware Just-in-Time verification. Off (needs live web + cost budget).
     va_jit_enabled: bool = _bool("VA_JIT_ENABLED", False)

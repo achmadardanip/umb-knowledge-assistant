@@ -109,6 +109,42 @@ PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill \
 Cloud embeddings dan provider generation tetap tersedia. Jangan aktifkan
 `DENSE_RETRIEVAL_ENABLED=true` sebelum profile lokal selesai di-backfill.
 
+## Local Multilingual Reranker
+
+Reranker lintas bahasa memakai `BAAI/bge-reranker-v2-m3` melalui
+`sentence-transformers`. Fitur ini opt-in dan mempertahankan ranking
+heuristic/TAHF bila model gagal dimuat atau inference gagal:
+
+```env
+RERANKER_ENABLED=false
+RERANKER_PROVIDER=local_bge
+RERANKER_MODEL=BAAI/bge-reranker-v2-m3
+RERANKER_DEVICE=auto
+RERANKER_CANDIDATE_K=20
+RERANKER_BATCH_SIZE=4
+RERANKER_MAX_LENGTH=512
+RERANKER_MODEL_WEIGHT=0.8
+RERANKER_PREWARM_ENABLED=true
+```
+
+Jalankan gate kualitas dan latensi sebelum mengaktifkannya:
+
+```bash
+cd backend
+PYTHONPATH=. .venv/bin/python -m app.evaluation.benchmark_reranker \
+  --out /tmp/umb-reranker-gate.json
+```
+
+Exit code `0` berarti seluruh gate lolos. Exit code `1` berarti reranker harus
+tetap nonaktif. Profil fallback yang diizinkan dapat diuji tanpa mengubah
+`.env`:
+
+```bash
+RERANKER_CANDIDATE_K=12 RERANKER_MAX_LENGTH=384 \
+PYTHONPATH=. .venv/bin/python -m app.evaluation.benchmark_reranker \
+  --out /tmp/umb-reranker-gate-12x384.json
+```
+
 ## Setup Provider AI
 
 Default provider adalah OpenRouter:

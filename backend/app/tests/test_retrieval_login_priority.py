@@ -23,7 +23,7 @@ def test_sso_host_boosted_for_login_query():
     assert sso >= 25.0
 
 
-def test_non_login_query_unaffected_by_login_branch():
+def test_tuition_query_uses_tuition_priority_without_login_anchors():
     terms = _terms("berapa biaya kuliah")
     score = _score_topic_priority("Biaya kuliah program studi", "pmb.mercubuana.ac.id", terms)
-    assert score == 0.0
+    assert score >= 40.0

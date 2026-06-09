@@ -75,3 +75,47 @@ def test_grounding_fixture_is_classified_offline():
     report = evaluate_grounding_cases()
     assert report["total_cases"] == 4
     assert report["classification_accuracy"] == 1.0
+
+
+def test_evaluate_reports_ranking_metrics_and_latency():
+    class _Retriever:
+        def search(self, question, top_k, apply_model_reranker):
+            target = {
+                "url": "https://mercubuana.ac.id/fakultas-ilmu-komputer",
+                "hostname": "mercubuana.ac.id",
+            }
+            noisy = {
+                "url": "https://lib.mercubuana.ac.id/bidang-ilmu-komputer",
+                "hostname": "lib.mercubuana.ac.id",
+            }
+            return [target, noisy] if apply_model_reranker else [noisy, target]
+
+    questions = [
+        {
+            "id": "rank",
+            "question": "program studi fasilkom",
+            "expected_url_contains": ["/fakultas-ilmu-komputer"],
+            "forbidden_hosts": ["lib.mercubuana.ac.id"],
+        }
+    ]
+
+    baseline = evaluate(
+        questions,
+        db=None,
+        retriever=_Retriever(),
+        reranker_enabled=False,
+    )
+    reranked = evaluate(
+        questions,
+        db=None,
+        retriever=_Retriever(),
+        reranker_enabled=True,
+    )
+
+    assert baseline["hit_at_1"] == 0.0
+    assert baseline["hit_at_3"] == 1.0
+    assert baseline["mrr"] == 0.5
+    assert baseline["noisy_at_1_rate"] == 1.0
+    assert reranked["hit_at_1"] == 1.0
+    assert reranked["mrr"] == 1.0
+    assert reranked["latency_ms"]["median"] >= 0.0

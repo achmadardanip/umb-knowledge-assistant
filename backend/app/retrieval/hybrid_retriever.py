@@ -13,7 +13,7 @@ from app.discovery.scope_validator import is_allowed_host, validate_url_scope
 from app.ingestion.embedder import get_embedder
 from app.retrieval.dense import dense_search
 from app.retrieval.fusion import reciprocal_rank_fusion, tahf_score
-from app.retrieval.reranker import rerank_contexts
+from app.retrieval.reranker import model_rerank_contexts, rerank_contexts
 from app.trust.authority import host_authority
 from app.trust.freshness import freshness_from_age
 from app.trust.volatility import query_volatility
@@ -64,6 +64,21 @@ STOPWORDS = {
     "mercu",
     "buana",
     "studi",
+    "are",
+    "at",
+    "can",
+    "do",
+    "find",
+    "for",
+    "how",
+    "is",
+    "latest",
+    "my",
+    "the",
+    "what",
+    "where",
+    "which",
+    "university",
 }
 
 QUERY_EXPANSIONS = {
@@ -79,7 +94,11 @@ QUERY_EXPANSIONS = {
     "informatika": ["teknik informatika", "fakultas ilmu komputer", "fasilkom"],
     "dekan": ["struktural", "pimpinan fakultas", "fakultas"],
     "dosen": ["struktural dan dosen", "dosen tetap", "fasilkom"],
-    "akademik": ["perkuliahan", "program akademik"],
+    "biaya": ["biaya kuliah", "rincian pembayaran", "uang kuliah", "biaya pendidikan"],
+    "kuliah": ["biaya kuliah", "rincian pembayaran", "uang kuliah"],
+    "pembayaran": ["rincian pembayaran", "biaya kuliah", "angsuran"],
+    "akademik": ["perkuliahan", "program akademik", "academic"],
+    "kalender": ["kalender akademik", "academic calendar"],
     "perpus": ["perpustakaan", "library", "lib", "digilib", "repository"],
     "perpustakaan": ["perpus", "library", "lib", "digilib", "repository"],
     "library": ["perpustakaan", "perpus", "lib", "digilib", "repository"],
@@ -91,6 +110,27 @@ QUERY_EXPANSIONS = {
     "sia": ["sso", "login", "sistem informasi akademik"],
     "sso": ["sia", "login", "single sign on"],
     "beasiswa": ["scholarship"],
+    "tuition": ["biaya kuliah", "rincian pembayaran", "uang kuliah", "biaya pendidikan"],
+    "fees": ["biaya kuliah", "rincian pembayaran", "uang kuliah"],
+    "informatics": ["informatika", "teknik informatika", "fakultas ilmu komputer", "fasilkom"],
+    "academic": ["akademik", "kalender akademik", "academic calendar"],
+    "calendar": ["kalender", "kalender akademik", "academic calendar"],
+    "study": ["program studi", "prodi", "jurusan"],
+    "studies": ["program studi", "prodi", "jurusan"],
+    "programs": ["program studi", "prodi", "jurusan"],
+    "faculty": ["fakultas"],
+    "computer": ["komputer", "ilmu komputer", "fasilkom"],
+    "science": ["ilmu komputer", "fakultas ilmu komputer"],
+    "access": ["akses", "panduan akses"],
+    "institutional": ["institusi", "repository institusi"],
+    "admission": ["pendaftaran", "pmb", "penerimaan mahasiswa baru"],
+    "register": ["pendaftaran", "daftar", "registrasi"],
+    "registration": ["pendaftaran", "daftar", "registrasi"],
+    "scholarship": ["beasiswa"],
+    "location": ["lokasi", "lokasi kampus"],
+    "contact": ["kontak", "hubungi"],
+    "menghubungi": ["hubungi", "kontak", "pendaftaran", "pmb"],
+    "penerimaan": ["penerimaan mahasiswa baru", "pendaftaran", "pmb"],
 }
 
 LOGIN_RELATED_TERMS = {
@@ -176,6 +216,55 @@ NOISY_ACADEMIC_TEXT_MARKERS = (
 
 FACULTY_PROGRAM_TERMS = {"program", "program studi", "prodi", "jurusan"}
 FACULTY_ROLE_TERMS = {"dekan", "dosen", "struktural", "wakil dekan", "ketua program studi", "kaprodi"}
+TUITION_TERMS = {
+    "biaya",
+    "biaya kuliah",
+    "biaya pendidikan",
+    "kuliah",
+    "pembayaran",
+    "rincian pembayaran",
+    "tuition",
+    "fees",
+    "uang kuliah",
+}
+TUITION_ANCHORS = (
+    "biaya kuliah",
+    "rincian pembayaran",
+    "uang kuliah",
+    "total biaya semester",
+    "angsuran",
+    "tuition fee",
+)
+CALENDAR_TERMS = {"kalender", "kalender akademik", "calendar", "academic calendar"}
+CALENDAR_ANCHORS = ("kalender akademik", "academic calendar")
+REPOSITORY_TERMS = {"repository", "digilib", "repository institusi", "institutional"}
+REPOSITORY_ANCHORS = (
+    "repository institusi",
+    "panduan akses repository",
+    "umb repository",
+    "e-skripsi",
+    "e-tesis",
+    "e-tugas akhir",
+)
+ADMISSION_TERMS = {
+    "daftar",
+    "pendaftaran",
+    "pmb",
+    "registrasi",
+    "admission",
+    "register",
+    "registration",
+    "penerimaan mahasiswa baru",
+}
+ADMISSION_ANCHORS = (
+    "cara pendaftaran",
+    "prosedur pendaftaran",
+    "penerimaan mahasiswa baru",
+    "jalur pendaftaran",
+)
+CONTACT_TERMS = {"contact", "kontak", "hubungi", "menghubungi"}
+CONTACT_ANCHORS = ("hubungi kami", "contact us", "whatsapp", "call center", "telepon")
+SCHOLARSHIP_TERMS = {"beasiswa", "scholarship"}
 
 
 @dataclass
@@ -254,6 +343,10 @@ def _is_fasilkom_query(terms: list[str]) -> bool:
     return any(term in {"fasilkom", "fakultas ilmu komputer", "ilmu komputer"} for term in terms)
 
 
+def _has_topic(terms: list[str], topic_terms: set[str]) -> bool:
+    return any(term in topic_terms for term in terms)
+
+
 def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[str]) -> float:
     lowered = combined_text.lower()
     host = (hostname or "").lower()
@@ -265,20 +358,26 @@ def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[
         # ...and demote per-student record pages that merely mention "sia".
         if any(marker in lowered for marker in NOISY_SIA_RECORD_MARKERS):
             score -= 22.0
-    if _is_fasilkom_query(terms):
+    if _is_fasilkom_query(terms) and not _has_topic(terms, TUITION_TERMS):
         if _contains_any(lowered, FASILKOM_REQUIRED_ANCHORS):
             score += 30.0
         if any(term in FACULTY_ROLE_TERMS for term in terms) and _contains_any(
             lowered, ("struktural", "dosen", "dekan", "wakil dekan", "ketua program studi", "kaprodi")
         ):
             score += 14.0
+            if "struktural-dan-dosen" in lowered:
+                score += 20.0
         if any(term in FACULTY_PROGRAM_TERMS for term in terms) and _contains_any(
             lowered, ("program studi", "prodi", "jurusan", "teknik informatika", "sistem informasi")
         ):
             score += 12.0
+            if "/fakultas-ilmu-komputer" in lowered:
+                score += 18.0
+            if not any(term in FACULTY_ROLE_TERMS for term in terms) and "struktural-dan-dosen" in lowered:
+                score -= 12.0
         if not _is_library_query(terms):
             if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS):
-                score -= 25.0
+                score -= 40.0
             if any(marker in lowered for marker in NOISY_ACADEMIC_TEXT_MARKERS) and not _contains_any(
                 lowered, FASILKOM_REQUIRED_ANCHORS
             ):
@@ -288,6 +387,57 @@ def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[
             lowered, ("program studi", "prodi", "fakultas", "jurusan")
         ):
             score -= 8.0
+    if _has_topic(terms, TUITION_TERMS):
+        if _contains_any(lowered, TUITION_ANCHORS):
+            score += 32.0
+        if "rincian-pembayaran" in lowered:
+            score += 50.0
+        if any(marker in host for marker in ("pendaftaran.", "pmb.")):
+            score += 10.0
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, TUITION_ANCHORS
+        ):
+            score -= 20.0
+    if _has_topic(terms, CALENDAR_TERMS):
+        if _contains_any(lowered, CALENDAR_ANCHORS):
+            score += 36.0
+        if "baa." in host or "/akademik/" in lowered:
+            score += 10.0
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, CALENDAR_ANCHORS
+        ):
+            score -= 20.0
+    if _has_topic(terms, REPOSITORY_TERMS):
+        if _contains_any(lowered, REPOSITORY_ANCHORS):
+            score += 32.0
+            if "repository institusi" in lowered:
+                score += 12.0
+        elif _term_count(lowered, "repository"):
+            score += 14.0
+    if _has_topic(terms, ADMISSION_TERMS) and not _has_topic(terms, TUITION_TERMS):
+        if _contains_any(lowered, ADMISSION_ANCHORS):
+            score += 28.0
+        if any(marker in host for marker in ("pendaftaran.", "pmb.")):
+            score += 8.0
+    if _has_topic(terms, CONTACT_TERMS):
+        if _contains_any(lowered, CONTACT_ANCHORS):
+            score += 20.0
+        if any(marker in host for marker in ("pendaftaran.", "pmb.")):
+            score += 14.0
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, CONTACT_ANCHORS
+        ):
+            score -= 20.0
+        if _has_topic(terms, ADMISSION_TERMS):
+            if any(marker in host for marker in ("pendaftaran.", "pmb.")):
+                score += 30.0
+            elif any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS):
+                score -= 35.0
+    if _has_topic(terms, SCHOLARSHIP_TERMS):
+        if "beasiswa" in lowered or "scholarship" in lowered:
+            score += 24.0
+        if any(marker in host for marker in ("pendaftaran.", "pmb.")):
+            score += 8.0
     return score
 
 
@@ -301,6 +451,8 @@ def _has_required_anchor(text: str, anchors: tuple[str, ...]) -> bool:
 
 
 def _required_anchors_for_query(terms: list[str]) -> tuple[str, ...]:
+    if _has_topic(terms, TUITION_TERMS):
+        return ()
     if _is_fasilkom_query(terms):
         return FASILKOM_REQUIRED_ANCHORS
     if any(term in SIA_REQUIRED_ANCHORS for term in terms):
@@ -331,27 +483,63 @@ class HybridRetriever:
         self._embedder = embedder
         self._dense_enabled = get_settings().dense_retrieval_enabled if dense_enabled is None else dense_enabled
 
-    def search(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
+    def search(
+        self,
+        query: str,
+        top_k: int = 5,
+        source_types: list[str] | None = None,
+        *,
+        apply_model_reranker: bool | None = None,
+        candidate_k: int | None = None,
+    ) -> list[dict]:
+        settings = get_settings()
+        model_enabled = settings.reranker_enabled if apply_model_reranker is None else apply_model_reranker
+        candidate_limit = max(
+            top_k,
+            candidate_k or (settings.reranker_candidate_k if model_enabled else top_k),
+        )
+        retrieval_limit = max(candidate_limit, 8) if self._dense_enabled else candidate_limit
+        output_limit = candidate_limit if candidate_k is not None and apply_model_reranker is False else top_k
         volatility = query_volatility(query)
         keyword_contexts = self._apply_freshness(
-            self._keyword_search(query, top_k=top_k, source_types=source_types), volatility
+            self._keyword_search(query, top_k=retrieval_limit, source_types=source_types), volatility
         )
         if not self._dense_enabled:
-            return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
+            ranked = rerank_contexts(keyword_contexts, root_domain=self.root_domain)
+            if model_enabled:
+                ranked = model_rerank_contexts(query, ranked, root_domain=self.root_domain)
+            return ranked[:output_limit]
         dense_contexts = self._apply_freshness(
-            self._dense_search(query, top_k=top_k, source_types=source_types), volatility
+            self._dense_search(query, top_k=retrieval_limit, source_types=source_types), volatility
         )
         if not dense_contexts:
-            return rerank_contexts(keyword_contexts, root_domain=self.root_domain)[:top_k]
-        return self._fuse_and_rank(keyword_contexts, dense_contexts, top_k)
+            ranked = rerank_contexts(keyword_contexts, root_domain=self.root_domain)
+        else:
+            ranked = self._fuse_and_rank(query, keyword_contexts, dense_contexts, retrieval_limit)
+        if model_enabled:
+            ranked = model_rerank_contexts(query, ranked, root_domain=self.root_domain)
+        return ranked[:output_limit]
 
-    def search_dense(self, query: str, top_k: int = 5, source_types: list[str] | None = None) -> list[dict]:
+    def search_dense(
+        self,
+        query: str,
+        top_k: int = 5,
+        source_types: list[str] | None = None,
+        *,
+        apply_model_reranker: bool | None = None,
+    ) -> list[dict]:
+        settings = get_settings()
+        model_enabled = settings.reranker_enabled if apply_model_reranker is None else apply_model_reranker
+        candidate_limit = max(top_k, settings.reranker_candidate_k if model_enabled else top_k)
         volatility = query_volatility(query)
         contexts = self._apply_freshness(
-            self._dense_search(query, top_k=top_k, source_types=source_types),
+            self._dense_search(query, top_k=candidate_limit, source_types=source_types),
             volatility,
         )
-        return rerank_contexts(contexts, root_domain=self.root_domain)[:top_k]
+        ranked = rerank_contexts(contexts, root_domain=self.root_domain)
+        if model_enabled:
+            ranked = model_rerank_contexts(query, ranked, root_domain=self.root_domain)
+        return ranked[:top_k]
 
     def _apply_freshness(self, contexts: list[dict], volatility: float) -> list[dict]:
         now = datetime.now(timezone.utc)
@@ -382,7 +570,13 @@ class HybridRetriever:
         except Exception:
             return []  # dense is best-effort; the keyword path still answers
 
-    def _fuse_and_rank(self, keyword_contexts: list[dict], dense_contexts: list[dict], top_k: int) -> list[dict]:
+    def _fuse_and_rank(
+        self,
+        query: str,
+        keyword_contexts: list[dict],
+        dense_contexts: list[dict],
+        top_k: int,
+    ) -> list[dict]:
         by_id: dict[str, dict] = {}
         for context in keyword_contexts + dense_contexts:
             chunk_id = context.get("chunk_id")
@@ -399,18 +593,38 @@ class HybridRetriever:
         settings = get_settings()
         alpha = settings.tahf_authority_weight
         beta = settings.tahf_freshness_weight
+        terms = _terms(query)
         ranked: list[dict] = []
         for chunk_id, rrf in fused:
             context = by_id.get(chunk_id)
             if not context:
                 continue
             relevance = (rrf - low) / spread if spread > 0 else 1.0
+            combined_text = " ".join(
+                str(value)
+                for value in (
+                    context.get("title"),
+                    context.get("url"),
+                    context.get("chunk_text"),
+                )
+                if value
+            )
+            topic_priority = _score_topic_priority(
+                combined_text,
+                context.get("hostname"),
+                terms,
+            )
+            topic_nudge = max(-0.5, min(1.75, topic_priority / 50.0))
+            relevance += topic_nudge
             authority = host_authority(context.get("hostname"), self.root_domain)
             context_freshness = context.get("freshness")
             context_freshness = 1.0 if context_freshness is None else float(context_freshness)
             context["relevance"] = relevance
+            context["retrieval_score"] = relevance
+            context["topic_priority"] = topic_priority
             context["authority"] = authority
             context["freshness"] = context_freshness
+            context.setdefault("reranker_used", False)
             context["score"] = tahf_score(relevance, authority, context_freshness, alpha=alpha, beta=beta)
             ranked.append(context)
         ranked.sort(key=lambda item: item.get("score", 0.0), reverse=True)
@@ -421,13 +635,51 @@ class HybridRetriever:
         if not terms:
             return []
 
-        filters = [Chunk.chunk_text.ilike(f"%{term}%") for term in terms[:8]]
+        text_filters = []
+        metadata_filters = []
+        priority_metadata_filters = []
+        for term in terms[:12]:
+            pattern = f"%{term}%"
+            text_filters.append(Chunk.chunk_text.ilike(pattern))
+            metadata_filters.extend(
+                [
+                    Source.title.ilike(pattern),
+                    Source.url.ilike(pattern),
+                    Source.path.ilike(pattern),
+                ]
+            )
+            if " " in term:
+                priority_metadata_filters.extend(
+                    [
+                        Source.title.ilike(pattern),
+                        Source.url.ilike(pattern),
+                        Source.path.ilike(pattern),
+                    ]
+                )
         required_anchors = _required_anchors_for_query(terms)
         min_score = _min_relevance_score(terms)
         db_query = self.db.query(Chunk, Source).join(Source, Chunk.source_id == Source.id).filter(Source.status == "indexed")
         if source_types:
             db_query = db_query.filter(Chunk.source_type.in_(source_types))
-        rows = db_query.filter(or_(*filters)).limit(max(top_k * 20, 100)).all()
+        priority_metadata_rows = (
+            db_query.filter(or_(*priority_metadata_filters)).limit(50).all()
+            if priority_metadata_filters
+            else []
+        )
+        metadata_rows = (
+            []
+            if priority_metadata_filters
+            else db_query.filter(or_(*metadata_filters)).limit(max(top_k * 5, 50)).all()
+        )
+        text_limit = max(top_k * 15, 100) if priority_metadata_filters else max(top_k * 25, 200)
+        text_rows = db_query.filter(or_(*text_filters)).limit(text_limit).all()
+        rows = []
+        seen_chunk_ids = set()
+        for chunk, source in priority_metadata_rows + metadata_rows + text_rows:
+            if chunk.id in seen_chunk_ids:
+                continue
+            seen_chunk_ids.add(chunk.id)
+            rows.append((chunk, source))
 
         contexts: list[dict] = []
         for chunk, source in rows:
@@ -482,4 +734,5 @@ class HybridRetriever:
                     fetched_at=getattr(source, "fetched_at", None),
                 ).as_dict()
             )
+        contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
         return contexts

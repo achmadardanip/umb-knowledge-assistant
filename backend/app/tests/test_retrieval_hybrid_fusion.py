@@ -44,8 +44,8 @@ def test_hybrid_dense_finds_semantic_match_that_keyword_misses(db):
         embedding=[1.0, 0.0, 0.0],
     )
 
-    keyword_only = HybridRetriever(db, dense_enabled=False).search("biaya pendidikan", top_k=5)
+    keyword_only = HybridRetriever(db, dense_enabled=False).search("ongkos pendidikan", top_k=5)
     assert all(context["url"] != "https://pmb.mercubuana.ac.id/x" for context in keyword_only)
 
-    hybrid = HybridRetriever(db, embedder=_FakeEmbedder(), dense_enabled=True).search("biaya pendidikan", top_k=5)
+    hybrid = HybridRetriever(db, embedder=_FakeEmbedder(), dense_enabled=True).search("ongkos pendidikan", top_k=5)
     assert any(context["url"] == "https://pmb.mercubuana.ac.id/x" for context in hybrid)

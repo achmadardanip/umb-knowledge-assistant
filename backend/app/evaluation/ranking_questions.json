@@ -1,0 +1,130 @@
+[
+  {
+    "id": "rank_fik_programs_id",
+    "question": "Apa program studi di Fakultas Ilmu Komputer UMB?",
+    "category": "study_programs",
+    "lang": "id",
+    "expected_url_contains": ["/fakultas-ilmu-komputer"],
+    "forbidden_url_contains": ["/bidang-ilmu-komputer", "jurnal-ilmu-komputer"]
+  },
+  {
+    "id": "rank_fik_lecturers_id",
+    "question": "Siapa dosen dan pimpinan Fakultas Ilmu Komputer UMB?",
+    "category": "faculty",
+    "lang": "id",
+    "expected_url_contains": ["struktural-dan-dosen-fasilkom"],
+    "forbidden_url_contains": ["/bidang-ilmu-komputer", "jurnal-ilmu-komputer"]
+  },
+  {
+    "id": "rank_tuition_informatics_id",
+    "question": "Berapa biaya kuliah Teknik Informatika UMB?",
+    "category": "tuition",
+    "lang": "id",
+    "expected_url_contains": ["rincian-pembayaran"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_tuition_registration_id",
+    "question": "Di mana rincian pembayaran kuliah mahasiswa baru UMB?",
+    "category": "tuition",
+    "lang": "id",
+    "expected_url_contains": ["rincian-pembayaran"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_calendar_id",
+    "question": "Di mana kalender akademik UMB terbaru?",
+    "category": "academic_calendar",
+    "lang": "id",
+    "expected_url_contains": ["kalender-akademik", "academic-calendar"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_reset_sia_id",
+    "question": "Bagaimana cara reset password SIA atau SSO UMB?",
+    "category": "sia",
+    "lang": "id",
+    "expected_hosts": ["support.mercubuana.ac.id", "sso.mercubuana.ac.id"],
+    "forbidden_url_contains": ["pengalamanmhs", "biomhs", "peraturanskp"]
+  },
+  {
+    "id": "rank_repository_id",
+    "question": "Bagaimana mengakses repository institusi UMB?",
+    "category": "repository",
+    "lang": "id",
+    "expected_url_contains": ["repository-institusi", "repository institusi", "repository) umb", "repository%20umb"],
+    "forbidden_url_contains": ["e-resources-langganan"]
+  },
+  {
+    "id": "rank_library_id",
+    "question": "Bagaimana mengakses layanan perpustakaan UMB?",
+    "category": "library",
+    "lang": "id",
+    "expected_hosts": ["lib.mercubuana.ac.id"],
+    "forbidden_hosts": ["repository.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_location_meruya_id",
+    "question": "Di mana lokasi kampus Meruya Universitas Mercu Buana?",
+    "category": "campus_location",
+    "lang": "id",
+    "expected_url_contains": ["lokasi-kampus-umb"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_admission_id",
+    "question": "Bagaimana prosedur pendaftaran mahasiswa baru UMB?",
+    "category": "admission",
+    "lang": "id",
+    "expected_hosts": ["pendaftaran.mercubuana.ac.id", "pmb.mercubuana.ac.id"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_scholarship_id",
+    "question": "Di mana informasi beasiswa resmi untuk calon mahasiswa UMB?",
+    "category": "scholarship",
+    "lang": "id",
+    "expected_url_contains": ["beasiswa"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_contact_id",
+    "question": "Bagaimana menghubungi bagian penerimaan mahasiswa UMB?",
+    "category": "contact",
+    "lang": "id",
+    "expected_hosts": ["pendaftaran.mercubuana.ac.id", "pmb.mercubuana.ac.id"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_fik_programs_en",
+    "question": "What study programs are available in the Faculty of Computer Science at Mercu Buana?",
+    "category": "study_programs",
+    "lang": "en",
+    "expected_url_contains": ["/fakultas-ilmu-komputer"],
+    "forbidden_url_contains": ["/bidang-ilmu-komputer", "jurnal-ilmu-komputer"]
+  },
+  {
+    "id": "rank_tuition_en",
+    "question": "Where can I find the tuition fees for Informatics at Mercu Buana?",
+    "category": "tuition",
+    "lang": "en",
+    "expected_url_contains": ["rincian-pembayaran"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_calendar_en",
+    "question": "Where is the latest UMB academic calendar?",
+    "category": "academic_calendar",
+    "lang": "en",
+    "expected_url_contains": ["kalender-akademik", "academic-calendar"],
+    "forbidden_hosts": ["lib.mercubuana.ac.id"]
+  },
+  {
+    "id": "rank_reset_sia_en",
+    "question": "How do I reset my UMB SIA or SSO password?",
+    "category": "sia",
+    "lang": "en",
+    "expected_hosts": ["support.mercubuana.ac.id", "sso.mercubuana.ac.id"],
+    "forbidden_url_contains": ["pengalamanmhs", "biomhs", "peraturanskp"]
+  }
+]

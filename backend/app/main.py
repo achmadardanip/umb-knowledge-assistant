@@ -22,6 +22,7 @@ from app.api import (
 from app.core.config import get_settings
 from app.core.logging import configure_logging
 from app.ingestion.embedder import get_embedder
+from app.retrieval.reranker import get_reranker
 
 
 configure_logging()
@@ -45,9 +46,26 @@ def _prewarm_local_embedder() -> None:
     threading.Thread(target=_warm, daemon=True, name="local-e5-prewarm").start()
 
 
+def _prewarm_local_reranker() -> None:
+    """Load the gated local cross-encoder without delaying application startup."""
+    settings = get_settings()
+    if not settings.reranker_enabled or not settings.reranker_prewarm_enabled:
+        return
+
+    def _warm() -> None:
+        try:
+            get_reranker().score("warmup", ["warmup"])
+            logger.info("Local reranker pre-warm completed.")
+        except Exception:
+            logger.warning("Local reranker pre-warm failed.", exc_info=True)
+
+    threading.Thread(target=_warm, daemon=True, name="local-bge-reranker-prewarm").start()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _prewarm_local_embedder()
+    _prewarm_local_reranker()
     yield
 
 

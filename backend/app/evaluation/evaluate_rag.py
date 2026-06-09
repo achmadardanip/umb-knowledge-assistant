@@ -10,6 +10,9 @@ from __future__ import annotations
 
 import argparse
 import json
+import math
+import statistics
+import time
 from collections import Counter
 from pathlib import Path
 
@@ -21,6 +24,7 @@ from app.retrieval.hybrid_retriever import HybridRetriever
 from app.verification.entailment import LexicalEntailmentChecker
 
 QUESTIONS_PATH = Path(__file__).with_name("eval_questions.json")
+RANKING_QUESTIONS_PATH = Path(__file__).with_name("ranking_questions.json")
 GROUNDING_CASES_PATH = Path(__file__).with_name("grounding_cases.json")
 
 
@@ -28,20 +32,56 @@ def load_questions(path: str | Path = QUESTIONS_PATH) -> list[dict]:
     return json.loads(Path(path).read_text(encoding="utf-8"))
 
 
-def _target_hit(item: dict, contexts: list[dict]) -> bool | None:
+def _target_match(item: dict, context: dict) -> bool:
     expected_hosts = {value.lower() for value in item.get("expected_hosts", [])}
     expected_urls = set(item.get("expected_urls", []))
+    expected_url_contains = [value.lower() for value in item.get("expected_url_contains", [])]
     expected_chunk_ids = {str(value) for value in item.get("expected_chunk_ids", [])}
     expected_source_types = set(item.get("expected_source_types", []))
-    if not any((expected_hosts, expected_urls, expected_chunk_ids, expected_source_types)):
-        return None
-    return any(
+    url = context.get("url") or ""
+    return (
         (context.get("hostname") or "").lower() in expected_hosts
-        or context.get("url") in expected_urls
+        or url in expected_urls
+        or any(value in url.lower() for value in expected_url_contains)
         or str(context.get("chunk_id")) in expected_chunk_ids
         or context.get("source_type") in expected_source_types
-        for context in contexts
     )
+
+
+def _target_rank(item: dict, contexts: list[dict]) -> int | None:
+    if not any(
+        (
+            item.get("expected_hosts"),
+            item.get("expected_urls"),
+            item.get("expected_url_contains"),
+            item.get("expected_chunk_ids"),
+            item.get("expected_source_types"),
+        )
+    ):
+        return None
+    return next(
+        (rank for rank, context in enumerate(contexts, start=1) if _target_match(item, context)),
+        0,
+    )
+
+
+def _is_noisy(item: dict, context: dict | None) -> bool:
+    if context is None:
+        return False
+    host = (context.get("hostname") or "").lower()
+    url = (context.get("url") or "").lower()
+    return (
+        host in {value.lower() for value in item.get("forbidden_hosts", [])}
+        or any(value.lower() in url for value in item.get("forbidden_url_contains", []))
+    )
+
+
+def _percentile(values: list[float], percentile: float) -> float:
+    if not values:
+        return 0.0
+    ordered = sorted(values)
+    index = max(0, math.ceil(percentile * len(ordered)) - 1)
+    return ordered[index]
 
 
 def evaluate(
@@ -52,6 +92,7 @@ def evaluate(
     strategy: str = "current",
     retriever: HybridRetriever | None = None,
     embedder=None,
+    reranker_enabled: bool | None = None,
 ) -> dict:
     settings = get_settings()
     if strategy not in {"current", "keyword", "dense", "hybrid"}:
@@ -73,12 +114,34 @@ def evaluate(
     in_scope_hits = 0
     target_total = 0
     target_hits = 0
+    hit_at_1 = 0
+    hit_at_3 = 0
+    reciprocal_rank_total = 0.0
+    noisy_at_1 = 0
+    latency_ms: list[float] = []
 
     for item in questions:
+        started = time.perf_counter()
         if strategy == "dense":
-            contexts = retriever.search_dense(item["question"], top_k=top_k)
+            if reranker_enabled is None:
+                contexts = retriever.search_dense(item["question"], top_k=top_k)
+            else:
+                contexts = retriever.search_dense(
+                    item["question"],
+                    top_k=top_k,
+                    apply_model_reranker=reranker_enabled,
+                )
         else:
-            contexts = retriever.search(item["question"], top_k=top_k)
+            if reranker_enabled is None:
+                contexts = retriever.search(item["question"], top_k=top_k)
+            else:
+                contexts = retriever.search(
+                    item["question"],
+                    top_k=top_k,
+                    apply_model_reranker=reranker_enabled,
+                )
+        elapsed_ms = (time.perf_counter() - started) * 1000.0
+        latency_ms.append(elapsed_ms)
         predicted_not_found = not bool(contexts)
         expected_not_found = bool(item.get("expected_not_found"))
         category_distribution[item.get("category", "unknown")] += 1
@@ -96,10 +159,15 @@ def evaluate(
             in_scope_total += 1
             if contexts:
                 in_scope_hits += 1
-        target_hit = _target_hit(item, contexts)
-        if target_hit is not None:
+        target_rank = _target_rank(item, contexts)
+        target_hit = None if target_rank is None else target_rank > 0
+        if target_rank is not None:
             target_total += 1
             target_hits += int(target_hit)
+            hit_at_1 += int(target_rank == 1)
+            hit_at_3 += int(0 < target_rank <= 3)
+            reciprocal_rank_total += 1.0 / target_rank if target_rank else 0.0
+            noisy_at_1 += int(_is_noisy(item, contexts[0] if contexts else None))
 
         rows.append(
             {
@@ -115,16 +183,30 @@ def evaluate(
                 "expected_not_found": expected_not_found if "expected_not_found" in item else None,
                 "abstention_outcome": outcome,
                 "target_hit": target_hit,
+                "target_rank": target_rank,
+                "reciprocal_rank": 1.0 / target_rank if target_rank else 0.0,
+                "noisy_at_1": _is_noisy(item, contexts[0] if contexts else None),
+                "latency_ms": elapsed_ms,
                 "retrieved_hosts": sorted({context.get("hostname") for context in contexts if context.get("hostname")}),
+                "retrieved_urls": [context.get("url") for context in contexts if context.get("url")],
             }
         )
 
     return {
         "retrieval_strategy": strategy,
+        "reranker_enabled": reranker_enabled,
         "total_questions": len(rows),
         "retrieval_hit_rate": in_scope_hits / in_scope_total if in_scope_total else 0.0,
         "labelled_target_hit_rate": target_hits / target_total if target_total else None,
         "labelled_target_questions": target_total,
+        "hit_at_1": hit_at_1 / target_total if target_total else None,
+        "hit_at_3": hit_at_3 / target_total if target_total else None,
+        "mrr": reciprocal_rank_total / target_total if target_total else None,
+        "noisy_at_1_rate": noisy_at_1 / target_total if target_total else None,
+        "latency_ms": {
+            "median": statistics.median(latency_ms) if latency_ms else 0.0,
+            "p95": _percentile(latency_ms, 0.95),
+        },
         "not_found_rate": sum(1 for row in rows if row["not_found"]) / max(len(rows), 1),
         "abstention": dict(abstention),
         "category_distribution": dict(category_distribution),
@@ -141,6 +223,7 @@ def evaluate_strategies(
     strategies: list[str],
     top_k: int = 5,
     embedder=None,
+    reranker_enabled: bool | None = None,
 ) -> dict[str, dict]:
     return {
         strategy: evaluate(
@@ -149,6 +232,7 @@ def evaluate_strategies(
             top_k=top_k,
             strategy=strategy,
             embedder=embedder if strategy in {"dense", "hybrid"} else None,
+            reranker_enabled=reranker_enabled,
         )
         for strategy in strategies
     }
@@ -195,6 +279,12 @@ def main() -> int:
     )
     parser.add_argument("--grounding-cases", default=str(GROUNDING_CASES_PATH))
     parser.add_argument("--skip-grounding", action="store_true")
+    parser.add_argument(
+        "--reranker",
+        choices=("current", "off", "on"),
+        default="current",
+        help="Use configured reranker state, force it off, or force it on.",
+    )
     args = parser.parse_args()
     questions = load_questions(args.questions)
     strategies = [value.strip() for value in args.strategies.split(",") if value.strip()]
@@ -202,6 +292,7 @@ def main() -> int:
     if unknown:
         parser.error(f"Unknown strategies: {', '.join(unknown)}")
     shared_embedder = get_embedder() if any(value in {"dense", "hybrid"} for value in strategies) else None
+    reranker_enabled = None if args.reranker == "current" else args.reranker == "on"
     with get_session_local()() as db:
         reports = evaluate_strategies(
             questions,
@@ -209,6 +300,7 @@ def main() -> int:
             strategies=strategies,
             top_k=args.top_k,
             embedder=shared_embedder,
+            reranker_enabled=reranker_enabled,
         )
     grounding = None if args.skip_grounding else evaluate_grounding_cases(args.grounding_cases)
     report = next(iter(reports.values())) if len(reports) == 1 else {"retrieval_strategies": reports}

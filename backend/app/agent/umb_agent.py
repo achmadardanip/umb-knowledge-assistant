@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.retrieval.hybrid_retriever import HybridRetriever
+from app.retrieval.reranker import model_rerank_contexts
 from app.trust.va_jit import va_jit_reverify
 from app.web_search.live_retriever import UMBLiveWebRetriever
 
@@ -145,7 +146,15 @@ def run_umb_agent(
 
     def indexed_tool(tool_query: str) -> str:
         nonlocal indexed_contexts
-        indexed_contexts = indexed_retriever.search(tool_query, top_k=top_k)
+        if settings.reranker_enabled:
+            indexed_contexts = indexed_retriever.search(
+                tool_query,
+                top_k=top_k,
+                apply_model_reranker=False,
+                candidate_k=settings.reranker_candidate_k,
+            )
+        else:
+            indexed_contexts = indexed_retriever.search(tool_query, top_k=top_k)
         return f"{len(indexed_contexts)} indexed contexts"
 
     def web_tool(tool_query: str) -> str:
@@ -281,7 +290,24 @@ def run_umb_agent(
     contexts = _dedupe_contexts(contexts)
     if _va_jit_enabled() and contexts:
         contexts = _maybe_va_jit(query, contexts, live_retriever, emit_step)
-    contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
+    if settings.reranker_enabled and contexts:
+        emit_step(
+            "model_reranker",
+            "Mengurutkan ulang kandidat multilingual",
+            "running",
+            f"Maksimal {settings.reranker_candidate_k} kandidat",
+        )
+        contexts = model_rerank_contexts(query, contexts, root_domain=root_domain)
+        reranker_used = any(context.get("reranker_used") for context in contexts)
+        emit_step(
+            "model_reranker",
+            "Mengurutkan ulang kandidat multilingual",
+            "done" if reranker_used else "skipped",
+            "BGE reranker diterapkan" if reranker_used else "Ranking baseline dipertahankan",
+            {"reranker_used": reranker_used, "reranker_model": settings.reranker_model},
+        )
+    else:
+        contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
     contexts = contexts[:top_k]
     emit_step(
         "agent",
