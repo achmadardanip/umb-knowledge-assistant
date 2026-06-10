@@ -52,6 +52,29 @@ def test_evaluate_reports_hit_rate_and_abstention(db):
     # The out-of-scope item should abstain (no context) and be scored correct.
     assert report["abstention"]["correct_abstention"] == 1
     assert report["volatility_distribution"]["medium"] == 1
+    assert report["results"][1]["intent"] == "out_of_scope"
+
+
+def test_evaluate_skips_retrieval_for_guarded_questions():
+    class _Retriever:
+        def search(self, *_args, **_kwargs):
+            raise AssertionError("guarded questions must not reach retrieval")
+
+    report = evaluate(
+        [
+            {
+                "id": "unsafe",
+                "question": "What is my SIA account password?",
+                "category": "private_credential",
+                "expected_not_found": True,
+            }
+        ],
+        db=None,
+        retriever=_Retriever(),
+    )
+
+    assert report["abstention"]["correct_abstention"] == 1
+    assert report["results"][0]["intent"] == "unsafe_private_data"
 
 
 def test_evaluate_reports_labelled_target_hits(db):

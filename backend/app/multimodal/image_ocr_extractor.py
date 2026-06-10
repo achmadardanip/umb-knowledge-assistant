@@ -23,7 +23,7 @@ def extract_image_ocr(path: str | Path) -> OCRResult:
         import pytesseract
         from PIL import Image
 
-        text = pytesseract.image_to_string(Image.open(path)).strip()
+        text = pytesseract.image_to_string(Image.open(path), lang=settings.ocr_languages).strip()
         confidence = 0.6 if text else 0.0
         return OCRResult(
             text,
@@ -34,4 +34,3 @@ def extract_image_ocr(path: str | Path) -> OCRResult:
         )
     except Exception as exc:
         return OCRResult("", settings.ocr_provider, 0.0, "failed", str(exc))
-

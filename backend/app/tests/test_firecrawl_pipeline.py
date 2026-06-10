@@ -4,6 +4,7 @@ import pytest
 
 from app.db.models import Chunk, DiscoveredURL, Source
 from app.ingestion.embedder import BaseEmbedder
+from app.ingestion.firecrawl_client import FirecrawlAPIError
 from app.ingestion.firecrawl_pipeline import discover_firecrawl, run_firecrawl_index
 from app.ingestion.pipeline import upsert_source_document
 
@@ -52,7 +53,10 @@ class _IndexClient:
 
     def get_crawl_status(self, crawl_id_or_next_url):
         queue = self.crawl_payloads[str(crawl_id_or_next_url)]
-        return queue.pop(0)
+        payload = queue.pop(0)
+        if isinstance(payload, Exception):
+            raise payload
+        return payload
 
     def scrape(self, url, **_kwargs):
         self.scrape_calls.append(url)
@@ -197,6 +201,78 @@ def test_run_firecrawl_skips_already_indexed_pending_urls_without_scrape(db):
     assert client.scrape_calls == []
     row = db.query(DiscoveredURL).filter(DiscoveredURL.normalized_url == indexed_url).one()
     assert row.indexed is True
+
+
+def test_run_firecrawl_resumes_existing_job_without_starting_another(db):
+    client = _IndexClient(
+        crawl_payloads={
+            "existing-crawl": [
+                {
+                    "status": "completed",
+                    "data": [
+                        {
+                            "markdown": _words("resume"),
+                            "metadata": {
+                                "sourceURL": "https://mercubuana.ac.id/resumed",
+                                "title": "Resumed",
+                                "statusCode": 200,
+                            },
+                        }
+                    ],
+                }
+            ]
+        }
+    )
+
+    report = run_firecrawl_index(
+        domain="mercubuana.ac.id",
+        confirm_authorized=True,
+        client=client,
+        crawl_id="existing-crawl",
+        limit=1,
+        require_postgres=False,
+    )
+
+    assert report["crawl_job_id"] == "existing-crawl"
+    assert report["processed"]["indexed"] == 1
+    assert client.started is False
+
+
+def test_run_firecrawl_retries_failed_pagination_on_next_poll(db):
+    client = _IndexClient(
+        crawl_payloads={
+            "crawl-1": [
+                {"status": "scraping", "next": "next-page", "data": []},
+                {"status": "completed", "next": "next-page", "data": []},
+            ],
+            "next-page": [
+                FirecrawlAPIError("connection reset"),
+                {
+                    "status": "scraping",
+                    "data": [
+                        {
+                            "markdown": _words("recovered"),
+                            "metadata": {
+                                "sourceURL": "https://mercubuana.ac.id/recovered",
+                                "title": "Recovered",
+                                "statusCode": 200,
+                            },
+                        }
+                    ],
+                },
+            ],
+        }
+    )
+
+    report = run_firecrawl_index(
+        domain="mercubuana.ac.id",
+        confirm_authorized=True,
+        client=client,
+        limit=1,
+        require_postgres=False,
+    )
+
+    assert report["processed"]["indexed"] == 1
 
 
 def test_run_firecrawl_refuses_without_authorization_before_firecrawl_call(db):

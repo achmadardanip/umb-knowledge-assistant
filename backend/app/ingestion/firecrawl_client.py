@@ -74,13 +74,22 @@ class FirecrawlClient:
         url = self._url(path)
         last_payload: Any = None
         for attempt in range(max(0, self.max_retries) + 1):
-            response = self.session.request(
-                method,
-                url,
-                headers=self._headers(),
-                json=json_payload,
-                timeout=self.timeout_seconds,
-            )
+            try:
+                response = self.session.request(
+                    method,
+                    url,
+                    headers=self._headers(),
+                    json=json_payload,
+                    timeout=self.timeout_seconds,
+                )
+            except requests.RequestException as exc:
+                if attempt >= self.max_retries:
+                    raise FirecrawlAPIError(
+                        f"Firecrawl request failed after retries: {exc}",
+                        response_payload=last_payload,
+                    ) from exc
+                time.sleep(max(self.retry_backoff_seconds * (2**attempt), 0.0))
+                continue
             try:
                 payload = response.json()
             except ValueError:

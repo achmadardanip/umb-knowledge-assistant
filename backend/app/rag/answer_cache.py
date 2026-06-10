@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 from app.db.models import RAGAnswerCache, utcnow
 
 
+ANSWER_CACHE_KEY_VERSION = "v2"
+
+
 def normalize_question(question: str) -> str:
     return re.sub(r"\s+", " ", (question or "").strip().lower())
 
@@ -34,6 +37,7 @@ def build_cache_key(
     # separately by the freshness/VA-JIT path, not by cache invalidation.
     _ = contexts  # kept in the signature for caller compatibility
     payload = {
+        "cache_version": ANSWER_CACHE_KEY_VERSION,
         "question_hash": question_hash(question),
         "intent": intent,
         "provider": provider_used,
@@ -85,4 +89,3 @@ def store_cached_answer(
     row.created_at = now
     row.expires_at = now + timedelta(seconds=max(ttl_seconds, 60))
     db.flush()
-

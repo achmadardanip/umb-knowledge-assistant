@@ -795,6 +795,7 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         provider_used="puter",
         model_used=model_used,
         memory_used=prepared.memory_used,
+        language=prepared.language,
     )
     final_model = answer_payload.get("model_used") or model_used
 

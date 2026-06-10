@@ -83,15 +83,32 @@ def _unique_contexts_by_source(contexts: list[dict]) -> list[dict]:
 
 
 _FASILKOM_MARKERS = ("fasilkom", "fakultas ilmu komputer", "ilmu komputer")
-_PROGRAM_QUERIES = ("program studi", "prodi", "jurusan")
-_LECTURER_QUERIES = ("dosen", "pengajar", "lecturer")
+_PROGRAM_QUERIES = ("program studi", "prodi", "jurusan", "programs", "degree programs", "majors")
+_LECTURER_QUERIES = ("dosen", "pengajar", "lecturer", "lecturers")
 _DEAN_QUERIES = ("dekan", "dean")
 _FACULTY_REFERENCE_QUERIES = ("fakultas ini", "fakultas tersebut", "program studi ini", "prodi ini")
-_PROGRAM_CANDIDATES = (
-    "Teknik Informatika",
-    "Sistem Informasi",
-    "Magister Ilmu Komputer",
-    "Doktor Ilmu Komputer",
+_LOCATION_QUERIES = ("lokasi", "alamat", "kampus", "location", "locations", "located", "address", "campus")
+_CAMPUS_NAMES = ("Meruya", "Menteng", "Pejaten", "Warung Buncit", "Jatisampurna", "Bekasi", "Keranggan")
+_PROGRAM_PATTERNS = (
+    (
+        "Informatika",
+        (
+            r"\bInformatika\s*\(\s*Visi\s*:\s*Artificial Intelligence\s*\)",
+            r"\bReguler\s+dan\s+Fleksibel\s+Informatika\b",
+        ),
+    ),
+    ("Teknik Informatika", (r"\bTeknik Informatika\b",)),
+    ("Sistem Informasi", (r"\bSistem Informasi\b",)),
+    (
+        "Informatika Program Belajar Jarak Jauh (PBJJ)",
+        (
+            r"\bInformatika\s+Program\s+Belajar\s+Jarak\s+Jauh\s*\(\s*PBJJ\s*\)",
+            r"\bPBJJ\s+Informatika\b",
+        ),
+    ),
+    ("Sains Data", (r"\bSains Data\b",)),
+    ("Magister Ilmu Komputer", (r"\bMagister Ilmu Komputer\b",)),
+    ("Doktor Ilmu Komputer", (r"\bDoktor Ilmu Komputer\b",)),
 )
 _ROLE_BOUNDARY_RE = re.compile(
     r"\b(wakil\s+dekan|ketua\s+program\s+studi|kaprodi|sekretaris|program\s+studi|dosen\s+tetap|pendidikan|nidn|jabatan)\b",
@@ -219,10 +236,71 @@ def _extract_lecturer_names(contexts: list[dict], limit: int = 40) -> list[str]:
 def _extract_programs(contexts: list[dict]) -> list[str]:
     found: list[str] = []
     combined = "\n".join(context.get("chunk_text") or "" for context in contexts)
-    for program in _PROGRAM_CANDIDATES:
-        if re.search(rf"\b{re.escape(program)}\b", combined, flags=re.IGNORECASE):
+    for program, patterns in _PROGRAM_PATTERNS:
+        if any(re.search(pattern, combined, flags=re.IGNORECASE) for pattern in patterns):
             found.append(program)
     return found
+
+
+def _extract_campus_locations(context: dict) -> list[tuple[str, str]]:
+    text = re.sub(r"\s+", " ", context.get("chunk_text") or "").strip()
+    if not text:
+        return []
+    names_pattern = "|".join(re.escape(name) for name in _CAMPUS_NAMES)
+    matches = list(
+        re.finditer(
+            rf"\bKampus\s+({names_pattern})\b(.*?)(?=\bKampus\s+(?:{names_pattern})\b|$)",
+            text,
+            flags=re.IGNORECASE,
+        )
+    )
+    locations: list[tuple[str, str]] = []
+    seen: set[str] = set()
+    for match in matches:
+        name = match.group(1).title()
+        address = re.sub(r"^\s*(?:Default Title\s*)?", "", match.group(2), flags=re.IGNORECASE).strip(" :-–—|,;")
+        if not address or not re.search(r"\b(?:Jl\.?|Jalan)\b", address, flags=re.IGNORECASE):
+            continue
+        address = address[:300].rstrip(" ,;")
+        key = name.lower()
+        if key in seen:
+            continue
+        seen.add(key)
+        locations.append((name, address))
+    return locations
+
+
+def _structured_location_payload(
+    *,
+    question: str,
+    contexts: list[dict],
+    memory_used: bool,
+    language: str | None = None,
+) -> dict | None:
+    if not _question_has(question, _LOCATION_QUERIES):
+        return None
+    for context in _unique_contexts_by_source(contexts):
+        locations = _extract_campus_locations(context)
+        if len(locations) < 2:
+            continue
+        rendered = "\n".join(f"{index}. **Kampus {name}**: {address}" for index, (name, address) in enumerate(locations, start=1))
+        if (language or "").lower().startswith("en"):
+            answer = f"The official UMB source lists these campus locations [1]:\n\n{rendered}"
+        else:
+            answer = f"Sumber resmi UMB mencantumkan lokasi kampus berikut [1]:\n\n{rendered}"
+        payload = {
+            "answer": answer,
+            "sources": _build_sources([context]),
+            "confidence": "high",
+            "not_found": False,
+            "provider_used": "system",
+            "model_used": "structured-campus-location-extractor",
+            "memory_used": memory_used,
+        }
+        validated = validate_citations(payload, [context], require_citation_markers=True)
+        validated["answer"] = sanitize_answer(validated.get("answer") or "")
+        return validated
+    return None
 
 
 def _structured_fasilkom_payload(
@@ -230,6 +308,7 @@ def _structured_fasilkom_payload(
     question: str,
     contexts: list[dict],
     memory_used: bool,
+    language: str | None = None,
 ) -> dict | None:
     focused_contexts = _unique_contexts_by_source(_fasilkom_contexts(contexts))[:3]
     asks_fasilkom_topic = _is_fasilkom_text(question) or (
@@ -261,7 +340,10 @@ def _structured_fasilkom_payload(
         programs = _extract_programs(focused_contexts)
         if programs:
             rendered = "\n".join(f"{index}. {program}" for index, program in enumerate(programs, start=1))
-            answer = f"Berdasarkan sumber resmi, program studi di Fakultas Ilmu Komputer/Fasilkom yang tercantum adalah [1]:\n\n{rendered}"
+            if (language or "").lower().startswith("en"):
+                answer = f"According to the official source, the listed Faculty of Computer Science/Fasilkom programs are [1]:\n\n{rendered}"
+            else:
+                answer = f"Berdasarkan sumber resmi, program studi di Fakultas Ilmu Komputer/Fasilkom yang tercantum adalah [1]:\n\n{rendered}"
 
     if not answer:
         return None
@@ -286,6 +368,7 @@ def extractive_fallback_payload(
     provider_used: str | None = None,
     model_used: str | None = None,
     reason: str | None = None,
+    language: str | None = None,
 ) -> dict:
     fallback_contexts = _unique_contexts_by_source(contexts)[:5]
     sources = _build_sources(fallback_contexts)
@@ -294,11 +377,24 @@ def extractive_fallback_payload(
         text = " ".join((context.get("chunk_text") or "").split())
         if not text:
             continue
-        title = context.get("title") or context.get("hostname") or "Sumber resmi"
+        title = context.get("title") or context.get("hostname") or (
+            "Official source" if (language or "").lower().startswith("en") else "Sumber resmi"
+        )
         snippets.append(f"**{title}** — {text[:240].rstrip()}… [{index}]")
     answer = FALLBACK_ANSWER
     if snippets:
-        if reason and "missing_valid_citations" in reason:
+        is_english = (language or "").lower().startswith("en")
+        if is_english and reason and "missing_valid_citations" in reason:
+            lead = (
+                "I could not verify a complete answer to this question from the indexed official sources, "
+                "so I will not guess. These are the most relevant excerpts from official UMB sources:"
+            )
+        elif is_english:
+            lead = (
+                "Relevant official sources were found, but a complete answer could not be generated right now. "
+                "These are the most relevant excerpts from official UMB sources:"
+            )
+        elif reason and "missing_valid_citations" in reason:
             lead = (
                 "Saya belum dapat memverifikasi jawaban yang utuh untuk pertanyaan ini dari sumber resmi yang terindeks, "
                 "jadi saya tidak menebak. Berikut kutipan paling relevan dari sumber resmi UMB:"
@@ -516,6 +612,7 @@ def finalize_generated_answer(
     model_used: str | None,
     memory_used: bool = False,
     provider_override: str | None = None,
+    language: str | None = None,
 ) -> dict:
     """Verify + clean a raw LLM answer (server-side trust gate).
 
@@ -548,6 +645,7 @@ def finalize_generated_answer(
             provider_used=provider_used,
             model_used=model_used,
             reason="provider_answer_missing_valid_citations",
+            language=language,
         )
     validated_payload["answer"] = sanitize_answer(validated_payload.get("answer") or "")
     return validated_payload
@@ -567,10 +665,20 @@ def generate_answer(
     if not contexts:
         return fallback_payload(memory_used=memory_used)
 
+    structured_payload = _structured_location_payload(
+        question=question,
+        contexts=contexts,
+        memory_used=memory_used,
+        language=language,
+    )
+    if structured_payload:
+        return structured_payload
+
     structured_payload = _structured_fasilkom_payload(
         question=question,
         contexts=contexts,
         memory_used=memory_used,
+        language=language,
     )
     if structured_payload:
         return structured_payload
@@ -593,6 +701,7 @@ def generate_answer(
                 provider_used=provider.provider_name if provider else normalize_provider(provider_override),
                 model_used=provider.model if provider else None,
                 reason=str(last_error) if last_error else "provider_unavailable",
+                language=language,
             )
         if last_error:
             raise last_error
@@ -605,4 +714,5 @@ def generate_answer(
         model_used=response.model_used,
         memory_used=memory_used,
         provider_override=provider_override,
+        language=language,
     )

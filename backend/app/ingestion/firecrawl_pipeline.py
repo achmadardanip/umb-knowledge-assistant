@@ -238,6 +238,7 @@ def run_firecrawl_index(
     domain: str,
     confirm_authorized: bool,
     client: FirecrawlClient | None = None,
+    crawl_id: str | None = None,
     limit: int | None = None,
     skip_existing: bool = True,
     poll_interval_seconds: float | None = None,
@@ -271,20 +272,27 @@ def run_firecrawl_index(
         if require_postgres:
             _ensure_postgres(db)
 
-    crawl_payload = client.start_crawl(
-        f"https://{domain}",
-        limit=limit,
-        delay_seconds=settings.firecrawl_delay_seconds,
-        max_concurrency=settings.firecrawl_max_concurrency,
-        zero_data_retention=settings.firecrawl_zero_data_retention,
-    )
-    crawl_id = str(crawl_payload.get("id") or crawl_payload.get("jobId") or "").strip()
-    report["crawl_job_id"] = crawl_id
-    if not crawl_id:
-        raise FirecrawlAPIError("Firecrawl crawl did not return a job id.", response_payload=crawl_payload)
+    active_crawl_id = str(crawl_id or "").strip()
+    if not active_crawl_id:
+        crawl_payload = client.start_crawl(
+            f"https://{domain}",
+            limit=limit,
+            delay_seconds=settings.firecrawl_delay_seconds,
+            max_concurrency=settings.firecrawl_max_concurrency,
+            zero_data_retention=settings.firecrawl_zero_data_retention,
+        )
+        active_crawl_id = str(crawl_payload.get("id") or crawl_payload.get("jobId") or "").strip()
+        if not active_crawl_id:
+            raise FirecrawlAPIError("Firecrawl crawl did not return a job id.", response_payload=crawl_payload)
+    report["crawl_job_id"] = active_crawl_id
 
     with session_factory() as db:
-        for payload in _iter_crawl_payloads(client, crawl_id, poll_interval_seconds=poll_interval_seconds, max_wait_seconds=max_wait_seconds):
+        for payload in _iter_crawl_payloads(
+            client,
+            active_crawl_id,
+            poll_interval_seconds=poll_interval_seconds,
+            max_wait_seconds=max_wait_seconds,
+        ):
             report["crawl_status"] = payload.get("status")
             report["credits_used"] = payload.get("creditsUsed") or report["credits_used"]
             for document in documents_from_payload(payload):
@@ -322,12 +330,24 @@ def _iter_crawl_payloads(
     deadline = time.monotonic() + max(1, max_wait_seconds)
     seen_next: set[str] = set()
     while True:
-        payload = client.get_crawl_status(crawl_id)
+        try:
+            payload = client.get_crawl_status(crawl_id)
+        except FirecrawlAPIError as exc:
+            if time.monotonic() >= deadline:
+                logger.warning("Firecrawl crawl %s status polling timed out: %s", crawl_id, exc)
+                return
+            logger.warning("Firecrawl crawl %s status polling failed; retrying: %s", crawl_id, exc)
+            time.sleep(max(poll_interval_seconds, 0.1))
+            continue
         yield payload
         next_url = payload.get("next")
         while isinstance(next_url, str) and next_url and next_url not in seen_next:
+            try:
+                page_payload = client.get_crawl_status(next_url)
+            except FirecrawlAPIError as exc:
+                logger.warning("Firecrawl crawl %s pagination failed; retrying on next poll: %s", crawl_id, exc)
+                break
             seen_next.add(next_url)
-            page_payload = client.get_crawl_status(next_url)
             yield page_payload
             next_url = page_payload.get("next")
         status = str(payload.get("status") or "").lower()
@@ -427,6 +447,7 @@ def build_parser() -> argparse.ArgumentParser:
     run_parser = sub.add_parser("run")
     run_parser.add_argument("--domain", default="mercubuana.ac.id")
     run_parser.add_argument("--confirm-authorized", action="store_true")
+    run_parser.add_argument("--crawl-id", default=None, help="Resume an existing Firecrawl crawl job instead of starting a new one")
     run_parser.add_argument("--limit", type=int, default=None)
     run_parser.add_argument("--poll-interval", type=float, default=None)
     run_parser.add_argument("--max-wait-seconds", type=int, default=None)
@@ -445,6 +466,7 @@ def main(argv: list[str] | None = None) -> int:
         report = discover_firecrawl(
             domain=args.domain,
             confirm_authorized=args.confirm_authorized,
+            crawl_id=args.crawl_id,
             limit=args.limit,
         )
     elif args.command == "run":

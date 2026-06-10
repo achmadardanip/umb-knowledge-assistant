@@ -107,6 +107,30 @@ def test_ocr_asr_and_video_download_are_disabled_by_default(monkeypatch):
     assert _bool("ENABLE_VIDEO_DOWNLOAD", False) is False
 
 
+def test_ocr_uses_configured_indonesian_and_english_languages(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    from PIL import Image
+
+    calls = {}
+    fake_pytesseract = types.SimpleNamespace(
+        image_to_string=lambda image, lang: calls.update(lang=lang) or "Informasi kampus"
+    )
+    monkeypatch.setitem(sys.modules, "pytesseract", fake_pytesseract)
+    monkeypatch.setattr(
+        "app.multimodal.image_ocr_extractor.get_settings",
+        lambda: SimpleNamespace(enable_ocr=True, ocr_provider="tesseract", ocr_languages="ind+eng"),
+    )
+    path = tmp_path / "poster.png"
+    Image.new("RGB", (8, 8), "white").save(path)
+
+    result = extract_image_ocr(path)
+
+    assert result.status == "ok"
+    assert result.content == "Informasi kampus"
+    assert calls["lang"] == "ind+eng"
+
+
 def test_archive_urls_are_not_indexed_unless_live_official_url_is_validated():
     from app.discovery.scope_validator import validate_url_scope
     from app.discovery.url_normalizer import archive_to_live_candidate

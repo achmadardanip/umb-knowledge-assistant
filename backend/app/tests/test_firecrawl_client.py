@@ -3,6 +3,7 @@ from __future__ import annotations
 from types import SimpleNamespace
 
 import pytest
+import requests
 
 from app.ingestion.firecrawl_client import (
     FirecrawlAPIError,
@@ -26,13 +27,16 @@ class _Response:
 
 
 class _Session:
-    def __init__(self, responses: list[_Response]):
+    def __init__(self, responses: list[_Response | Exception]):
         self.responses = responses
         self.calls: list[dict] = []
 
     def request(self, method, url, headers=None, json=None, timeout=None):
         self.calls.append({"method": method, "url": url, "headers": headers, "json": json, "timeout": timeout})
-        return self.responses.pop(0)
+        response = self.responses.pop(0)
+        if isinstance(response, Exception):
+            raise response
+        return response
 
 
 def test_requires_api_key_without_leaking_secret(monkeypatch):
@@ -123,6 +127,29 @@ def test_retries_429_and_honors_retry_after(monkeypatch):
     )
 
     assert client.map_urls("https://mercubuana.ac.id", limit=1)["success"] is True
+    assert len(session.calls) == 2
+    assert sleeps == [0.25]
+
+
+def test_retries_connection_errors(monkeypatch):
+    sleeps: list[float] = []
+    monkeypatch.setattr("app.ingestion.firecrawl_client.time.sleep", lambda seconds: sleeps.append(seconds))
+    session = _Session(
+        [
+            requests.ConnectionError("connection reset"),
+            _Response(200, {"status": "completed", "data": []}),
+        ]
+    )
+    client = FirecrawlClient(
+        api_key="fc-test-token",
+        base_url="https://api.firecrawl.dev/v2",
+        timeout_seconds=60,
+        max_retries=1,
+        retry_backoff_seconds=0.25,
+        session=session,
+    )
+
+    assert client.get_crawl_status("job-1")["status"] == "completed"
     assert len(session.calls) == 2
     assert sleeps == [0.25]
 

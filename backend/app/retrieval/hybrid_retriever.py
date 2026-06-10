@@ -41,6 +41,11 @@ KEYWORD_BOOST_TERMS = {
     "jurusan",
     "informatika",
     "komputer",
+    "lokasi",
+    "alamat",
+    "location",
+    "address",
+    "campus",
 }
 
 STOPWORDS = {
@@ -128,6 +133,11 @@ QUERY_EXPANSIONS = {
     "registration": ["pendaftaran", "daftar", "registrasi"],
     "scholarship": ["beasiswa"],
     "location": ["lokasi", "lokasi kampus"],
+    "lokasi": ["location", "lokasi kampus", "alamat kampus"],
+    "kampus": ["campus", "lokasi kampus", "alamat kampus"],
+    "campus": ["kampus", "lokasi kampus", "campus location"],
+    "alamat": ["address", "alamat kampus", "lokasi kampus"],
+    "address": ["alamat", "alamat kampus", "campus location"],
     "contact": ["kontak", "hubungi"],
     "menghubungi": ["hubungi", "kontak", "pendaftaran", "pmb"],
     "penerimaan": ["penerimaan mahasiswa baru", "pendaftaran", "pmb"],
@@ -265,6 +275,19 @@ ADMISSION_ANCHORS = (
 CONTACT_TERMS = {"contact", "kontak", "hubungi", "menghubungi"}
 CONTACT_ANCHORS = ("hubungi kami", "contact us", "whatsapp", "call center", "telepon")
 SCHOLARSHIP_TERMS = {"beasiswa", "scholarship"}
+LOCATION_TERMS = {"lokasi", "location", "kampus", "campus", "alamat", "address"}
+LOCATION_ANCHORS = (
+    "lokasi kampus",
+    "campus location",
+    "alamat kampus",
+    "kampus meruya",
+    "kampus menteng",
+    "kampus pejaten",
+    "kampus warung buncit",
+    "jl. meruya",
+    "jl. menteng",
+    "tutty alawiyah",
+)
 
 
 @dataclass
@@ -438,6 +461,15 @@ def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[
             score += 24.0
         if any(marker in host for marker in ("pendaftaran.", "pmb.")):
             score += 8.0
+    if _has_topic(terms, LOCATION_TERMS):
+        if _contains_any(lowered, LOCATION_ANCHORS):
+            score += 45.0
+        if "lokasi-kampus" in lowered:
+            score += 45.0
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, LOCATION_ANCHORS
+        ):
+            score -= 45.0
     return score
 
 
@@ -453,6 +485,8 @@ def _has_required_anchor(text: str, anchors: tuple[str, ...]) -> bool:
 def _required_anchors_for_query(terms: list[str]) -> tuple[str, ...]:
     if _has_topic(terms, TUITION_TERMS):
         return ()
+    if _has_topic(terms, LOCATION_TERMS):
+        return LOCATION_ANCHORS
     if _is_fasilkom_query(terms):
         return FASILKOM_REQUIRED_ANCHORS
     if any(term in SIA_REQUIRED_ANCHORS for term in terms):

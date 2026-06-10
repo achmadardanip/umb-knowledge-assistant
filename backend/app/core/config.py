@@ -212,6 +212,7 @@ class Settings:
 
     enable_ocr: bool = _bool("ENABLE_OCR", False)
     ocr_provider: str = os.getenv("OCR_PROVIDER", "tesseract")
+    ocr_languages: str = os.getenv("OCR_LANGUAGES", "ind+eng")
     enable_asr: bool = _bool("ENABLE_ASR", False)
     asr_provider: str = os.getenv("ASR_PROVIDER", "faster-whisper")
     asr_model_size: str = os.getenv("ASR_MODEL_SIZE", "base")

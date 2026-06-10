@@ -20,6 +20,7 @@ from app.core.config import get_settings
 from app.db.database import get_session_local
 from app.evaluation.metrics import abstention_outcome, citation_metrics, faithfulness_score
 from app.ingestion.embedder import get_embedder
+from app.rag.intent_classifier import classify_intent
 from app.retrieval.hybrid_retriever import HybridRetriever
 from app.verification.entailment import LexicalEntailmentChecker
 
@@ -122,7 +123,10 @@ def evaluate(
 
     for item in questions:
         started = time.perf_counter()
-        if strategy == "dense":
+        intent = classify_intent(item["question"]).intent
+        if intent in {"out_of_scope", "unsafe_private_data"}:
+            contexts = []
+        elif strategy == "dense":
             if reranker_enabled is None:
                 contexts = retriever.search_dense(item["question"], top_k=top_k)
             else:
@@ -177,6 +181,7 @@ def evaluate(
                 "volatility": item.get("volatility"),
                 "stakes": item.get("stakes"),
                 "question": item["question"],
+                "intent": intent,
                 "sources_found": bool(contexts),
                 "citation_count": len({context.get("url") for context in contexts if context.get("url")}),
                 "not_found": predicted_not_found,

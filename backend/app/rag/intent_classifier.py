@@ -83,6 +83,33 @@ OFFICIAL_TERMS = (
     "kampus",
     "dosen",
     "kalender",
+    "lokasi",
+    "alamat",
+    "location",
+    "address",
+    "campus",
+    "tuition",
+    "admission",
+    "faculty",
+    "lecturer",
+    "academic calendar",
+    "library",
+    "scholarship",
+    "rector",
+    "rektor",
+)
+OUT_OF_SCOPE_TERMS = (
+    "piala dunia",
+    "world cup",
+    "liga champions",
+    "champions league",
+    "premier league",
+    "nba",
+    "formula 1",
+    "harga saham",
+    "stock price",
+    "cuaca hari ini",
+    "weather today",
 )
 
 
@@ -92,6 +119,15 @@ def _clean(text: str) -> str:
 
 def _is_capability_question(text: str) -> bool:
     return any(pattern in text for pattern in CAPABILITY_PATTERNS)
+
+
+def _contains_term(text: str, term: str) -> bool:
+    escaped = re.escape(term.strip()).replace(r"\ ", r"\s+")
+    return bool(escaped and re.search(rf"(?<!\w){escaped}(?!\w)", text))
+
+
+def _contains_any_term(text: str, terms: tuple[str, ...]) -> bool:
+    return any(_contains_term(text, term) for term in terms)
 
 
 def classify_intent(question: str, recent_messages: list[dict] | None = None) -> IntentResult:
@@ -106,7 +142,7 @@ def classify_intent(question: str, recent_messages: list[dict] | None = None) ->
     if is_disallowed_request(question):
         return IntentResult("unsafe_private_data", 0.9, "Mengandung permintaan kredensial, data pribadi, atau akses tidak aman.")
 
-    if any(term in text for term in LOGIN_TERMS):
+    if _contains_any_term(text, LOGIN_TERMS):
         return IntentResult("login_help_general", 0.85, "Pertanyaan terkait login/SSO/SIA sehingga hanya panduan publik yang boleh digunakan.")
 
     if _is_capability_question(text):
@@ -124,7 +160,10 @@ def classify_intent(question: str, recent_messages: list[dict] | None = None) ->
         if not any(term in text for term in ("umb", "mercu buana")):
             return IntentResult("out_of_scope", 0.7, "Pertanyaan mengarah ke institusi di luar UMB.")
 
-    if any(term in text for term in OFFICIAL_TERMS):
+    if _contains_any_term(text, OUT_OF_SCOPE_TERMS) and not _contains_any_term(text, ("umb", "mercu buana")):
+        return IntentResult("out_of_scope", 0.85, "Topik tidak berkaitan dengan informasi publik Universitas Mercu Buana.")
+
+    if _contains_any_term(text, OFFICIAL_TERMS):
         return IntentResult("official_info_query", 0.8, "Pertanyaan membutuhkan informasi publik resmi UMB.")
 
     return IntentResult("official_info_query", 0.6, "Default aman: cari sumber resmi UMB sebelum menjawab.")

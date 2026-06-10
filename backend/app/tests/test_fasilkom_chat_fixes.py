@@ -188,3 +188,65 @@ def test_structured_fasilkom_program_followup_uses_context(db):
     assert "Teknik Informatika" in result["answer"]
     assert "Sistem Informasi" in result["answer"]
     assert result["sources"][0]["hostname"] == "fasilkom.mercubuana.ac.id"
+
+
+def test_structured_fasilkom_program_answer_extracts_current_four_programs(db):
+    _add_chunk(
+        db,
+        url="https://mercubuana.ac.id/fakultas-ilmu-komputer",
+        title="Fakultas Ilmu Komputer - Universitas Mercu Buana",
+        hostname="mercubuana.ac.id",
+        path="/fakultas-ilmu-komputer",
+        text=(
+            "Fakultas Ilmu Komputer mengelola empat program studi: "
+            "Program Studi Sarjana (S1) Reguler dan Fleksibel Informatika "
+            "(Visi: Artificial Intelligence), Sistem Informasi (Visi: Business Intelligence), "
+            "Informatika Program Belajar Jarak Jauh (PBJJ), dan Program Studi Magister (S2) "
+            "Sains Data (Visi: Sains Data)."
+        ),
+    )
+    contexts = HybridRetriever(db).search("program studi Fakultas Ilmu Komputer", top_k=5)
+
+    result = generate_answer(
+        question="Apa saja program studi di Fakultas Ilmu Komputer?",
+        contexts=contexts,
+        recent_messages=[],
+        memories=[],
+        provider_override="openrouter",
+        language="id",
+    )
+
+    assert "1. Informatika" in result["answer"]
+    assert "2. Sistem Informasi" in result["answer"]
+    assert "3. Informatika Program Belajar Jarak Jauh (PBJJ)" in result["answer"]
+    assert "4. Sains Data" in result["answer"]
+
+
+def test_structured_fasilkom_program_answer_honors_english_language(db):
+    _add_chunk(
+        db,
+        url="https://mercubuana.ac.id/fakultas-ilmu-komputer",
+        title="Faculty of Computer Science - Universitas Mercu Buana",
+        hostname="mercubuana.ac.id",
+        path="/fakultas-ilmu-komputer",
+        text=(
+            "Fakultas Ilmu Komputer mengelola empat program studi: "
+            "Reguler dan Fleksibel Informatika (Visi: Artificial Intelligence), "
+            "Sistem Informasi, Informatika Program Belajar Jarak Jauh (PBJJ), "
+            "dan Sains Data."
+        ),
+    )
+    contexts = HybridRetriever(db).search("Faculty of Computer Science degree programs", top_k=5)
+
+    result = generate_answer(
+        question="What degree programs are available at the Faculty of Computer Science?",
+        contexts=contexts,
+        recent_messages=[],
+        memories=[],
+        provider_override="openrouter",
+        language="en",
+    )
+
+    assert result["model_used"] == "structured-fasilkom-extractor"
+    assert result["answer"].startswith("According to the official source")
+    assert "4. Sains Data" in result["answer"]
