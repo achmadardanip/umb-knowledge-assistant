@@ -25,6 +25,16 @@ def test_private_url_filter_rejects_login_admin_auth_pages():
         assert decision.reason == "sensitive_or_private_path"
 
 
+def test_search_and_generated_paths_are_not_knowledge_sources():
+    for url in [
+        "https://mercubuana.ac.id/search?q=pendaftaran",
+        "https://mercubuana.ac.id/usage_events",
+    ]:
+        decision = validate_url_scope(url)
+        assert not decision.is_allowed
+        assert decision.reason == "sensitive_or_private_path"
+
+
 def test_lookalike_subdomain_is_rejected():
     decision = validate_url_scope("https://mercubuana.ac.id.evil.com/pendaftaran")
     assert not decision.is_allowed

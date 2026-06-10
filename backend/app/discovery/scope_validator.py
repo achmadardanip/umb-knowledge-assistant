@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
-from urllib.parse import unquote, urlparse
+from urllib.parse import parse_qsl, unquote, urlparse
 
 
 SENSITIVE_PATH_KEYWORDS = (
@@ -12,7 +12,6 @@ SENSITIVE_PATH_KEYWORDS = (
     "admin",
     "administrator",
     "wp-admin",
-    "profile",
     "account",
     "token",
     "password",
@@ -42,6 +41,9 @@ SENSITIVE_PATH_KEYWORDS = (
     "setlocale",
     "subscribemaillist",
     "registeruser",
+    "/cart",
+    "/checkout",
+    "/wp-login",
 )
 
 NON_KNOWLEDGE_EXTENSIONS = (
@@ -56,6 +58,21 @@ NON_KNOWLEDGE_EXTENSIONS = (
     ".eot",
     ".otf",
     ".log",
+)
+
+SENSITIVE_QUERY_KEYS = {
+    "_wpnonce",
+    "add-to-cart",
+    "remove_item",
+    "wc-ajax",
+    "yith-woocompare-add-product",
+}
+SENSITIVE_QUERY_VALUE_MARKERS = (
+    "add-product",
+    "add-to-cart",
+    "checkout",
+    "remove-item",
+    "woocompare",
 )
 
 
@@ -96,6 +113,11 @@ def validate_url_scope(url: str, root_domain: str = "mercubuana.ac.id") -> Scope
         candidate_path = f"{candidate_path}?{parsed.query}"
     if is_sensitive_path(candidate_path):
         return ScopeDecision(False, "sensitive_or_private_path")
+    query_pairs = [(key.lower(), value.lower()) for key, value in parse_qsl(parsed.query, keep_blank_values=True)]
+    if any(key in SENSITIVE_QUERY_KEYS for key, _ in query_pairs) or any(
+        marker in value for _, value in query_pairs for marker in SENSITIVE_QUERY_VALUE_MARKERS
+    ):
+        return ScopeDecision(False, "stateful_or_transactional_url")
     if is_non_knowledge_asset(candidate_path):
         return ScopeDecision(False, "non_knowledge_asset")
     return ScopeDecision(True, None)

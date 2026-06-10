@@ -1,4 +1,14 @@
-export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic" | "hermes";
+export type ProviderId =
+  | "local_ollama"
+  | "local_lmstudio"
+  | "openrouter"
+  | "openai"
+  | "gemini"
+  | "anthropic"
+  | "hermes"
+  | "groq"
+  | "puter"
+  | "huggingface";
 export type RetrievalMode = "indexed" | "web" | "hybrid";
 
 export type ProviderOption = {
@@ -22,6 +32,9 @@ export type Source = {
   url: string;
   hostname?: string;
   source_type?: string;
+  page_type?: string | null;
+  content_type?: string | null;
+  media_type?: string | null;
   relevance_score?: number;
   score?: number;
   page_number?: number | null;
@@ -45,6 +58,7 @@ export type ChatMessage = {
   model_used?: string | null;
   not_found?: boolean;
   visible_steps?: Array<string | AgentStep>;
+  follow_up_questions?: string[];
   created_at?: string;
   metadata?: Record<string, unknown> & {
     intent?: string;
@@ -82,6 +96,7 @@ export type ChatResponse = {
   memory_used: boolean;
   chat_title: string;
   visible_steps?: AgentStep[];
+  follow_up_questions?: string[];
   intent?: string;
   retrieval_mode?: RetrievalMode;
   language_detected?: string;

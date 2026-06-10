@@ -3,7 +3,17 @@ from __future__ import annotations
 import re
 
 
-API_KEY_RE = re.compile(r"\b(sk-or-v1-[A-Za-z0-9_\-]{10,}|sk-[A-Za-z0-9_\-]{10,}|[A-Za-z0-9_\-]{32,})\b")
+# The generic catch-all must look key-like: >=40 chars AND contain BOTH a digit and a
+# letter. This stops false positives on long URL slugs / concatenated titles
+# (e.g. "wisuda-umb-tegaskan-...") which have no digits, while still catching real
+# high-entropy tokens. Specific provider formats (sk-...) are matched explicitly.
+API_KEY_RE = re.compile(
+    r"\b("
+    r"sk-or-v1-[A-Za-z0-9_\-]{10,}"
+    r"|sk-[A-Za-z0-9_\-]{10,}"
+    r"|(?=[A-Za-z0-9_\-]*[0-9])(?=[A-Za-z0-9_\-]*[A-Za-z])[A-Za-z0-9_\-]{40,}"
+    r")\b"
+)
 BEARER_RE = re.compile(r"\bBearer\s+([A-Za-z0-9._\-]{10,})", re.IGNORECASE)
 PASSWORD_RE = re.compile(
     r"(?i)\b("

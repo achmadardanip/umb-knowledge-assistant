@@ -13,7 +13,8 @@ from app.multimodal.presentation_extractor import extract_pptx
 from app.multimodal.spreadsheet_extractor import extract_spreadsheet
 from app.multimodal.video_extractor import extract_video_metadata
 from app.retrieval.hybrid_retriever import HybridRetriever
-from app.db.models import Chunk, Document as DbDocument, Source
+from app.db.models import Chunk, ChunkEmbedding, Document as DbDocument, Source
+from app.ingestion import pipeline
 from app.ingestion.pipeline import upsert_source_document
 
 
@@ -94,15 +95,40 @@ def test_spreadsheet_extractor_extracts_csv_columns_and_summary(tmp_path):
     assert "Reguler" in sheets[0].content
 
 
-def test_ocr_asr_and_video_download_are_disabled_by_default(tmp_path):
-    settings = get_settings()
-    assert settings.enable_ocr is False
-    assert settings.enable_asr is False
-    assert settings.enable_video_download is False
-    image = tmp_path / "image.jpg"
-    image.write_bytes(b"jpg")
-    assert extract_image_ocr(image).status == "disabled"
-    assert extract_audio(image)[0].status == "asr_disabled"
+def test_ocr_asr_and_video_download_are_disabled_by_default(monkeypatch):
+    # Verify the code defaults (off), independent of the operator's .env, which may
+    # enable OCR/ASR for multimodal ingestion.
+    from app.core.config import _bool
+
+    for var in ("ENABLE_OCR", "ENABLE_ASR", "ENABLE_VIDEO_DOWNLOAD"):
+        monkeypatch.delenv(var, raising=False)
+    assert _bool("ENABLE_OCR", False) is False
+    assert _bool("ENABLE_ASR", False) is False
+    assert _bool("ENABLE_VIDEO_DOWNLOAD", False) is False
+
+
+def test_ocr_uses_configured_indonesian_and_english_languages(monkeypatch, tmp_path):
+    from types import SimpleNamespace
+
+    from PIL import Image
+
+    calls = {}
+    fake_pytesseract = types.SimpleNamespace(
+        image_to_string=lambda image, lang: calls.update(lang=lang) or "Informasi kampus"
+    )
+    monkeypatch.setitem(sys.modules, "pytesseract", fake_pytesseract)
+    monkeypatch.setattr(
+        "app.multimodal.image_ocr_extractor.get_settings",
+        lambda: SimpleNamespace(enable_ocr=True, ocr_provider="tesseract", ocr_languages="ind+eng"),
+    )
+    path = tmp_path / "poster.png"
+    Image.new("RGB", (8, 8), "white").save(path)
+
+    result = extract_image_ocr(path)
+
+    assert result.status == "ok"
+    assert result.content == "Informasi kampus"
+    assert calls["lang"] == "ind+eng"
 
 
 def test_archive_urls_are_not_indexed_unless_live_official_url_is_validated():
@@ -114,7 +140,7 @@ def test_archive_urls_are_not_indexed_unless_live_official_url_is_validated():
 
 
 def test_retrieval_returns_source_type_specific_metadata(db):
-    source = Source(url="https://mercubuana.ac.id/file.pdf", hostname="mercubuana.ac.id", title="PDF")
+    source = Source(url="https://mercubuana.ac.id/file.pdf", hostname="mercubuana.ac.id", title="PDF", status="indexed")
     db.add(source)
     db.flush()
     doc = DbDocument(source_id=source.id, raw_text="biaya pendaftaran", cleaned_text="biaya pendaftaran")
@@ -164,6 +190,69 @@ def test_subdomain_chunk_metadata_preserves_hostname_path_and_retrieves(db):
     assert contexts[0]["hostname"] == "pmb.mercubuana.ac.id"
 
 
+def test_html_ingestion_stores_local_embedding_in_sidecar(db, monkeypatch):
+    class _LocalEmbedder:
+        storage = "sidecar"
+        provider_name = "local_e5"
+        model = "intfloat/multilingual-e5-small"
+        dimension = 384
+        profile = "local-e5-small-v1"
+        version = "1"
+
+        def embed_texts(self, texts):
+            return [[1.0] + [0.0] * 383 for _ in texts]
+
+    monkeypatch.setattr(pipeline, "get_embedder", lambda: _LocalEmbedder())
+    text = " ".join(["informasi", "pendaftaran", "mahasiswa", "baru"] * 12)
+
+    upsert_source_document(
+        db,
+        "https://pmb.mercubuana.ac.id/local-embedding",
+        text,
+        "PMB UMB",
+        {},
+        200,
+        discovery_source="katana",
+    )
+    db.commit()
+
+    chunk = db.query(Chunk).one()
+    sidecar = db.query(ChunkEmbedding).one()
+    assert chunk.embedding is None
+    assert sidecar.chunk_id == chunk.id
+    assert sidecar.profile == "local-e5-small-v1"
+
+
+def test_html_ingestion_falls_back_to_keyword_only_when_sidecar_migration_is_missing(db, monkeypatch):
+    class _LocalEmbedder:
+        storage = "sidecar"
+        provider_name = "local_e5"
+        model = "intfloat/multilingual-e5-small"
+        dimension = 384
+        profile = "local-e5-small-v1"
+        version = "1"
+
+        def embed_texts(self, texts):
+            return [[1.0] + [0.0] * 383 for _ in texts]
+
+    ChunkEmbedding.__table__.drop(db.get_bind())
+    monkeypatch.setattr(pipeline, "get_embedder", lambda: _LocalEmbedder())
+
+    created = upsert_source_document(
+        db,
+        "https://pmb.mercubuana.ac.id/no-sidecar",
+        " ".join(["informasi", "pendaftaran", "mahasiswa", "baru"] * 12),
+        "PMB UMB",
+        {},
+        200,
+        discovery_source="katana",
+    )
+    db.commit()
+
+    assert created == 1
+    assert db.query(Chunk).one().embedding is None
+
+
 def test_retrieval_expands_daftar_query_to_pendaftaran_subdomain(db):
     upsert_source_document(
         db,
@@ -191,7 +280,7 @@ def test_retrieval_expands_daftar_query_to_pendaftaran_subdomain(db):
     )
     db.commit()
 
-    contexts = HybridRetriever(db).search("Bagaimana cara daftar mahasiswa baru?", top_k=1)
+    contexts = HybridRetriever(db, dense_enabled=False).search("Bagaimana cara daftar mahasiswa baru?", top_k=1)
 
     assert contexts[0]["url"] == "https://pendaftaran.mercubuana.ac.id/"
     assert contexts[0]["hostname"] == "pendaftaran.mercubuana.ac.id"

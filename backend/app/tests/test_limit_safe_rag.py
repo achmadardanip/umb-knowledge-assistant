@@ -4,7 +4,7 @@ from app.db.models import Chunk, Document, Source
 from app.llm.base import LLMResponse
 from app.llm.provider_factory import get_provider
 from app.rag.answer_cache import build_cache_key, get_cached_answer, store_cached_answer
-from app.rag.answer_generator import generate_answer
+from app.rag.answer_generator import extractive_fallback_payload, generate_answer
 from app.retrieval.hybrid_retriever import HybridRetriever
 
 
@@ -165,6 +165,68 @@ def test_answer_cache_hit_avoids_provider_call(db, monkeypatch):
     assert result["intent"] == "official_info_query"
 
 
+def test_answer_cache_key_is_versioned():
+    key = build_cache_key(
+        question="Apa saja program studi Fasilkom?",
+        intent="official_info_query",
+        provider_used="gemini",
+        model_used="gemini-test",
+        contexts=[],
+        memory_enabled=False,
+    )
+
+    assert len(key) == 64
+
+
+def test_extractive_fallback_honors_english_language():
+    result = extractive_fallback_payload(
+        contexts=[
+            {
+                "chunk_id": "location",
+                "url": "https://pendaftaran.mercubuana.ac.id/en/lokasi-kampus-umb",
+                "hostname": "pendaftaran.mercubuana.ac.id",
+                "title": "Campus Locations",
+                "chunk_text": "Kampus Meruya is located in West Jakarta.",
+            }
+        ],
+        language="en",
+        reason="provider_answer_missing_valid_citations",
+    )
+
+    assert result["answer"].startswith("I could not verify a complete answer")
+
+
+def test_structured_location_answer_uses_official_context():
+    contexts = [
+        {
+            "chunk_id": "location",
+            "source_id": "source-location",
+            "url": "https://pendaftaran.mercubuana.ac.id/en/lokasi-kampus-umb",
+            "hostname": "pendaftaran.mercubuana.ac.id",
+            "title": "Lokasi Kampus - Universitas Mercu Buana",
+            "chunk_text": (
+                "Lokasi Kampus "
+                "Kampus Meruya Default Title Jl. Raya Meruya Selatan, Jakarta Barat 11650 "
+                "Kampus Menteng Default Title Jl. Menteng Raya No.29, Jakarta Pusat 10340 "
+                "Kampus Pejaten Default Title Jl. Hj. Tutty Alawiyah No.98, Jakarta Selatan 12510"
+            ),
+            "score": 1.0,
+        }
+    ]
+
+    result = generate_answer(
+        question="Where are the Mercu Buana campus locations?",
+        contexts=contexts,
+        language="en",
+    )
+
+    assert result["model_used"] == "structured-campus-location-extractor"
+    assert "Kampus Meruya" in result["answer"]
+    assert "Kampus Menteng" in result["answer"]
+    assert "Kampus Pejaten" in result["answer"]
+    assert result["sources"][0]["hostname"] == "pendaftaran.mercubuana.ac.id"
+
+
 def test_hybrid_library_query_uses_indexed_library_context(db, monkeypatch):
     _add_library_chunk(db)
     _patch_answer_generation(monkeypatch)
@@ -300,7 +362,7 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
 
     assert result["not_found"] is False
     assert result["sources"][0]["hostname"] == "lib.mercubuana.ac.id"
-    assert "Ringkasan berbasis kutipan teratas" in result["answer"]
+    assert "kutipan paling relevan" in result["answer"]
     assert "[1]" in result["answer"]
 
 

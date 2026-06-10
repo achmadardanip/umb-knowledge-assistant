@@ -2,12 +2,16 @@ from __future__ import annotations
 
 import logging
 from dataclasses import dataclass
+from datetime import datetime, timezone
 from typing import Callable, Literal
 
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.ingestion.umb_content import canonicalize_umb_url
 from app.retrieval.hybrid_retriever import HybridRetriever
+from app.retrieval.reranker import model_rerank_contexts
+from app.trust.va_jit import va_jit_reverify
 from app.web_search.live_retriever import UMBLiveWebRetriever
 
 try:
@@ -35,8 +39,13 @@ def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
     seen: set[tuple] = set()
     deduped: list[dict] = []
     for context in contexts:
+        raw_url = context.get("url")
+        try:
+            canonical_url = canonicalize_umb_url(raw_url) if raw_url else raw_url
+        except (TypeError, ValueError):
+            canonical_url = raw_url
         key = (
-            context.get("url"),
+            canonical_url,
             context.get("page_number"),
             context.get("slide_number"),
             context.get("sheet_name"),
@@ -48,6 +57,8 @@ def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
         if key in seen:
             continue
         seen.add(key)
+        if canonical_url and canonical_url != raw_url:
+            context = {**context, "url": canonical_url}
         deduped.append(context)
     return deduped
 
@@ -66,6 +77,53 @@ def _build_langchain_tools(indexed_tool, web_tool, citation_tool) -> list:
         Tool.from_function(web_tool, name="umb_live_web_search", description="Search and fetch live official UMB pages."),
         Tool.from_function(citation_tool, name="citation_validator", description="Validate that citations point to retrieved UMB sources."),
     ]
+
+
+def _va_jit_enabled() -> bool:
+    return get_settings().va_jit_enabled
+
+
+def _maybe_va_jit(query: str, contexts: list[dict], live_retriever, emit_step) -> list[dict]:
+    """Trigger a bounded live re-verification for volatile, stale facts (VA-JIT).
+
+    Fresh re-fetched contexts (freshness=1.0) are surfaced above the stale
+    indexed evidence; CGCV downstream then re-verifies claims against them — the
+    conformal buy-back, realized by sequencing on the shared context set.
+    """
+    settings = get_settings()
+    today = datetime.now(timezone.utc).date().isoformat()
+
+    def fetcher(reverify_query: str, *, budget: int) -> list[dict]:
+        try:
+            fresh = live_retriever.search(reverify_query, top_k=budget)
+        except Exception:
+            return []
+        for context in fresh:
+            context["freshness"] = 1.0
+            context["last_verified"] = today
+        return fresh
+
+    fresh = va_jit_reverify(
+        query,
+        contexts,
+        fetcher=fetcher,
+        budget=settings.va_jit_budget,
+        volatility_threshold=settings.va_jit_volatility_threshold,
+        freshness_threshold=settings.va_jit_freshness_threshold,
+    )
+    if not fresh:
+        return contexts
+    top_score = max((float(context.get("score") or 0.0) for context in contexts), default=0.0)
+    for context in fresh:
+        context["score"] = top_score + 1.0
+    emit_step(
+        "va_jit",
+        "Verifikasi langsung fakta dinamis",
+        "done",
+        f"{len(fresh)} sumber resmi diverifikasi ulang secara live",
+        {"va_jit_count": len(fresh)},
+    )
+    return _dedupe_contexts(fresh + contexts)
 
 
 def run_umb_agent(
@@ -96,7 +154,15 @@ def run_umb_agent(
 
     def indexed_tool(tool_query: str) -> str:
         nonlocal indexed_contexts
-        indexed_contexts = indexed_retriever.search(tool_query, top_k=top_k)
+        if settings.reranker_enabled:
+            indexed_contexts = indexed_retriever.search(
+                tool_query,
+                top_k=top_k,
+                apply_model_reranker=False,
+                candidate_k=settings.reranker_candidate_k,
+            )
+        else:
+            indexed_contexts = indexed_retriever.search(tool_query, top_k=top_k)
         return f"{len(indexed_contexts)} indexed contexts"
 
     def web_tool(tool_query: str) -> str:
@@ -201,8 +267,55 @@ def run_umb_agent(
             {"indexed_context_count": len(indexed_contexts), "web_context_count": len(web_contexts)},
         )
 
+    graph_settings = get_settings()
+    if graph_settings.graph_rag_enabled and retrieval_mode != "web" and contexts:
+        try:
+            from app.graph.graph_store import expansion_contexts, load_graph
+
+            graph = load_graph(graph_settings.graph_path)
+            if graph is not None:
+                exclude_ids = {c.get("chunk_id") for c in contexts if c.get("chunk_id")}
+                graph_ctx = expansion_contexts(
+                    db,
+                    query,
+                    graph,
+                    root_domain=root_domain,
+                    limit=graph_settings.graph_expansion_top_k,
+                    exclude_chunk_ids=exclude_ids,
+                )
+                if graph_ctx:
+                    contexts = contexts + graph_ctx
+                    emit_step(
+                        "graph_rag",
+                        "Memperluas konteks via knowledge graph",
+                        "done",
+                        f"{len(graph_ctx)} konteks tambahan dari relasi entitas",
+                        {"graph_context_count": len(graph_ctx)},
+                    )
+        except Exception as exc:  # graph is best-effort; never break retrieval
+            logging.getLogger(__name__).warning("GraphRAG expansion skipped: %s", exc)
+
     contexts = _dedupe_contexts(contexts)
-    contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
+    if _va_jit_enabled() and contexts:
+        contexts = _maybe_va_jit(query, contexts, live_retriever, emit_step)
+    if settings.reranker_enabled and contexts:
+        emit_step(
+            "model_reranker",
+            "Mengurutkan ulang kandidat multilingual",
+            "running",
+            f"Maksimal {settings.reranker_candidate_k} kandidat",
+        )
+        contexts = model_rerank_contexts(query, contexts, root_domain=root_domain)
+        reranker_used = any(context.get("reranker_used") for context in contexts)
+        emit_step(
+            "model_reranker",
+            "Mengurutkan ulang kandidat multilingual",
+            "done" if reranker_used else "skipped",
+            "BGE reranker diterapkan" if reranker_used else "Ranking baseline dipertahankan",
+            {"reranker_used": reranker_used, "reranker_model": settings.reranker_model},
+        )
+    else:
+        contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
     contexts = contexts[:top_k]
     emit_step(
         "agent",

@@ -10,6 +10,9 @@ from sqlalchemy.orm import Session
 from app.db.models import RAGAnswerCache, utcnow
 
 
+ANSWER_CACHE_KEY_VERSION = "v5-local-rag"
+
+
 def normalize_question(question: str) -> str:
     return re.sub(r"\s+", " ", (question or "").strip().lower())
 
@@ -27,25 +30,18 @@ def build_cache_key(
     contexts: list[dict],
     memory_enabled: bool,
 ) -> str:
-    context_ids = [
-        {
-            "chunk_id": context.get("chunk_id"),
-            "url": context.get("url"),
-            "page_number": context.get("page_number"),
-            "slide_number": context.get("slide_number"),
-            "sheet_name": context.get("sheet_name"),
-            "row_range": context.get("row_range"),
-            "timestamp_start": context.get("timestamp_start"),
-            "timestamp_end": context.get("timestamp_end"),
-        }
-        for context in contexts
-    ]
+    # Intentionally NOT keyed on retrieved contexts: while the live crawl mutates
+    # the index, context ids shift between identical questions and the cache would
+    # never hit. Keying on the normalized question + provider/model gives reliable
+    # hits for repeated questions (bounded by the TTL); volatile facts are handled
+    # separately by the freshness/VA-JIT path, not by cache invalidation.
+    _ = contexts  # kept in the signature for caller compatibility
     payload = {
+        "cache_version": ANSWER_CACHE_KEY_VERSION,
         "question_hash": question_hash(question),
         "intent": intent,
         "provider": provider_used,
         "model": model_used,
-        "contexts": context_ids,
         "memory_enabled": bool(memory_enabled),
     }
     canonical = json.dumps(payload, ensure_ascii=False, sort_keys=True, separators=(",", ":"))
@@ -93,4 +89,3 @@ def store_cached_answer(
     row.created_at = now
     row.expires_at = now + timedelta(seconds=max(ttl_seconds, 60))
     db.flush()
-

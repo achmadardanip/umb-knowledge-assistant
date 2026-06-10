@@ -12,6 +12,8 @@ from app.crawler.extractor import extract_html_document
 from app.discovery.scope_validator import validate_url_scope
 from app.discovery.url_normalizer import is_archive_url, normalize_url
 from app.ingestion.chunker import chunk_text
+from app.ingestion.firecrawl_client import FirecrawlClient, documents_from_payload
+from app.ingestion.umb_content import classify_umb_url, clean_umb_content
 from app.multimodal.document_extractor import extract_document
 from app.multimodal.pdf_extractor import extract_pdf
 from app.multimodal.presentation_extractor import extract_pptx
@@ -88,6 +90,9 @@ def _contexts_from_text(
                 "hostname": base["hostname"],
                 "discovery_source": "live_web_search",
                 "source_type": source_type,
+                "page_type": base.get("page_type"),
+                "content_type": base.get("content_type"),
+                "media_type": base.get("media_type"),
                 "page_number": chunk.page_number,
                 "slide_number": chunk.slide_number,
                 "sheet_name": chunk.sheet_name,
@@ -232,3 +237,46 @@ def fetch_live_contexts(url: str, *, title: str | None = None, score: float = 0.
             temp_path.unlink(missing_ok=True)
         except Exception:
             pass
+
+
+def fetch_firecrawl_contexts(url: str, *, title: str | None = None, score: float = 0.5) -> list[dict]:
+    """Extract an official live result through local Firecrawl before generation."""
+
+    normalized = normalize_url(url)
+    settings = get_settings()
+    if is_archive_url(normalized) or not validate_url_scope(normalized, settings.web_search_strict_domain).is_allowed:
+        return []
+    payload = FirecrawlClient().parse(
+        normalized,
+        zero_data_retention=settings.firecrawl_zero_data_retention,
+    )
+    contexts: list[dict] = []
+    for document in documents_from_payload(payload):
+        cleaned = clean_umb_content(document.markdown)
+        if not cleaned:
+            continue
+        classification = classify_umb_url(
+            document.url,
+            title=document.title or title,
+            content_type=str((document.metadata or {}).get("contentType") or ""),
+        )
+        contexts.extend(
+            _contexts_from_text(
+                text=cleaned,
+                url=normalize_url(document.url),
+                title=document.title or title,
+                source_type=document.source_type,
+                method="firecrawl_live_parse",
+                confidence=0.95,
+                score=score,
+                metadata={
+                    "discovery_source": "tavily_firecrawl_live",
+                    "links": document.links,
+                    "images": document.images,
+                    "page_type": classification.page_type,
+                    "content_type": classification.content_type,
+                    "media_type": classification.media_type,
+                },
+            )
+        )
+    return contexts

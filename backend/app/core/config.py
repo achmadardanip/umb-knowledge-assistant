@@ -10,16 +10,26 @@ try:
     from dotenv import dotenv_values, load_dotenv
 
     for env_file in (Path.cwd() / ".env", Path.cwd().parent / ".env"):
-        load_dotenv(env_file, override=True)
+        load_dotenv(env_file, override=False)
         if env_file.exists():
             for key, value in dotenv_values(env_file, encoding="utf-8-sig").items():
                 if key and value is not None:
-                    os.environ[key.lstrip("\ufeff")] = value
+                    os.environ.setdefault(key.lstrip("\ufeff"), value)
 except Exception:
     pass
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes"]
+ProviderName = Literal[
+    "local_ollama",
+    "local_lmstudio",
+    "openrouter",
+    "openai",
+    "gemini",
+    "anthropic",
+    "hermes",
+    "groq",
+    "huggingface",
+]
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -44,9 +54,21 @@ def _float(name: str, default: float) -> float:
 
 
 def _provider(value: str | None) -> ProviderName:
-    normalized = (value or "openrouter").strip().lower()
-    if normalized not in {"openrouter", "openai", "gemini", "anthropic", "hermes"}:
-        return "openrouter"
+    normalized = (value or "local_ollama").strip().lower()
+    aliases = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio"}
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in {
+        "local_ollama",
+        "local_lmstudio",
+        "openrouter",
+        "openai",
+        "gemini",
+        "anthropic",
+        "hermes",
+        "groq",
+        "huggingface",
+    }:
+        return "local_ollama"
     return normalized  # type: ignore[return-value]
 
 
@@ -56,7 +78,17 @@ class Settings:
     local_sqlite_fallback_enabled: bool = _bool("LOCAL_SQLITE_FALLBACK_ENABLED", True)
     local_sqlite_path: str = os.getenv("LOCAL_SQLITE_PATH", "local-dev.db")
 
-    ai_provider: ProviderName = _provider(os.getenv("AI_PROVIDER"))
+    ai_provider: ProviderName = _provider(os.getenv("ANSWER_PROVIDER") or os.getenv("AI_PROVIDER"))
+    answer_enable_fallback: bool = _bool("ANSWER_ENABLE_FALLBACK", True)
+    answer_fallback_provider: str = os.getenv("ANSWER_FALLBACK_PROVIDER", "puter").strip().lower()
+    local_llm_base_url: str = os.getenv("LOCAL_LLM_BASE_URL", "http://localhost:11434").rstrip("/")
+    local_llm_model: str = os.getenv("LOCAL_LLM_MODEL", "qwen2.5:7b-instruct").strip()
+    local_llm_temperature: float = _float("LOCAL_LLM_TEMPERATURE", 0.2)
+    local_llm_max_tokens: int = _int("LOCAL_LLM_MAX_TOKENS", 800)
+    local_llm_timeout_seconds: int = _int("LOCAL_LLM_TIMEOUT_SECONDS", 180)
+    lmstudio_base_url: str = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1").rstrip("/")
+    lmstudio_model: str = os.getenv("LMSTUDIO_MODEL", "local-model").strip()
+    lmstudio_api_key: str = os.getenv("LMSTUDIO_API_KEY", "lm-studio").strip()
 
     openrouter_api_key: str | None = os.getenv("OPENROUTER_API_KEY")
     openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
@@ -77,8 +109,22 @@ class Settings:
     hermes_api_key: str | None = os.getenv("HERMES_API_KEY")
     hermes_model: str = os.getenv("HERMES_MODEL", "hermes-agent")
 
-    embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "openai").strip().lower()
+    groq_api_key: str | None = os.getenv("GROQ_API_KEY")
+    groq_base_url: str = os.getenv("GROQ_BASE_URL", "https://api.groq.com/openai/v1")
+    groq_model: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
+    # Hugging Face Inference router (OpenAI-compatible) — free serverless fallback.
+    huggingface_api_key: str | None = os.getenv("HF_TOKEN") or os.getenv("HUGGINGFACE_API_KEY")
+    huggingface_base_url: str = os.getenv("HUGGINGFACE_BASE_URL", "https://router.huggingface.co/v1")
+    huggingface_model: str = os.getenv("HF_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
+
+    embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "local_e5").strip().lower()
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
+    embedding_profile: str = os.getenv("EMBEDDING_PROFILE", "local-e5-small-v1").strip()
+    embedding_version: str = os.getenv("EMBEDDING_VERSION", "1").strip()
+    local_embedding_model: str = os.getenv("LOCAL_EMBEDDING_MODEL", "intfloat/multilingual-e5-small").strip()
+    local_embedding_dimension: int = _int("LOCAL_EMBEDDING_DIMENSION", 384)
+    local_embedding_batch_size: int = _int("LOCAL_EMBEDDING_BATCH_SIZE", 32)
+    local_embedding_device: str = os.getenv("LOCAL_EMBEDDING_DEVICE", "auto").strip().lower()
 
     discovery_enabled: bool = _bool("DISCOVERY_ENABLED", True)
     discovery_domain: str = os.getenv("DISCOVERY_DOMAIN", "mercubuana.ac.id")
@@ -115,7 +161,44 @@ class Settings:
     llm_max_retries: int = _int("LLM_MAX_RETRIES", 2)
     llm_retry_backoff_seconds: float = _float("LLM_RETRY_BACKOFF_SECONDS", 2.0)
     llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", True)
-    llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "openai")
+    llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "gemini,openai")
+
+    # Corroboration-Gated Claim Verification (CGCV). Off by default until the
+    # evaluation harness can measure its faithfulness/abstention impact; the
+    # conformal layer (C²GV) will later set the threshold from a calibration set.
+    cgcv_enabled: bool = _bool("CGCV_ENABLED", True)
+    # 'lexical' = free offline entailment (no LLM call); 'llm' = provider judge.
+    cgcv_entailment_mode: str = os.getenv("CGCV_ENTAILMENT_MODE", "lexical").strip().lower()
+    cgcv_entailment_threshold: float = _float("CGCV_ENTAILMENT_THRESHOLD", 0.5)
+    cgcv_min_supported_claims: int = _int("CGCV_MIN_SUPPORTED_CLAIMS", 1)
+
+    # Safety floor (OWASP LLM10 / LLM01).
+    rate_limit_enabled: bool = _bool("RATE_LIMIT_ENABLED", True)
+    rate_limit_max_requests: int = _int("RATE_LIMIT_MAX_REQUESTS", 30)
+    rate_limit_window_seconds: int = _int("RATE_LIMIT_WINDOW_SECONDS", 60)
+    max_question_chars: int = _int("MAX_QUESTION_CHARS", 4000)
+
+    # Trust-Aware Hybrid Fusion priors: S(d) = rel(d) + alpha*authority + beta*freshness.
+    tahf_authority_weight: float = _float("TAHF_AUTHORITY_WEIGHT", 1.0)
+    tahf_freshness_weight: float = _float("TAHF_FRESHNESS_WEIGHT", 0.5)
+    # Dense semantic retrieval. Off until chunk embeddings are backfilled.
+    dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
+    # Optional local multilingual cross-encoder, gated by offline ranking/latency evaluation.
+    reranker_enabled: bool = _bool("RERANKER_ENABLED", False)
+    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_bge").strip().lower()
+    reranker_model: str = os.getenv("RERANKER_MODEL", "BAAI/bge-reranker-v2-m3").strip()
+    reranker_device: str = os.getenv("RERANKER_DEVICE", "auto").strip().lower()
+    reranker_candidate_k: int = _int("RERANKER_CANDIDATE_K", 20)
+    reranker_batch_size: int = _int("RERANKER_BATCH_SIZE", 4)
+    reranker_max_length: int = _int("RERANKER_MAX_LENGTH", 512)
+    reranker_model_weight: float = _float("RERANKER_MODEL_WEIGHT", 0.8)
+    reranker_prewarm_enabled: bool = _bool("RERANKER_PREWARM_ENABLED", True)
+
+    # Volatility-Aware Just-in-Time verification. Off (needs live web + cost budget).
+    va_jit_enabled: bool = _bool("VA_JIT_ENABLED", False)
+    va_jit_budget: int = _int("VA_JIT_BUDGET", 2)
+    va_jit_volatility_threshold: float = _float("VA_JIT_VOLATILITY_THRESHOLD", 0.7)
+    va_jit_freshness_threshold: float = _float("VA_JIT_FRESHNESS_THRESHOLD", 0.5)
 
     web_search_enabled: bool = _bool("WEB_SEARCH_ENABLED", False)
     web_search_provider: str = os.getenv("WEB_SEARCH_PROVIDER", "tavily").strip().lower()
@@ -124,6 +207,29 @@ class Settings:
     web_search_timeout_seconds: int = _int("WEB_SEARCH_TIMEOUT_SECONDS", 10)
     web_search_strict_domain: str = os.getenv("WEB_SEARCH_STRICT_DOMAIN", "mercubuana.ac.id")
     web_search_cache_answers: bool = _bool("WEB_SEARCH_CACHE_ANSWERS", False)
+    # Persist live web-derived answer contexts into the KB so similar future
+    # questions are served from the indexed KB (no second web round-trip / LLM call).
+    web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
+
+    firecrawl_api_key: str | None = os.getenv("FIRECRAWL_API_KEY")
+    firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "http://localhost:3002").rstrip("/")
+    firecrawl_self_hosted: bool = _bool("FIRECRAWL_SELF_HOSTED", True)
+    firecrawl_default_limit: int = _int("FIRECRAWL_DEFAULT_LIMIT", 500)
+    firecrawl_timeout_seconds: int = _int("FIRECRAWL_TIMEOUT_SECONDS", 60)
+    firecrawl_max_retries: int = _int("FIRECRAWL_MAX_RETRIES", 3)
+    firecrawl_retry_backoff_seconds: float = _float("FIRECRAWL_RETRY_BACKOFF_SECONDS", 2.0)
+    firecrawl_delay_seconds: float = _float("FIRECRAWL_DELAY_SECONDS", 1.0)
+    firecrawl_max_concurrency: int = _int("FIRECRAWL_MAX_CONCURRENCY", 2)
+    firecrawl_max_related_links_per_page: int = _int("FIRECRAWL_MAX_RELATED_LINKS_PER_PAGE", 500)
+    firecrawl_poll_interval_seconds: float = _float("FIRECRAWL_POLL_INTERVAL_SECONDS", 10.0)
+    firecrawl_max_wait_seconds: int = _int("FIRECRAWL_MAX_WAIT_SECONDS", 1800)
+    firecrawl_zero_data_retention: bool = _bool("FIRECRAWL_ZERO_DATA_RETENTION", True)
+
+    # GraphRAG: entity co-occurrence graph over indexed chunks, used to expand
+    # retrieval along entity relations (multi-hop). Built offline to JSON.
+    graph_rag_enabled: bool = _bool("GRAPH_RAG_ENABLED", True)
+    graph_path: str = os.getenv("GRAPH_PATH", "data/graph/umb_graph.json")
+    graph_expansion_top_k: int = _int("GRAPH_EXPANSION_TOP_K", 3)
 
     agent_mode_enabled: bool = _bool("AGENT_MODE_ENABLED", True)
     agent_max_tool_iterations: int = _int("AGENT_MAX_TOOL_ITERATIONS", 3)
@@ -140,6 +246,11 @@ class Settings:
 
     enable_ocr: bool = _bool("ENABLE_OCR", False)
     ocr_provider: str = os.getenv("OCR_PROVIDER", "tesseract")
+    ocr_languages: str = os.getenv("OCR_LANGUAGES", "ind+eng")
+    multimodal_embedding_provider: str = os.getenv("MULTIMODAL_EMBEDDING_PROVIDER", "disabled").strip().lower()
+    jina_embedding_model: str = os.getenv("JINA_EMBEDDING_MODEL", "jinaai/jina-embeddings-v4").strip()
+    vision_provider: str = os.getenv("VISION_PROVIDER", "disabled").strip().lower()
+    qwen_vl_model: str = os.getenv("QWEN_VL_MODEL", "Qwen/Qwen2.5-VL-3B-Instruct").strip()
     enable_asr: bool = _bool("ENABLE_ASR", False)
     asr_provider: str = os.getenv("ASR_PROVIDER", "faster-whisper")
     asr_model_size: str = os.getenv("ASR_MODEL_SIZE", "base")

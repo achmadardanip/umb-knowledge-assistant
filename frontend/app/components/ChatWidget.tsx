@@ -13,7 +13,7 @@ import {
   setRetrievalMode,
   setSelectedProvider
 } from "../lib/localStorage";
-import type { ChatMessage, ChatSession, ProviderId, ProviderOption, RetrievalMode } from "../lib/types";
+import type { ChatMessage, ChatResponse, ChatSession, ProviderId, ProviderOption, RetrievalMode } from "../lib/types";
 import { useChatMessages } from "../hooks/useChatMessages";
 import { useChatSessions } from "../hooks/useChatSessions";
 import { ChatInput } from "./ChatInput";
@@ -24,10 +24,45 @@ import { MessageBubble } from "./MessageBubble";
 import { RenameChatDialog } from "./RenameChatDialog";
 import { ThinkingSteps } from "./ThinkingSteps";
 
+declare global {
+  interface Window {
+    puter?: { ai?: { chat?: (messages: unknown, opts?: unknown) => Promise<unknown> } };
+  }
+}
+
 const MIN_PROGRESS_MS = 1200;
+// Puter.js model (keyless, free in-browser). Override with NEXT_PUBLIC_PUTER_MODEL.
+const PUTER_MODEL = process.env.NEXT_PUBLIC_PUTER_MODEL || "gpt-5.5";
 
 function wait(ms: number) {
   return new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+function textFromUnknown(value: unknown): string {
+  if (typeof value === "string") return value;
+  if (value == null) return "";
+  if (Array.isArray(value)) return value.map(textFromUnknown).filter(Boolean).join("\n");
+  if (typeof value === "object") {
+    const record = value as Record<string, unknown>;
+    const candidates = [
+      record.answer,
+      record.content,
+      record.text,
+      (record.message as Record<string, unknown> | undefined)?.content,
+      ((record.choices as Array<Record<string, unknown>> | undefined)?.[0]?.message as Record<string, unknown> | undefined)
+        ?.content
+    ];
+    for (const candidate of candidates) {
+      const text = textFromUnknown(candidate);
+      if (text.trim()) return text;
+    }
+    try {
+      return JSON.stringify(value);
+    } catch {
+      return "";
+    }
+  }
+  return String(value);
 }
 
 function mergeStep(current: NonNullable<ChatMessage["visible_steps"]>, incoming: string | NonNullable<ChatMessage["visible_steps"]>[number]) {
@@ -44,7 +79,7 @@ function mergeStep(current: NonNullable<ChatMessage["visible_steps"]>, incoming:
 export function ChatWidget() {
   const [anonymousId, setAnonymousId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("openrouter");
+  const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("local_ollama");
   const [providerOptions, setProviderOptions] = useState<ProviderOption[]>([]);
   const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("hybrid");
   const [memoryEnabledState, setMemoryEnabledState] = useState(true);
@@ -123,6 +158,22 @@ export function ChatWidget() {
     return created.session_id;
   }
 
+  async function runPuterChat(payload: Parameters<typeof api.chatPrepare>[0]): Promise<ChatResponse> {
+    const prep = await api.chatPrepare(payload);
+    if (prep.mode === "final" || !prep.prepare_id || !prep.messages) {
+      return prep as ChatResponse; // terminal: clarify / blocked / cache / not_found
+    }
+    (prep.visible_steps || []).forEach((step) => setSteps((current) => mergeStep(current, step)));
+    let text = "";
+    try {
+      const resp = (await window.puter!.ai!.chat!(prep.messages, { model: PUTER_MODEL })) as any;
+      text = textFromUnknown(resp);
+    } catch {
+      throw new Error("Puter.js gagal menghasilkan jawaban di browser. Pilih provider lain atau coba lagi.");
+    }
+    return api.chatFinalize({ prepare_id: prep.prepare_id, answer: text, model_used: PUTER_MODEL });
+  }
+
   async function send(question: string, regenerateFromMessageId?: string | null) {
     if (!anonymousId) return;
     setError(null);
@@ -133,24 +184,46 @@ export function ChatWidget() {
     setMessages((current) => [...current, optimisticUser]);
     try {
       const sessionId = await ensureSession();
-      const result = await api.chatStream(
-        {
-          session_id: sessionId,
-          anonymous_session_id: anonymousId,
-          question,
-          top_k: 5,
-          provider_override: selectedProviderState,
-          memory_enabled: memoryEnabledState,
-          regenerate_from_message_id: regenerateFromMessageId || null,
-          retrieval_mode: retrievalModeState
-        },
-        {
-          onStep: (step) => {
-            setSteps((current) => mergeStep(current, step));
-          },
-          onError: (message) => setError(message)
+      // "puter" is a browser-side provider; the backend never sees it as a provider_override.
+      const usePuter =
+        selectedProviderState === "puter" && typeof window !== "undefined" && Boolean(window.puter?.ai?.chat);
+      const requestPayload = {
+        session_id: sessionId,
+        anonymous_session_id: anonymousId,
+        question,
+        top_k: 5,
+        provider_override: selectedProviderState === "puter" ? null : selectedProviderState,
+        memory_enabled: memoryEnabledState,
+        regenerate_from_message_id: regenerateFromMessageId || null,
+        retrieval_mode: retrievalModeState
+      };
+      let result: ChatResponse;
+      if (usePuter) {
+        result = await runPuterChat(requestPayload);
+      } else {
+        try {
+          result = await api.chatStream(requestPayload, {
+            onStep: (step) => {
+              setSteps((current) => mergeStep(current, step));
+            },
+            onError: (message) => setError(message)
+          });
+        } catch (providerError) {
+          const canUsePuterFallback =
+            selectedProviderState !== "puter" &&
+            typeof window !== "undefined" &&
+            Boolean(window.puter?.ai?.chat);
+          if (!canUsePuterFallback) throw providerError;
+          setSteps((current) =>
+            mergeStep(current, {
+              id: "puter_fallback",
+              label: "Mencoba fallback browser Puter",
+              status: "running"
+            })
+          );
+          result = await runPuterChat({ ...requestPayload, provider_override: null });
         }
-      );
+      }
       const elapsed = Date.now() - startedAt;
       if (elapsed < MIN_PROGRESS_MS) {
         await wait(MIN_PROGRESS_MS - elapsed);
@@ -158,13 +231,14 @@ export function ChatWidget() {
       const assistant: ChatMessage = {
         id: result.message_id,
         role: "assistant",
-        content: result.answer,
+        content: textFromUnknown((result as unknown as Record<string, unknown>).answer),
         sources: result.sources,
         confidence: result.confidence,
         provider_used: result.provider_used,
         model_used: result.model_used,
         not_found: result.not_found,
         visible_steps: result.visible_steps || [],
+        follow_up_questions: result.follow_up_questions || [],
         metadata: {
           memory_used: result.memory_used,
           intent: result.intent,
@@ -268,6 +342,24 @@ export function ChatWidget() {
                 return <MessageBubble key={message.id} message={message} onRegenerate={message.role === "assistant" && previousUser ? () => send(previousUser.content, message.id) : undefined} />;
               })
             )}
+            {!sending &&
+            messages.length > 0 &&
+            messages[messages.length - 1].role === "assistant" &&
+            (messages[messages.length - 1].follow_up_questions?.length ?? 0) > 0 ? (
+              <div className="flex flex-wrap gap-2">
+                <span className="w-full text-xs font-medium text-neutral-500">Pertanyaan lanjutan</span>
+                {messages[messages.length - 1].follow_up_questions!.map((q) => (
+                  <button
+                    key={q}
+                    type="button"
+                    onClick={() => send(q)}
+                    className="rounded-full border border-line bg-white px-3 py-1.5 text-sm transition hover:border-brand"
+                  >
+                    {q}
+                  </button>
+                ))}
+              </div>
+            ) : null}
             {sending ? <ThinkingSteps steps={steps} /> : null}
             {error ? <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div> : null}
           </div>

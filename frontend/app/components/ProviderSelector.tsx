@@ -4,6 +4,8 @@ import { Cpu } from "lucide-react";
 import type { ProviderId, ProviderOption } from "../lib/types";
 
 const FALLBACK_OPTIONS: ProviderOption[] = [
+  { id: "local_ollama", label: "Local Ollama", configured: true, model: "" },
+  { id: "puter", label: "Puter (browser fallback)", configured: true, model: "" },
   { id: "openrouter", label: "OpenRouter", configured: true, model: "" },
   { id: "openai", label: "OpenAI", configured: true, model: "" },
   { id: "gemini", label: "Gemini", configured: true, model: "" },

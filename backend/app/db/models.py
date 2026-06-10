@@ -16,6 +16,7 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     cast,
 )
 from sqlalchemy.ext.compiler import compiles
@@ -69,6 +70,15 @@ class VectorType(TypeDecorator):
 @compiles(VectorType, "postgresql")
 def compile_vector_type(_type, compiler, **kw):  # noqa: D401
     return "vector"
+
+
+class Vector384Type(VectorType):
+    """Portable vector type pinned to the local E5 embedding dimension."""
+
+
+@compiles(Vector384Type, "postgresql")
+def compile_vector_384_type(_type, compiler, **kw):  # noqa: D401
+    return "vector(384)"
 
 
 class GUID(TypeDecorator):
@@ -231,6 +241,28 @@ class Chunk(Base):
 
     document = relationship("Document", back_populates="chunks")
     source = relationship("Source", back_populates="chunks")
+    embeddings = relationship("ChunkEmbedding", back_populates="chunk", cascade="all, delete-orphan")
+
+
+class ChunkEmbedding(Base):
+    __tablename__ = "chunk_embeddings"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    chunk_id = Column(GUID, ForeignKey("chunks.id", ondelete="CASCADE"), nullable=False, index=True)
+    profile = Column(String(100), nullable=False, index=True)
+    provider = Column(String(50), nullable=False)
+    model = Column(String(255), nullable=False)
+    dimension = Column(Integer, nullable=False)
+    version = Column(String(50), nullable=False, default="1")
+    embedding = Column(Vector384Type, nullable=False)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    chunk = relationship("Chunk", back_populates="embeddings")
+    __table_args__ = (
+        CheckConstraint("dimension = 384", name="ck_chunk_embedding_dimension_384"),
+        UniqueConstraint("chunk_id", "profile", name="uq_chunk_embeddings_chunk_profile"),
+    )
 
 
 class ChatSession(Base):
@@ -341,6 +373,7 @@ class RAGAnswerCache(Base):
 
 Index("ix_discovered_urls_host_allowed", DiscoveredURL.hostname, DiscoveredURL.is_allowed)
 Index("ix_chunks_source_type_confidence", Chunk.source_type, Chunk.extraction_confidence)
+Index("ix_chunk_embeddings_profile_chunk", ChunkEmbedding.profile, ChunkEmbedding.chunk_id)
 Index("ix_chat_messages_session_created", ChatMessage.session_id, ChatMessage.created_at)
 Index("ix_chat_memories_scope", ChatMemory.session_id, ChatMemory.anonymous_session_id, ChatMemory.is_active)
 Index("ix_rag_answer_cache_key_expires", RAGAnswerCache.cache_key, RAGAnswerCache.expires_at)

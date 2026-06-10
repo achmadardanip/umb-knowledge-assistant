@@ -53,6 +53,7 @@ type ChatPayload = {
   regenerate_from_message_id?: string | null;
   retrieval_mode?: RetrievalMode;
   language?: string | null;
+  audience?: string | null;
 };
 
 export const api = {
@@ -85,6 +86,15 @@ export const api = {
       method: "POST",
       body: JSON.stringify(payload)
     }),
+  // Puter.js (browser, keyless) path: prepare builds the grounded prompt server-side,
+  // the browser calls puter.ai.chat(messages), then finalize verifies the answer.
+  chatPrepare: (payload: ChatPayload) =>
+    apiJson<ChatResponse & { mode: "final" | "generate"; prepare_id?: string; messages?: { role: string; content: string }[] }>(
+      "/chat/prepare",
+      { method: "POST", body: JSON.stringify(payload) }
+    ),
+  chatFinalize: (body: { prepare_id: string; answer: string; model_used?: string }) =>
+    apiJson<ChatResponse>("/chat/finalize", { method: "POST", body: JSON.stringify(body) }),
   chatStream: async (
     payload: ChatPayload,
     handlers: {

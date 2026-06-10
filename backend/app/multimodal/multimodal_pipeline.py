@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import logging
 import sys
 from pathlib import Path
 from urllib.parse import unquote, urlparse
@@ -14,6 +15,7 @@ from app.db.models import Chunk, DiscoveredURL, ExtractedSegment, Source, Source
 from app.discovery.scope_validator import validate_url_scope
 from app.discovery.url_normalizer import normalize_url
 from app.ingestion.embedder import EmbeddingConfigurationError, get_embedder
+from app.ingestion.embedding_store import ensure_embedding_storage, store_chunk_embedding, validate_embedding_batch
 from app.ingestion.chunker import chunk_segments
 from app.multimodal.audio_extractor import extract_audio
 from app.multimodal.document_extractor import extract_document
@@ -33,6 +35,7 @@ DISCOVERY_URLS = project_path("data", "discovery", "urls_filtered.txt")
 REPORT_PATH = project_path("data", "multimodal", "extraction_report.json")
 CLASSIFIED_PATH = project_path("data", "multimodal", "classified_assets.json")
 DISCOVERY_REPORT = project_path("data", "discovery", "discovery_report.json")
+logger = logging.getLogger(__name__)
 
 
 def _load_urls() -> list[str]:
@@ -58,10 +61,10 @@ def _update_discovery_report(report_update: dict) -> None:
     DISCOVERY_REPORT.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def classify_discovered() -> dict:
+def classify_discovered(urls: list[str] | None = None) -> dict:
     settings = get_settings()
     items = []
-    for url in _load_urls():
+    for url in urls if urls is not None else _load_urls():
         normalized = normalize_url(url)
         decision = validate_url_scope(normalized, settings.allowed_domain)
         if not decision.is_allowed:
@@ -272,29 +275,41 @@ def index_assets() -> dict:
                     chunk_size=settings.chunk_size,
                     overlap=settings.chunk_overlap,
                 )
-                embeddings = embedder.embed_texts([chunk.chunk_text for chunk in chunks]) if embedder and chunks else [None] * len(chunks)
-                for chunk, embedding in zip(chunks, embeddings):
-                    chunk_values = {
-                        "source_id": source.id,
-                        "asset_id": asset.id,
-                        "segment_id": extracted.id,
-                        "chunk_text": chunk.chunk_text,
-                        "chunk_index": chunk.chunk_index,
-                        "token_count": chunk.token_count,
-                        "meta": chunk.metadata,
-                        "source_type": chunk.source_type,
-                        "page_number": chunk.page_number,
-                        "slide_number": chunk.slide_number,
-                        "sheet_name": chunk.sheet_name,
-                        "row_range": chunk.row_range,
-                        "timestamp_start": chunk.timestamp_start,
-                        "timestamp_end": chunk.timestamp_end,
-                        "extraction_method": chunk.extraction_method,
-                        "extraction_confidence": chunk.extraction_confidence,
-                    }
+                embeddings = [None] * len(chunks)
+                if embedder and chunks:
+                    try:
+                        embeddings = embedder.embed_texts([chunk.chunk_text for chunk in chunks])
+                        validate_embedding_batch(embedder, embeddings, len(chunks))
+                        ensure_embedding_storage(db, embedder)
+                    except Exception as exc:
+                        logger.warning(
+                            "Embedding failed for %s; indexing keyword-only asset chunks: %s",
+                            normalized_url,
+                            exc,
+                        )
+                        embeddings = [None] * len(chunks)
+                for chunk, embedding in zip(chunks, embeddings, strict=True):
+                    chunk_row = Chunk(
+                        source_id=source.id,
+                        asset_id=asset.id,
+                        segment_id=extracted.id,
+                        chunk_text=chunk.chunk_text,
+                        chunk_index=chunk.chunk_index,
+                        token_count=chunk.token_count,
+                        meta=chunk.metadata,
+                        source_type=chunk.source_type,
+                        page_number=chunk.page_number,
+                        slide_number=chunk.slide_number,
+                        sheet_name=chunk.sheet_name,
+                        row_range=chunk.row_range,
+                        timestamp_start=chunk.timestamp_start,
+                        timestamp_end=chunk.timestamp_end,
+                        extraction_method=chunk.extraction_method,
+                        extraction_confidence=chunk.extraction_confidence,
+                    )
+                    db.add(chunk_row)
                     if embedding is not None:
-                        chunk_values["embedding"] = embedding
-                    db.add(Chunk(**chunk_values))
+                        store_chunk_embedding(db, chunk_row, embedding, embedder)
                     indexed_chunks += 1
                 indexed_segments += 1
             indexed_assets += 1
@@ -304,8 +319,8 @@ def index_assets() -> dict:
     return report
 
 
-def run_all(max_files: int = 200) -> dict:
-    classify_report = classify_discovered()
+def run_all(max_files: int = 200, *, urls: list[str] | None = None) -> dict:
+    classify_report = classify_discovered(urls=urls)
     download_report = download_assets(max_files=max_files)
     extract_report = extract_assets()
     index_report = index_assets()

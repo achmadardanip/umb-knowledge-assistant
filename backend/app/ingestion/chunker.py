@@ -47,13 +47,14 @@ def chunk_text(
     metadata: dict[str, Any] | None = None,
     chunk_size: int = 900,
     overlap: int = 120,
+    min_words: int = 25,
 ) -> list[TextChunk]:
     metadata = dict(metadata or {})
     source_type = metadata.get("source_type") or "html"
     if source_type == "html":
         chunk_size = min(max(chunk_size, 700), 1000)
     words = approximate_tokens(text)
-    if len(words) < 25:
+    if len(words) < min_words:
         return []
     title = metadata.get("title")
     heading = metadata.get("section_heading")

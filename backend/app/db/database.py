@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 from collections.abc import Generator
+from datetime import date, datetime
 from pathlib import Path
 
 from sqlalchemy import create_engine, text
@@ -10,6 +12,26 @@ from sqlalchemy.orm import Session, sessionmaker
 from app.core.config import get_settings
 from app.core.paths import project_path
 from app.db.models import Base
+
+
+def _json_default(obj):
+    if isinstance(obj, (datetime, date)):
+        return obj.isoformat()
+    return str(obj)
+
+
+def _json_dumps(obj) -> str:
+    return json.dumps(obj, default=_json_default)
+
+
+# JSONB writes must tolerate datetime/date values (e.g. source freshness
+# timestamps) on both the psycopg (Postgres) and SQLAlchemy (SQLite) paths.
+try:
+    from psycopg.types.json import set_json_dumps
+
+    set_json_dumps(_json_dumps)
+except Exception:
+    pass
 
 
 _engine = None
@@ -26,8 +48,11 @@ def normalize_database_url(database_url: str) -> str:
 
 def _engine_kwargs(database_url: str) -> dict:
     if database_url.startswith("sqlite"):
-        return {"connect_args": {"check_same_thread": False}}
-    return {"pool_pre_ping": True}
+        return {"connect_args": {"check_same_thread": False}, "json_serializer": _json_dumps}
+    # Supabase's transaction-mode pooler does not persist psycopg3 prepared
+    # statements across reused connections ("prepared statement _pgN does not
+    # exist"); disabling auto-prepare makes pooled writes (crawl/backfill) safe.
+    return {"pool_pre_ping": True, "json_serializer": _json_dumps, "connect_args": {"prepare_threshold": None}}
 
 
 def _create_verified_engine(database_url: str):

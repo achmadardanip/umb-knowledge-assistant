@@ -4,6 +4,7 @@ const KEYS = {
   anonymousId: "umb_anonymous_session_id",
   activeSession: "umb_last_active_session_id",
   provider: "umb_selected_provider",
+  providerDefaultVersion: "umb_provider_default_version",
   retrievalMode: "umb_selected_retrieval_mode",
   memory: "umb_memory_enabled"
 };
@@ -24,7 +25,16 @@ export function getAnonymousSessionId() {
 }
 
 export function getSelectedProvider(): ProviderId {
-  return (window.localStorage.getItem(KEYS.provider) as ProviderId | null) || "openrouter";
+  const stored = window.localStorage.getItem(KEYS.provider) as ProviderId | null;
+  const migrated = window.localStorage.getItem(KEYS.providerDefaultVersion) === "local-ollama-v1";
+  if (!migrated) {
+    window.localStorage.setItem(KEYS.providerDefaultVersion, "local-ollama-v1");
+    if (!stored || stored === "puter") {
+      window.localStorage.setItem(KEYS.provider, "local_ollama");
+      return "local_ollama";
+    }
+  }
+  return stored || "local_ollama";
 }
 
 export function setSelectedProvider(provider: ProviderId) {
