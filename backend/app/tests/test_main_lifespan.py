@@ -90,3 +90,43 @@ def test_reranker_prewarm_is_non_blocking(monkeypatch):
         ("thread", True, "local-bge-reranker-prewarm"),
         ("warmup", ["warmup"]),
     ]
+
+
+def test_local_answer_model_prewarm_is_non_blocking(monkeypatch):
+    calls = []
+
+    class _Thread:
+        def __init__(self, *, target, daemon, name=None):
+            calls.append(("thread", daemon, name))
+            self.target = target
+
+        def start(self):
+            self.target()
+
+    class _Response:
+        def raise_for_status(self):
+            return None
+
+    monkeypatch.setattr(
+        main,
+        "get_settings",
+        lambda: SimpleNamespace(
+            ai_provider="local_ollama",
+            local_llm_base_url="http://localhost:11434",
+            local_llm_model="qwen2.5:7b-instruct",
+            local_llm_timeout_seconds=180,
+        ),
+    )
+    monkeypatch.setattr(main.threading, "Thread", _Thread)
+    monkeypatch.setattr(
+        main.requests,
+        "post",
+        lambda url, **kwargs: calls.append((url, kwargs["json"]["model"])) or _Response(),
+    )
+
+    main._prewarm_local_answer_model()
+
+    assert calls == [
+        ("thread", True, "local-ollama-prewarm"),
+        ("http://localhost:11434/api/generate", "qwen2.5:7b-instruct"),
+    ]

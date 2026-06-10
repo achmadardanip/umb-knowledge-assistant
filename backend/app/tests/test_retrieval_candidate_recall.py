@@ -49,6 +49,7 @@ def test_english_queries_expand_to_indonesian_retrieval_terms():
     assert "rincian pembayaran" in tuition
     assert "teknik informatika" in tuition
     assert "kalender akademik" in calendar
+    assert "fakultas" in _terms("What faculties and study programs are available?")
 
 
 def test_metadata_phrase_match_recovers_indonesian_calendar_for_english_query(db):
@@ -123,3 +124,62 @@ def test_admissions_contact_does_not_rank_library_footer_first(db):
     )
 
     assert contexts[0]["hostname"] == "pendaftaran.mercubuana.ac.id"
+
+
+def test_k3_report_query_prioritizes_official_pdf_over_generic_reports(db):
+    _add_chunk(
+        db,
+        url="https://publikasi.mercubuana.ac.id/laporan-kegiatan",
+        hostname="publikasi.mercubuana.ac.id",
+        title="Laporan Kegiatan Februari 2026",
+        text="Laporan kegiatan dan publikasi kampus pada Februari 2026.",
+    )
+    _add_chunk(
+        db,
+        url="https://agv-api.mercubuana.ac.id/uploads/media/laporan-k3lk-februari-2026.pdf",
+        hostname="agv-api.mercubuana.ac.id",
+        title="Laporan K3LK Februari 2026",
+        text=(
+            "Laporan K3LK Februari 2026 membahas keselamatan dan kesehatan kerja "
+            "serta lingkungan kampus Universitas Mercu Buana."
+        ),
+    )
+
+    contexts = HybridRetriever(db, dense_enabled=False).search(
+        "Apa isi laporan K3LK Februari 2026?",
+        top_k=2,
+    )
+
+    assert contexts[0]["url"].endswith(".pdf")
+    assert all("k3" in (context["title"] or "").lower() for context in contexts)
+
+
+def test_english_faculty_overview_query_avoids_news_and_repository(db):
+    _add_chunk(
+        db,
+        url="https://repository.mercubuana.ac.id/92028",
+        hostname="repository.mercubuana.ac.id",
+        title="Thesis from Faculty of Economics",
+        text="A study by a student in one faculty and study program.",
+    )
+    _add_chunk(
+        db,
+        url="https://mercubuana.ac.id/campus-update/berita/program-motorsport",
+        hostname="mercubuana.ac.id",
+        title="Study Program Motorsport News",
+        text="Latest news from one study program at the engineering faculty.",
+    )
+    _add_chunk(
+        db,
+        url="https://mercubuana.ac.id/fakultas",
+        hostname="mercubuana.ac.id",
+        title="Fakultas - Universitas Mercu Buana",
+        text="Daftar fakultas dan program studi Universitas Mercu Buana.",
+    )
+
+    contexts = HybridRetriever(db, dense_enabled=False).search(
+        "What faculties and study programs are available at Mercu Buana University?",
+        top_k=3,
+    )
+
+    assert contexts[0]["url"].endswith("/fakultas")

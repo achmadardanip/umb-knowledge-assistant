@@ -14,6 +14,22 @@ def providers() -> dict:
     return {
         "default_provider": settings.ai_provider,
         "providers": [
+            {
+                "id": "local_ollama",
+                "label": "Local Ollama",
+                "configured": bool(
+                    getattr(settings, "local_llm_base_url", None) and getattr(settings, "local_llm_model", None)
+                ),
+                "model": getattr(settings, "local_llm_model", "qwen2.5:7b-instruct"),
+            },
+            {
+                "id": "local_lmstudio",
+                "label": "Local LM Studio",
+                "configured": bool(
+                    getattr(settings, "lmstudio_base_url", None) and getattr(settings, "lmstudio_model", None)
+                ),
+                "model": getattr(settings, "lmstudio_model", "local-model"),
+            },
             {"id": "openrouter", "label": "OpenRouter", "configured": bool(settings.openrouter_api_key), "model": settings.openrouter_model},
             {"id": "openai", "label": "OpenAI", "configured": bool(settings.openai_api_key), "model": settings.openai_model},
             {"id": "gemini", "label": "Gemini", "configured": bool(settings.gemini_api_key), "model": settings.gemini_model},
@@ -25,7 +41,7 @@ def providers() -> dict:
                 "model": settings.hermes_model,
             },
             {"id": "groq", "label": "Groq", "configured": bool(settings.groq_api_key), "model": settings.groq_model},
-            {"id": "puter", "label": "Puter (gratis, tanpa API key)", "configured": True, "model": "browser"},
+            {"id": "puter", "label": "Puter (browser fallback)", "configured": True, "model": "browser"},
             {"id": "huggingface", "label": "Hugging Face (gratis)", "configured": bool(settings.huggingface_api_key), "model": settings.huggingface_model},
         ],
         "web_search": {

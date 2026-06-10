@@ -61,11 +61,16 @@ def upsert_source_document(
     source_type: str = "html",
     extraction_method: str = "trafilatura+beautifulsoup",
     extraction_confidence: float = 0.9,
+    source_row: Source | None = None,
+    source_lookup_performed: bool = False,
 ) -> int:
     parsed = urlparse(url)
     hostname = (parsed.hostname or "").lower()
     path = parsed.path or "/"
-    existing = db.query(Source).filter(Source.url == url).first()
+    existing = source_row
+    if existing is None and not source_lookup_performed:
+        existing = db.query(Source).filter(Source.url == url).first()
+    source_is_new = existing is None
     if existing is None:
         existing = Source(url=url)
         db.add(existing)
@@ -76,7 +81,7 @@ def upsert_source_document(
         existing.http_status = http_status
         existing.discovery_source = discovery_source or existing.discovery_source
         return max(db.query(Chunk).filter(Chunk.source_id == existing.id).count(), 1)
-    if existing.id:
+    if existing.id and not source_is_new:
         db.query(Chunk).filter(Chunk.source_id == existing.id, Chunk.asset_id.is_(None)).delete(synchronize_session=False)
         db.query(Document).filter(Document.source_id == existing.id).delete(synchronize_session=False)
     existing.hostname = hostname

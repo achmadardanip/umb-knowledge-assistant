@@ -14,6 +14,11 @@ from app.ingestion.firecrawl_client import (
 )
 
 
+def test_self_hosted_base_url_adds_v2_prefix():
+    client = FirecrawlClient(base_url="http://localhost:3002", timeout_seconds=10, max_retries=0)
+    assert client.base_url == "http://localhost:3002/v2"
+
+
 class _Response:
     def __init__(self, status_code: int, payload, headers: dict | None = None):
         self.status_code = status_code
@@ -106,6 +111,21 @@ def test_map_search_and_crawl_request_bodies_match_v2_shape():
     assert crawl_body["scrapeOptions"]["formats"] == ["markdown", "links", "images"]
     assert crawl_body["scrapeOptions"]["parsers"] == ["pdf"]
     assert "zeroDataRetention" not in crawl_body["scrapeOptions"]
+
+
+def test_parse_uses_scrape_parser_path():
+    session = _Session([_Response(200, {"success": True, "data": {"markdown": "ok"}})])
+    client = FirecrawlClient(
+        api_key="fc-test-token",
+        base_url="http://localhost:3002",
+        timeout_seconds=60,
+        session=session,
+    )
+
+    client.parse("https://mercubuana.ac.id/file.pdf", zero_data_retention=False)
+
+    assert session.calls[0]["url"] == "http://localhost:3002/v2/scrape"
+    assert session.calls[0]["json"]["parsers"] == ["pdf"]
 
 
 def test_retries_429_and_honors_retry_after(monkeypatch):

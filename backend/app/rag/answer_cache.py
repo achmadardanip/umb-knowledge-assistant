@@ -10,7 +10,7 @@ from sqlalchemy.orm import Session
 from app.db.models import RAGAnswerCache, utcnow
 
 
-ANSWER_CACHE_KEY_VERSION = "v2"
+ANSWER_CACHE_KEY_VERSION = "v5-local-rag"
 
 
 def normalize_question(question: str) -> str:

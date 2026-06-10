@@ -4,6 +4,7 @@ import logging
 import threading
 from contextlib import asynccontextmanager
 
+import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -62,10 +63,33 @@ def _prewarm_local_reranker() -> None:
     threading.Thread(target=_warm, daemon=True, name="local-bge-reranker-prewarm").start()
 
 
+def _prewarm_local_answer_model() -> None:
+    """Ask Ollama to load the configured model without blocking FastAPI startup."""
+
+    settings = get_settings()
+    if settings.ai_provider != "local_ollama":
+        return
+
+    def _warm() -> None:
+        try:
+            response = requests.post(
+                f"{settings.local_llm_base_url}/api/generate",
+                json={"model": settings.local_llm_model, "prompt": "", "stream": False, "keep_alive": "30m"},
+                timeout=settings.local_llm_timeout_seconds,
+            )
+            response.raise_for_status()
+            logger.info("Local Ollama answer model pre-warm completed.")
+        except Exception:
+            logger.warning("Local Ollama answer model pre-warm failed.", exc_info=True)
+
+    threading.Thread(target=_warm, daemon=True, name="local-ollama-prewarm").start()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _prewarm_local_embedder()
     _prewarm_local_reranker()
+    _prewarm_local_answer_model()
     yield
 
 

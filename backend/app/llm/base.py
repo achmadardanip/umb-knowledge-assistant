@@ -5,7 +5,17 @@ from dataclasses import dataclass
 from typing import Literal
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes"]
+ProviderName = Literal[
+    "local_ollama",
+    "local_lmstudio",
+    "openrouter",
+    "openai",
+    "gemini",
+    "anthropic",
+    "hermes",
+    "groq",
+    "huggingface",
+]
 
 
 class ProviderConfigurationError(RuntimeError):

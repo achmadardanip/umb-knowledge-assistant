@@ -1,4 +1,14 @@
-export type ProviderId = "openrouter" | "openai" | "gemini" | "anthropic" | "hermes" | "groq" | "puter" | "huggingface";
+export type ProviderId =
+  | "local_ollama"
+  | "local_lmstudio"
+  | "openrouter"
+  | "openai"
+  | "gemini"
+  | "anthropic"
+  | "hermes"
+  | "groq"
+  | "puter"
+  | "huggingface";
 export type RetrievalMode = "indexed" | "web" | "hybrid";
 
 export type ProviderOption = {
@@ -22,6 +32,9 @@ export type Source = {
   url: string;
   hostname?: string;
   source_type?: string;
+  page_type?: string | null;
+  content_type?: string | null;
+  media_type?: string | null;
   relevance_score?: number;
   score?: number;
   page_number?: number | null;

@@ -79,9 +79,9 @@ function mergeStep(current: NonNullable<ChatMessage["visible_steps"]>, incoming:
 export function ChatWidget() {
   const [anonymousId, setAnonymousId] = useState<string | null>(null);
   const [activeSessionId, setActiveSessionId] = useState<string | null>(null);
-  const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("openrouter");
+  const [selectedProviderState, setSelectedProviderState] = useState<ProviderId>("local_ollama");
   const [providerOptions, setProviderOptions] = useState<ProviderOption[]>([]);
-  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("indexed");
+  const [retrievalModeState, setRetrievalModeState] = useState<RetrievalMode>("hybrid");
   const [memoryEnabledState, setMemoryEnabledState] = useState(true);
   const [sending, setSending] = useState(false);
   const [steps, setSteps] = useState<NonNullable<ChatMessage["visible_steps"]>>([]);
@@ -197,14 +197,33 @@ export function ChatWidget() {
         regenerate_from_message_id: regenerateFromMessageId || null,
         retrieval_mode: retrievalModeState
       };
-      const result = usePuter
-        ? await runPuterChat(requestPayload)
-        : await api.chatStream(requestPayload, {
+      let result: ChatResponse;
+      if (usePuter) {
+        result = await runPuterChat(requestPayload);
+      } else {
+        try {
+          result = await api.chatStream(requestPayload, {
             onStep: (step) => {
               setSteps((current) => mergeStep(current, step));
             },
             onError: (message) => setError(message)
           });
+        } catch (providerError) {
+          const canUsePuterFallback =
+            selectedProviderState !== "puter" &&
+            typeof window !== "undefined" &&
+            Boolean(window.puter?.ai?.chat);
+          if (!canUsePuterFallback) throw providerError;
+          setSteps((current) =>
+            mergeStep(current, {
+              id: "puter_fallback",
+              label: "Mencoba fallback browser Puter",
+              status: "running"
+            })
+          );
+          result = await runPuterChat({ ...requestPayload, provider_override: null });
+        }
+      }
       const elapsed = Date.now() - startedAt;
       if (elapsed < MIN_PROGRESS_MS) {
         await wait(MIN_PROGRESS_MS - elapsed);

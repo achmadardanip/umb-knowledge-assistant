@@ -48,7 +48,7 @@ class FirecrawlClient:
     ) -> None:
         settings = get_settings()
         self.api_key = api_key or settings.firecrawl_api_key
-        self.base_url = (base_url or settings.firecrawl_base_url).rstrip("/")
+        self.base_url = _normalize_base_url(base_url or settings.firecrawl_base_url)
         # Self-hosted Firecrawl (USE_DB_AUTHENTICATION=false) needs no key; cloud does.
         if not self.api_key and "api.firecrawl.dev" in self.base_url:
             raise FirecrawlConfigurationError("FIRECRAWL_API_KEY is required for the Firecrawl cloud API.")
@@ -152,30 +152,34 @@ class FirecrawlClient:
         url: str,
         *,
         limit: int,
+        max_depth: int | None = None,
         delay_seconds: float,
         max_concurrency: int,
         zero_data_retention: bool,
     ) -> dict:
+        payload = {
+            "url": url,
+            "sitemap": "include",
+            "ignoreQueryParameters": True,
+            "limit": limit,
+            "crawlEntireDomain": True,
+            "allowExternalLinks": False,
+            "allowSubdomains": True,
+            "delay": delay_seconds,
+            "maxConcurrency": max_concurrency,
+            "zeroDataRetention": zero_data_retention,
+            "scrapeOptions": _scrape_options(
+                zero_data_retention=zero_data_retention,
+                timeout_seconds=self.timeout_seconds,
+                include_zero_data_retention=False,
+            ),
+        }
+        if max_depth is not None:
+            payload["maxDiscoveryDepth"] = max(0, max_depth)
         return self._request(
             "POST",
             "/crawl",
-            json_payload={
-                "url": url,
-                "sitemap": "include",
-                "ignoreQueryParameters": True,
-                "limit": limit,
-                "crawlEntireDomain": True,
-                "allowExternalLinks": False,
-                "allowSubdomains": True,
-                "delay": delay_seconds,
-                "maxConcurrency": max_concurrency,
-                "zeroDataRetention": zero_data_retention,
-                "scrapeOptions": _scrape_options(
-                    zero_data_retention=zero_data_retention,
-                    timeout_seconds=self.timeout_seconds,
-                    include_zero_data_retention=False,
-                ),
-            },
+            json_payload=payload,
         )
 
     def get_crawl_status(self, crawl_id_or_next_url: str) -> dict:
@@ -185,6 +189,26 @@ class FirecrawlClient:
     def scrape(self, url: str, *, zero_data_retention: bool) -> dict:
         payload = {"url": url, **_scrape_options(zero_data_retention=zero_data_retention, timeout_seconds=self.timeout_seconds)}
         return self._request("POST", "/scrape", json_payload=payload)
+
+    def parse(self, url: str, *, zero_data_retention: bool) -> dict:
+        """Use Firecrawl's scrape parser path for clean HTML/PDF extraction.
+
+        Self-hosted v2 exposes parsing through ``/scrape`` formats/parsers rather
+        than a separate public ``/parse`` endpoint.
+        """
+
+        return self.scrape(url, zero_data_retention=zero_data_retention)
+
+
+def _normalize_base_url(base_url: str) -> str:
+    normalized = (base_url or "").rstrip("/")
+    if not normalized:
+        return "http://localhost:3002/v2"
+    if normalized.endswith("/v1") or normalized.endswith("/v2"):
+        return normalized
+    if "api.firecrawl.dev" in normalized:
+        return f"{normalized}/v2"
+    return f"{normalized}/v2"
 
 
 def _scrape_options(*, zero_data_retention: bool, timeout_seconds: int, include_zero_data_retention: bool = True) -> dict:

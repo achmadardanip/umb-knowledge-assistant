@@ -33,6 +33,8 @@ KEYWORD_BOOST_TERMS = {
     "perpustakaan",
     "repository",
     "fakultas",
+    "faculty",
+    "faculties",
     "fasilkom",
     "dekan",
     "dosen",
@@ -46,6 +48,9 @@ KEYWORD_BOOST_TERMS = {
     "location",
     "address",
     "campus",
+    "k3",
+    "k3lk",
+    "keselamatan",
 }
 
 STOPWORDS = {
@@ -124,6 +129,7 @@ QUERY_EXPANSIONS = {
     "studies": ["program studi", "prodi", "jurusan"],
     "programs": ["program studi", "prodi", "jurusan"],
     "faculty": ["fakultas"],
+    "faculties": ["fakultas", "faculty", "program studi"],
     "computer": ["komputer", "ilmu komputer", "fasilkom"],
     "science": ["ilmu komputer", "fakultas ilmu komputer"],
     "access": ["akses", "panduan akses"],
@@ -141,6 +147,9 @@ QUERY_EXPANSIONS = {
     "contact": ["kontak", "hubungi"],
     "menghubungi": ["hubungi", "kontak", "pendaftaran", "pmb"],
     "penerimaan": ["penerimaan mahasiswa baru", "pendaftaran", "pmb"],
+    "k3": ["k3lk", "keselamatan dan kesehatan kerja", "laporan k3lk"],
+    "k3lk": ["k3", "keselamatan dan kesehatan kerja", "laporan k3lk"],
+    "safety": ["k3", "k3lk", "keselamatan dan kesehatan kerja"],
 }
 
 LOGIN_RELATED_TERMS = {
@@ -226,6 +235,7 @@ NOISY_ACADEMIC_TEXT_MARKERS = (
 
 FACULTY_PROGRAM_TERMS = {"program", "program studi", "prodi", "jurusan"}
 FACULTY_ROLE_TERMS = {"dekan", "dosen", "struktural", "wakil dekan", "ketua program studi", "kaprodi"}
+FACULTY_OVERVIEW_TERMS = {"fakultas", "faculty", "faculties"}
 TUITION_TERMS = {
     "biaya",
     "biaya kuliah",
@@ -288,6 +298,20 @@ LOCATION_ANCHORS = (
     "jl. menteng",
     "tutty alawiyah",
 )
+K3_TERMS = {
+    "k3",
+    "k3lk",
+    "keselamatan",
+    "keselamatan dan kesehatan kerja",
+    "laporan k3lk",
+    "safety",
+}
+K3_ANCHORS = (
+    "k3",
+    "k3lk",
+    "keselamatan dan kesehatan kerja",
+    "keselamatan kesehatan kerja",
+)
 
 
 @dataclass
@@ -303,6 +327,9 @@ class RetrievedContext:
     hostname: str | None
     discovery_source: str | None
     source_type: str | None
+    page_type: str | None
+    content_type: str | None
+    media_type: str | None
     page_number: int | None = None
     slide_number: int | None = None
     sheet_name: str | None = None
@@ -410,6 +437,13 @@ def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[
             lowered, ("program studi", "prodi", "fakultas", "jurusan")
         ):
             score -= 8.0
+    if _has_topic(terms, FACULTY_OVERVIEW_TERMS) and not any(term in FACULTY_ROLE_TERMS for term in terms):
+        if "mercubuana.ac.id/fakultas " in lowered or "mercubuana.ac.id/fakultas\n" in lowered:
+            score += 65.0
+        elif _contains_any(lowered, ("fakultas", "program studi", "prodi")) and "/fakultas-" in lowered:
+            score += 24.0
+        if "/campus-update/" in lowered or any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS):
+            score -= 50.0
     if _has_topic(terms, TUITION_TERMS):
         if _contains_any(lowered, TUITION_ANCHORS):
             score += 32.0
@@ -470,6 +504,17 @@ def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[
             lowered, LOCATION_ANCHORS
         ):
             score -= 45.0
+    if _has_topic(terms, K3_TERMS):
+        if _contains_any(lowered, K3_ANCHORS):
+            score += 50.0
+        if "laporan" in lowered and _contains_any(lowered, K3_ANCHORS):
+            score += 20.0
+        if "agv-api." in host or lowered.endswith(".pdf"):
+            score += 12.0
+        if any(marker in host for marker in NOISY_ACADEMIC_HOST_MARKERS) and not _contains_any(
+            lowered, K3_ANCHORS
+        ):
+            score -= 35.0
     return score
 
 
@@ -487,6 +532,8 @@ def _required_anchors_for_query(terms: list[str]) -> tuple[str, ...]:
         return ()
     if _has_topic(terms, LOCATION_TERMS):
         return LOCATION_ANCHORS
+    if _has_topic(terms, K3_TERMS):
+        return K3_ANCHORS
     if _is_fasilkom_query(terms):
         return FASILKOM_REQUIRED_ANCHORS
     if any(term in SIA_REQUIRED_ANCHORS for term in terms):
@@ -682,7 +729,7 @@ class HybridRetriever:
                     Source.path.ilike(pattern),
                 ]
             )
-            if " " in term:
+            if " " in term or term in KEYWORD_BOOST_TERMS:
                 priority_metadata_filters.extend(
                     [
                         Source.title.ilike(pattern),
@@ -757,6 +804,9 @@ class HybridRetriever:
                     hostname=hostname,
                     discovery_source=meta.get("discovery_source") or (source.discovery_source if source else None),
                     source_type=chunk.source_type or meta.get("source_type"),
+                    page_type=meta.get("page_type"),
+                    content_type=meta.get("content_type"),
+                    media_type=meta.get("media_type"),
                     page_number=chunk.page_number or meta.get("page_number"),
                     slide_number=chunk.slide_number or meta.get("slide_number"),
                     sheet_name=chunk.sheet_name or meta.get("sheet_name"),

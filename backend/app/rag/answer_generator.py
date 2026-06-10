@@ -41,6 +41,9 @@ def _build_sources(contexts: list[dict]) -> list[dict]:
                 "url": context.get("url"),
                 "hostname": context.get("hostname"),
                 "source_type": context.get("source_type"),
+                "page_type": context.get("page_type"),
+                "content_type": context.get("content_type"),
+                "media_type": context.get("media_type"),
                 "relevance_score": round(float(context.get("score", 0.0)), 4),
                 "page_number": context.get("page_number"),
                 "slide_number": context.get("slide_number"),
@@ -87,6 +90,14 @@ _PROGRAM_QUERIES = ("program studi", "prodi", "jurusan", "programs", "degree pro
 _LECTURER_QUERIES = ("dosen", "pengajar", "lecturer", "lecturers")
 _DEAN_QUERIES = ("dekan", "dean")
 _FACULTY_REFERENCE_QUERIES = ("fakultas ini", "fakultas tersebut", "program studi ini", "prodi ini")
+_GENERAL_FACULTY_QUERIES = (
+    "faculties",
+    "all faculty",
+    "all faculties",
+    "daftar fakultas",
+    "fakultas apa saja",
+    "semua fakultas",
+)
 _LOCATION_QUERIES = ("lokasi", "alamat", "kampus", "location", "locations", "located", "address", "campus")
 _CAMPUS_NAMES = ("Meruya", "Menteng", "Pejaten", "Warung Buncit", "Jatisampurna", "Bekasi", "Keranggan")
 _PROGRAM_PATTERNS = (
@@ -311,8 +322,11 @@ def _structured_fasilkom_payload(
     language: str | None = None,
 ) -> dict | None:
     focused_contexts = _unique_contexts_by_source(_fasilkom_contexts(contexts))[:3]
-    asks_fasilkom_topic = _is_fasilkom_text(question) or (
-        bool(focused_contexts)
+    explicit_fasilkom = _is_fasilkom_text(question)
+    asks_general_faculties = _question_has(question, _GENERAL_FACULTY_QUERIES)
+    asks_fasilkom_topic = explicit_fasilkom or (
+        not asks_general_faculties
+        and bool(focused_contexts)
         and (
             _question_has(question, _FACULTY_REFERENCE_QUERIES)
             or _question_has(question, _PROGRAM_QUERIES)
@@ -357,6 +371,65 @@ def _structured_fasilkom_payload(
         "memory_used": memory_used,
     }
     validated = validate_citations(payload, focused_contexts, require_citation_markers=True)
+    validated["answer"] = sanitize_answer(validated.get("answer") or "")
+    return validated
+
+
+def _structured_faculty_overview_payload(
+    *,
+    question: str,
+    contexts: list[dict],
+    memory_used: bool,
+    language: str | None = None,
+) -> dict | None:
+    if not _question_has(question, _GENERAL_FACULTY_QUERIES):
+        return None
+    overview = next(
+        (
+            context
+            for context in contexts
+            if re.search(r"mercubuana\.ac\.id/(?:en/)?fakultas/?$", str(context.get("url") or ""), re.IGNORECASE)
+        ),
+        None,
+    )
+    if overview is None:
+        return None
+    faculty_names: list[str] = []
+    seen: set[str] = set()
+    for match in re.findall(r"\[(Fakultas [^\]]+)\]\(https?://[^)]+/fakultas[^)]*\)", overview.get("chunk_text") or ""):
+        name = re.sub(r"\s+", " ", match).strip()
+        key = name.lower()
+        if key not in seen:
+            seen.add(key)
+            faculty_names.append(name)
+    if len(faculty_names) < 3:
+        return None
+
+    rendered = "\n".join(f"{index}. {name}" for index, name in enumerate(faculty_names, start=1))
+    if (language or "").lower().startswith("en"):
+        answer = (
+            "The official UMB faculty overview lists these faculties [1]:\n\n"
+            f"{rendered}\n\n"
+            "For the complete study-program catalog, open each faculty's official page linked from the overview; "
+            "the overview itself summarizes program areas rather than one exhaustive program-by-program list."
+        )
+    else:
+        answer = (
+            "Halaman resmi fakultas UMB mencantumkan fakultas berikut [1]:\n\n"
+            f"{rendered}\n\n"
+            "Untuk daftar program studi yang lengkap, buka halaman resmi tiap fakultas yang ditautkan dari halaman "
+            "tersebut; halaman overview merangkum bidang program, bukan satu katalog prodi lengkap."
+        )
+    payload = {
+        "answer": answer,
+        "sources": _build_sources([overview]),
+        "confidence": "high",
+        "not_found": False,
+        "provider_used": "system",
+        "model_used": "structured-faculty-overview-extractor",
+        "memory_used": memory_used,
+    }
+    validated = validate_citations(payload, [overview], require_citation_markers=True)
     validated["answer"] = sanitize_answer(validated.get("answer") or "")
     return validated
 
@@ -447,6 +520,8 @@ def _provider_candidates(provider_override: str | None) -> list[str | None]:
     settings = get_settings()
     selected = normalize_provider(provider_override)
     candidates: list[str | None] = [selected]
+    if not settings.answer_enable_fallback:
+        return candidates
     for raw_provider in settings.llm_fallback_providers.split(","):
         provider_name = raw_provider.strip().lower()
         if not provider_name:
@@ -622,7 +697,8 @@ def finalize_generated_answer(
     """
     settings = get_settings()
     try:
-        payload = json.loads(_json_text(content))
+        parsed_payload = json.loads(_json_text(content))
+        payload = parsed_payload if isinstance(parsed_payload, dict) else {"answer": parsed_payload}
     except json.JSONDecodeError:
         payload = {
             "answer": (content or "").strip(),
@@ -630,6 +706,16 @@ def finalize_generated_answer(
             "confidence": "medium",
             "not_found": False,
         }
+    raw_answer = payload.get("answer")
+    if isinstance(raw_answer, list):
+        payload["answer"] = "\n".join(
+            f"- {item}" if isinstance(item, str) else f"- {json.dumps(item, ensure_ascii=False)}"
+            for item in raw_answer
+        )
+    elif not isinstance(raw_answer, str):
+        payload["answer"] = "" if raw_answer is None else json.dumps(raw_answer, ensure_ascii=False)
+    if not isinstance(payload.get("sources"), list):
+        payload["sources"] = []
     payload["provider_used"] = provider_used
     payload["model_used"] = model_used
     payload["memory_used"] = memory_used
@@ -666,6 +752,15 @@ def generate_answer(
         return fallback_payload(memory_used=memory_used)
 
     structured_payload = _structured_location_payload(
+        question=question,
+        contexts=contexts,
+        memory_used=memory_used,
+        language=language,
+    )
+    if structured_payload:
+        return structured_payload
+
+    structured_payload = _structured_faculty_overview_payload(
         question=question,
         contexts=contexts,
         memory_used=memory_used,

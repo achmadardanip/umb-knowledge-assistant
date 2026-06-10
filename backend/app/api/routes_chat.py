@@ -53,7 +53,17 @@ class ChatRequest(BaseModel):
     anonymous_session_id: str | None = None
     question: str = Field(min_length=1)
     top_k: int = 5
-    provider_override: Literal["openrouter", "openai", "gemini", "anthropic", "hermes", "groq"] | None = None
+    provider_override: Literal[
+        "local_ollama",
+        "local_lmstudio",
+        "openrouter",
+        "openai",
+        "gemini",
+        "anthropic",
+        "hermes",
+        "groq",
+        "huggingface",
+    ] | None = None
     memory_enabled: bool = True
     regenerate_from_message_id: str | None = None
     retrieval_mode: RetrievalMode = "hybrid"
@@ -263,7 +273,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         "Mengklasifikasikan intent pertanyaan",
         "done",
         intent_result.reason,
-        {"intent": intent_result.intent, "confidence": intent_result.confidence},
+        {"intent": intent_result.intent, "topic": intent_result.topic, "confidence": intent_result.confidence},
     )
 
     if intent_result.intent in {"smalltalk", "capability_query"}:
@@ -458,6 +468,8 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         }
 
     retrieval_query = _build_retrieval_query(payload.question, history, title)
+    if intent_result.topic != "general":
+        retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
 
     emit("memory", "Memeriksa memori chat yang relevan", "running")

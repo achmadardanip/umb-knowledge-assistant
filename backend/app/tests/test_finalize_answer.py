@@ -51,3 +51,23 @@ def test_finalize_rejects_answer_citing_unknown_source(monkeypatch):
     payload = finalize_generated_answer(content, _CONTEXTS, provider_used="puter", model_used="gpt-4o")
     # the fabricated external source must not survive into the cited sources
     assert all("evil.example.com" not in (s.get("url") or "") for s in payload.get("sources", []))
+
+
+def test_finalize_coerces_list_answer_from_local_json_model(monkeypatch):
+    monkeypatch.setattr(ag, "_cgcv_enabled", lambda: False)
+    content = (
+        '{"answer":["Biaya pendaftaran adalah Rp500.000 [1].","Verifikasi pada halaman PMB [1]."],'
+        '"sources":[{"url":"https://pmb.mercubuana.ac.id/biaya"}],'
+        '"confidence":"high","not_found":false}'
+    )
+
+    payload = finalize_generated_answer(
+        content,
+        _CONTEXTS,
+        provider_used="local_ollama",
+        model_used="qwen2.5:7b-instruct",
+    )
+
+    assert payload["not_found"] is False
+    assert "Rp500.000" in payload["answer"]
+    assert "Verifikasi" in payload["answer"]

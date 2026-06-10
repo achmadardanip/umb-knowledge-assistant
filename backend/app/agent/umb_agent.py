@@ -8,6 +8,7 @@ from typing import Callable, Literal
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.ingestion.umb_content import canonicalize_umb_url
 from app.retrieval.hybrid_retriever import HybridRetriever
 from app.retrieval.reranker import model_rerank_contexts
 from app.trust.va_jit import va_jit_reverify
@@ -38,8 +39,13 @@ def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
     seen: set[tuple] = set()
     deduped: list[dict] = []
     for context in contexts:
+        raw_url = context.get("url")
+        try:
+            canonical_url = canonicalize_umb_url(raw_url) if raw_url else raw_url
+        except (TypeError, ValueError):
+            canonical_url = raw_url
         key = (
-            context.get("url"),
+            canonical_url,
             context.get("page_number"),
             context.get("slide_number"),
             context.get("sheet_name"),
@@ -51,6 +57,8 @@ def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
         if key in seen:
             continue
         seen.add(key)
+        if canonical_url and canonical_url != raw_url:
+            context = {**context, "url": canonical_url}
         deduped.append(context)
     return deduped
 

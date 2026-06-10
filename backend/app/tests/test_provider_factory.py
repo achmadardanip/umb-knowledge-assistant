@@ -4,14 +4,12 @@ from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider, normalize_provider
 
 
-def test_provider_factory_chooses_openrouter_by_default():
-    # openrouter is the built-in fallback default, independent of the operator's
-    # AI_PROVIDER setting (which a deployment may override, e.g. to gemini).
+def test_provider_factory_chooses_local_ollama_by_default():
     from app.core.config import _provider
 
-    assert _provider(None) == "openrouter"
-    assert _provider("") == "openrouter"
-    assert _provider("does-not-exist") == "openrouter"
+    assert _provider(None) == "local_ollama"
+    assert _provider("") == "local_ollama"
+    assert _provider("does-not-exist") == "local_ollama"
 
 
 def test_provider_factory_returns_clear_error_if_api_key_missing():

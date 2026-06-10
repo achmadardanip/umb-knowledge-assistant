@@ -21,6 +21,7 @@ class IntentResult:
     intent: IntentName
     confidence: float
     reason: str
+    topic: str = "general"
 
 
 SMALLTALK_PATTERNS = {
@@ -112,6 +113,19 @@ OUT_OF_SCOPE_TERMS = (
     "weather today",
 )
 
+TOPIC_TERMS = {
+    "library": ("perpustakaan", "library", "pinjam buku", "turnitin", "digilib"),
+    "pmb": ("pendaftaran", "pmb", "daftar mahasiswa", "admission", "register", "gelombang"),
+    "tuition": ("biaya kuliah", "uang kuliah", "tuition", "rincian pembayaran"),
+    "faculty": ("fakultas", "fasilkom", "dekan", "dosen", "program studi", "faculty", "lecturer"),
+    "academic_calendar": ("kalender akademik", "jadwal akademik", "academic calendar"),
+    "login_help": ("login", "sso", "sia", "lupa password", "reset password"),
+    "repository": ("repository", "repositori", "skripsi", "tesis"),
+    "location": ("lokasi kampus", "alamat kampus", "campus location", "meruya", "menteng", "warung buncit"),
+    "k3": ("k3", "k3lk", "keselamatan dan kesehatan kerja"),
+    "news": ("berita", "kabar kampus", "pengumuman", "event", "news"),
+}
+
 
 def _clean(text: str) -> str:
     return re.sub(r"\s+", " ", (text or "").strip().lower())
@@ -130,6 +144,14 @@ def _contains_any_term(text: str, terms: tuple[str, ...]) -> bool:
     return any(_contains_term(text, term) for term in terms)
 
 
+def classify_topic(text: str) -> str:
+    cleaned = _clean(text)
+    for topic, terms in TOPIC_TERMS.items():
+        if _contains_any_term(cleaned, terms):
+            return topic
+    return "general"
+
+
 def classify_intent(question: str, recent_messages: list[dict] | None = None) -> IntentResult:
     text = _clean(question)
     if not text:
@@ -143,7 +165,12 @@ def classify_intent(question: str, recent_messages: list[dict] | None = None) ->
         return IntentResult("unsafe_private_data", 0.9, "Mengandung permintaan kredensial, data pribadi, atau akses tidak aman.")
 
     if _contains_any_term(text, LOGIN_TERMS):
-        return IntentResult("login_help_general", 0.85, "Pertanyaan terkait login/SSO/SIA sehingga hanya panduan publik yang boleh digunakan.")
+        return IntentResult(
+            "login_help_general",
+            0.85,
+            "Pertanyaan terkait login/SSO/SIA sehingga hanya panduan publik yang boleh digunakan.",
+            "login_help",
+        )
 
     if _is_capability_question(text):
         return IntentResult("capability_query", 0.9, "Pengguna menanyakan kemampuan chatbot, bukan informasi dokumen UMB.")
@@ -164,6 +191,11 @@ def classify_intent(question: str, recent_messages: list[dict] | None = None) ->
         return IntentResult("out_of_scope", 0.85, "Topik tidak berkaitan dengan informasi publik Universitas Mercu Buana.")
 
     if _contains_any_term(text, OFFICIAL_TERMS):
-        return IntentResult("official_info_query", 0.8, "Pertanyaan membutuhkan informasi publik resmi UMB.")
+        return IntentResult(
+            "official_info_query",
+            0.8,
+            "Pertanyaan membutuhkan informasi publik resmi UMB.",
+            classify_topic(text),
+        )
 
-    return IntentResult("official_info_query", 0.6, "Default aman: cari sumber resmi UMB sebelum menjawab.")
+    return IntentResult("official_info_query", 0.6, "Default aman: cari sumber resmi UMB sebelum menjawab.", classify_topic(text))

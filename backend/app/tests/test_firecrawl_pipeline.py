@@ -275,6 +275,55 @@ def test_run_firecrawl_retries_failed_pagination_on_next_poll(db):
     assert report["processed"]["indexed"] == 1
 
 
+def test_run_firecrawl_revisits_pagination_cursor_when_crawl_grows(db):
+    client = _IndexClient(
+        crawl_payloads={
+            "crawl-1": [
+                {"status": "scraping", "next": "next-page", "data": []},
+                {"status": "completed", "next": "next-page", "data": []},
+            ],
+            "next-page": [
+                {
+                    "status": "scraping",
+                    "data": [
+                        {
+                            "markdown": _words("first"),
+                            "metadata": {
+                                "sourceURL": "https://mercubuana.ac.id/first",
+                                "title": "First",
+                                "statusCode": 200,
+                            },
+                        }
+                    ],
+                },
+                {
+                    "status": "completed",
+                    "data": [
+                        {
+                            "markdown": _words("second"),
+                            "metadata": {
+                                "sourceURL": "https://mercubuana.ac.id/second",
+                                "title": "Second",
+                                "statusCode": 200,
+                            },
+                        }
+                    ],
+                },
+            ],
+        }
+    )
+
+    report = run_firecrawl_index(
+        domain="mercubuana.ac.id",
+        confirm_authorized=True,
+        client=client,
+        limit=2,
+        require_postgres=False,
+    )
+
+    assert report["processed"]["indexed"] == 2
+
+
 def test_run_firecrawl_refuses_without_authorization_before_firecrawl_call(db):
     client = _IndexClient()
 

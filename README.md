@@ -23,7 +23,7 @@ RAG digunakan karena informasi kampus berubah dari waktu ke waktu. Model LLM tid
 - Ekstraksi: HTML, PDF, DOCX, PPTX, spreadsheet/CSV, OCR opsional, ASR opsional, metadata video opsional.
 - Ingestion: source-aware chunking, embedding provider abstraction.
 - Retrieval: hybrid keyword/vector-ready retrieval dengan metadata sitasi.
-- LLM: provider abstraction untuk OpenRouter, OpenAI, Gemini, dan Claude/Anthropic.
+- LLM: Ollama lokal default, LM Studio opsional, serta provider cloud dan Puter sebagai fallback.
 - Chat: session history, source cards, visible operational steps, memory aman.
 
 ## Supabase PostgreSQL
@@ -147,23 +147,32 @@ PYTHONPATH=. .venv/bin/python -m app.evaluation.benchmark_reranker \
 
 ## Setup Provider AI
 
-Default provider adalah OpenRouter:
+Default answer provider adalah Ollama lokal:
 
 ```env
-AI_PROVIDER=openrouter
-OPENROUTER_API_KEY=
-OPENROUTER_MODEL=openai/gpt-oss-20b:free
+ANSWER_PROVIDER=local_ollama
+LOCAL_LLM_BASE_URL=http://localhost:11434
+LOCAL_LLM_MODEL=qwen2.5:7b-instruct
+LOCAL_LLM_TEMPERATURE=0.2
+LOCAL_LLM_MAX_TOKENS=800
+ANSWER_FALLBACK_PROVIDER=puter
+ANSWER_ENABLE_FALLBACK=true
 ```
 
 Provider yang didukung:
 
+- Ollama lokal: `LOCAL_LLM_BASE_URL`, `LOCAL_LLM_MODEL`
+- LM Studio lokal: `LMSTUDIO_BASE_URL`, `LMSTUDIO_MODEL`
 - OpenRouter: `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_MODEL`
 - OpenAI: `OPENAI_API_KEY`, `OPENAI_MODEL`
 - Gemini: `GEMINI_API_KEY`, `GEMINI_MODEL`
 - Claude/Anthropic: `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`
 - Hermes Agent API Server: `HERMES_ENABLED`, `HERMES_BASE_URL`, `HERMES_API_KEY`, `HERMES_MODEL`
 
-Frontend mengirim `provider_override` pada setiap request chat. API key tidak pernah dikirim ke frontend.
+Puter tetap berjalan di browser melalui `/chat/prepare` dan `/chat/finalize`;
+retrieved context, validasi sitasi, dan CGCV tetap dikendalikan backend.
+Frontend mengirim `provider_override` pada setiap request chat. API key tidak
+pernah dikirim ke frontend.
 
 ## Discovery dan Crawling
 
@@ -288,27 +297,43 @@ python -m app.ingestion.pipeline crawl --domain mercubuana.ac.id --max-pages 500
 
 ## Firecrawl to Supabase KB
 
-Firecrawl dipakai untuk discovery dan extraction UMB-wide ke Supabase. Simpan key hanya di `.env` atau deployment secrets, jangan commit ke repository:
+Firecrawl self-hosted dipakai untuk Search, Map, Crawl, Scrape, dan parser
+HTML/PDF ke Supabase. Base URL tanpa suffix otomatis diarahkan ke API v2:
 
 ```env
 FIRECRAWL_API_KEY=
-FIRECRAWL_BASE_URL=https://api.firecrawl.dev/v2
+FIRECRAWL_BASE_URL=http://localhost:3002
+FIRECRAWL_SELF_HOSTED=true
 FIRECRAWL_DEFAULT_LIMIT=500
-FIRECRAWL_ZERO_DATA_RETENTION=true
+FIRECRAWL_ZERO_DATA_RETENTION=false
 ```
 
-Karena key Firecrawl pernah ditempel di chat, rotasi key tersebut setelah setup selesai.
-
-Command staged-safe pertama:
+Import seed JSON resmi:
 
 ```bash
 cd backend
-.venv/bin/python -m app.ingestion.firecrawl_pipeline discover --domain mercubuana.ac.id --confirm-authorized --limit 500
-.venv/bin/python -m app.ingestion.firecrawl_pipeline run --domain mercubuana.ac.id --confirm-authorized --limit 500
-.venv/bin/python -m app.ingestion.firecrawl_pipeline verify --domain mercubuana.ac.id
+.venv/bin/python -m app.ingestion.umb_crawl import-seeds \
+  --seed-json /path/to/mercubuana.ac.id.json \
+  --source official_umb --confirm-authorized
 ```
 
-Pipeline ini hanya menerima URL valid `mercubuana.ac.id` dan `*.mercubuana.ac.id`, menolak path sensitif/static asset, menghormati robots untuk targeted scrape, melewati URL yang sudah punya chunk, dan menyimpan teks/chunk ke Supabase. Link dan image dari Firecrawl disimpan sebagai metadata; media biner tidak diunduh atau disimpan.
+Full refresh:
+
+```bash
+.venv/bin/python -m app.ingestion.umb_crawl full-refresh \
+  --confirm-authorized --seed-json /path/to/mercubuana.ac.id.json \
+  --domains mercubuana.ac.id --include-subdomains --include-sitemap \
+  --use-firecrawl-search --use-firecrawl-map --use-firecrawl-crawl \
+  --use-firecrawl-scrape --use-firecrawl-parse --use-tavily-gap-fill \
+  --include-multimodal --parse-pdf \
+  --index-images-metadata --index-video-metadata \
+  --store-supabase --update-graph --max-depth 4 --limit 10000
+```
+
+Pipeline menolak auth/admin dan domain eksternal, melewati URL yang sudah
+mempunyai chunk, membersihkan CTA/navbar berulang, dan menghasilkan laporan di
+`reports/`. `intfloat/multilingual-e5-small` tetap embedding retrieval produksi.
+Jina v4 dan Qwen2.5-VL tersedia sebagai configuration hooks dan nonaktif default.
 
 ## Complete Public Indexing
 

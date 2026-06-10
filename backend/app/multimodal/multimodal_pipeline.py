@@ -61,10 +61,10 @@ def _update_discovery_report(report_update: dict) -> None:
     DISCOVERY_REPORT.write_text(json.dumps(report, indent=2, ensure_ascii=False), encoding="utf-8")
 
 
-def classify_discovered() -> dict:
+def classify_discovered(urls: list[str] | None = None) -> dict:
     settings = get_settings()
     items = []
-    for url in _load_urls():
+    for url in urls if urls is not None else _load_urls():
         normalized = normalize_url(url)
         decision = validate_url_scope(normalized, settings.allowed_domain)
         if not decision.is_allowed:
@@ -319,8 +319,8 @@ def index_assets() -> dict:
     return report
 
 
-def run_all(max_files: int = 200) -> dict:
-    classify_report = classify_discovered()
+def run_all(max_files: int = 200, *, urls: list[str] | None = None) -> dict:
+    classify_report = classify_discovered(urls=urls)
     download_report = download_assets(max_files=max_files)
     extract_report = extract_assets()
     index_report = index_assets()

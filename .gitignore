@@ -1,6 +1,7 @@
 .env
 .env.*
 !.env.example
+.DS_Store
 .venv/
 .tools/
 __pycache__/
@@ -28,6 +29,11 @@ frontend/*.log
 data/discovery/
 data/downloads/
 data/multimodal/
+data/graph/
+reports/umb_seed_import_*.json
+reports/umb_seed_import_*.md
+reports/umb_crawl_coverage_*.json
+reports/umb_crawl_coverage_*.md
 *.pdf
 *.doc
 *.docx

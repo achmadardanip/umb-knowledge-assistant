@@ -46,7 +46,14 @@ def validate_citations(
     *,
     require_citation_markers: bool = False,
 ) -> dict:
-    answer = (payload.get("answer") or "").strip()
+    raw_answer = payload.get("answer")
+    if isinstance(raw_answer, list):
+        answer = "\n".join(str(item) for item in raw_answer).strip()
+    elif isinstance(raw_answer, str):
+        answer = raw_answer.strip()
+    else:
+        answer = str(raw_answer or "").strip()
+    payload = {**payload, "answer": answer}
     retrieved_by_url = {context.get("url"): context for context in retrieved_contexts if context.get("url")}
     retrieved_by_normalized_url = {
         normalize_url(context.get("url")): context for context in retrieved_contexts if context.get("url")

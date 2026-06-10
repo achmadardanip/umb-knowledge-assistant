@@ -25,6 +25,15 @@ function hostnameForSource(source: Source) {
   }
 }
 
+function knowledgeBaseLabel(source: Source) {
+  const discovery = source.discovery_source || "";
+  if (discovery.includes("tavily")) return "Tavily + Firecrawl enriched KB";
+  if (source.source_type === "image" || source.source_type === "video") return `${source.source_type} metadata KB`;
+  if (source.source_type && source.source_type !== "html") return "PDF/document KB";
+  if (discovery.includes("firecrawl")) return "Firecrawl enriched KB";
+  return "Indexed Supabase KB";
+}
+
 export function SourceCard({ source, highlighted = false }: { source: Source; highlighted?: boolean }) {
   const hostname = hostnameForSource(source);
   return (
@@ -46,7 +55,11 @@ export function SourceCard({ source, highlighted = false }: { source: Source; hi
         <ExternalLink className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden />
       </div>
       <div className="flex flex-wrap gap-2 text-xs text-neutral-700">
+        <span className="rounded bg-brand/10 px-2 py-1 text-brand">{knowledgeBaseLabel(source)}</span>
         <span className="rounded bg-panel px-2 py-1">{source.source_type || "source"}</span>
+        {source.page_type ? <span className="rounded bg-panel px-2 py-1">{source.page_type}</span> : null}
+        {source.content_type && source.content_type !== source.source_type ? <span className="rounded bg-panel px-2 py-1">{source.content_type}</span> : null}
+        {source.media_type ? <span className="rounded bg-panel px-2 py-1">{source.media_type}</span> : null}
         <span className="rounded bg-panel px-2 py-1">score {source.relevance_score ?? source.score ?? 0}</span>
         {source.discovery_source ? <span className="rounded bg-panel px-2 py-1">{source.discovery_source}</span> : null}
       </div>

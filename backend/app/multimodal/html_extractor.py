@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 
 from app.multimodal.metadata_extractor import extract_html_metadata
 from app.multimodal.table_extractor import extract_html_tables
+from app.ingestion.umb_content import clean_umb_content
 
 
 @dataclass
@@ -46,10 +47,9 @@ def extract_html(html: str, url: str | None = None) -> ExtractedHTML:
     links = [a.get("href") for a in soup.find_all("a") if a.get("href")]
     return ExtractedHTML(
         title=metadata.get("title"),
-        text=clean_text(extracted),
+        text=clean_umb_content(clean_text(extracted)),
         headings=headings[:50],
         links=links[:300],
         metadata=metadata,
         tables=extract_html_tables(html),
     )
-

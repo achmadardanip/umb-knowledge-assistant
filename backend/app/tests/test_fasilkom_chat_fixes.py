@@ -1,6 +1,10 @@
 from app.api.routes_chat import ChatRequest, _build_retrieval_query, process_chat
 from app.db.models import Chunk, Document, Source
-from app.rag.answer_generator import generate_answer
+from app.rag.answer_generator import (
+    _structured_faculty_overview_payload,
+    _structured_fasilkom_payload,
+    generate_answer,
+)
 from app.rag.intent_classifier import classify_intent
 from app.retrieval.hybrid_retriever import HybridRetriever
 
@@ -250,3 +254,47 @@ def test_structured_fasilkom_program_answer_honors_english_language(db):
     assert result["model_used"] == "structured-fasilkom-extractor"
     assert result["answer"].startswith("According to the official source")
     assert "4. Sains Data" in result["answer"]
+
+
+def test_structured_fasilkom_does_not_hijack_general_faculty_question(db):
+    _add_fasilkom_chunk(db)
+    contexts = HybridRetriever(db).search("faculties and study programs", top_k=5)
+
+    result = _structured_fasilkom_payload(
+        question="What faculties and study programs are available at Mercu Buana University?",
+        contexts=contexts,
+        memory_used=False,
+        language="en",
+    )
+
+    assert result is None
+
+
+def test_structured_faculty_overview_lists_official_faculties():
+    context = {
+        "chunk_text": (
+            "[Fakultas Desain & Seni Kreatif](https://mercubuana.ac.id/fakultas-desain-dan-seni-kreatif) "
+            "[Fakultas Psikologi](https://mercubuana.ac.id/fakultas-psikologi) "
+            "[Fakultas Ilmu Komputer](https://mercubuana.ac.id/fakultas-ilmu-komputer) "
+            "[Fakultas Ilmu Komunikasi](https://mercubuana.ac.id/fakultas-ilmu-komunikasi) "
+            "[Fakultas Ekonomi & Bisnis](https://mercubuana.ac.id/fakultas-ekonomi-dan-bisnis) "
+            "[Fakultas Teknik](https://mercubuana.ac.id/fakultas-teknik)"
+        ),
+        "url": "https://mercubuana.ac.id/fakultas",
+        "title": "Fakultas - Universitas Mercu Buana",
+        "hostname": "mercubuana.ac.id",
+        "source_type": "html",
+        "score": 1.0,
+    }
+
+    result = _structured_faculty_overview_payload(
+        question="What faculties and study programs are available?",
+        contexts=[context],
+        memory_used=False,
+        language="en",
+    )
+
+    assert result is not None
+    assert result["model_used"] == "structured-faculty-overview-extractor"
+    assert "Fakultas Teknik" in result["answer"]
+    assert "complete study-program catalog" in result["answer"]

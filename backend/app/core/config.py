@@ -19,7 +19,17 @@ except Exception:
     pass
 
 
-ProviderName = Literal["openrouter", "openai", "gemini", "anthropic", "hermes", "groq", "huggingface"]
+ProviderName = Literal[
+    "local_ollama",
+    "local_lmstudio",
+    "openrouter",
+    "openai",
+    "gemini",
+    "anthropic",
+    "hermes",
+    "groq",
+    "huggingface",
+]
 
 
 def _bool(name: str, default: bool) -> bool:
@@ -44,9 +54,21 @@ def _float(name: str, default: float) -> float:
 
 
 def _provider(value: str | None) -> ProviderName:
-    normalized = (value or "openrouter").strip().lower()
-    if normalized not in {"openrouter", "openai", "gemini", "anthropic", "hermes", "groq", "huggingface"}:
-        return "openrouter"
+    normalized = (value or "local_ollama").strip().lower()
+    aliases = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio"}
+    normalized = aliases.get(normalized, normalized)
+    if normalized not in {
+        "local_ollama",
+        "local_lmstudio",
+        "openrouter",
+        "openai",
+        "gemini",
+        "anthropic",
+        "hermes",
+        "groq",
+        "huggingface",
+    }:
+        return "local_ollama"
     return normalized  # type: ignore[return-value]
 
 
@@ -56,7 +78,17 @@ class Settings:
     local_sqlite_fallback_enabled: bool = _bool("LOCAL_SQLITE_FALLBACK_ENABLED", True)
     local_sqlite_path: str = os.getenv("LOCAL_SQLITE_PATH", "local-dev.db")
 
-    ai_provider: ProviderName = _provider(os.getenv("AI_PROVIDER"))
+    ai_provider: ProviderName = _provider(os.getenv("ANSWER_PROVIDER") or os.getenv("AI_PROVIDER"))
+    answer_enable_fallback: bool = _bool("ANSWER_ENABLE_FALLBACK", True)
+    answer_fallback_provider: str = os.getenv("ANSWER_FALLBACK_PROVIDER", "puter").strip().lower()
+    local_llm_base_url: str = os.getenv("LOCAL_LLM_BASE_URL", "http://localhost:11434").rstrip("/")
+    local_llm_model: str = os.getenv("LOCAL_LLM_MODEL", "qwen2.5:7b-instruct").strip()
+    local_llm_temperature: float = _float("LOCAL_LLM_TEMPERATURE", 0.2)
+    local_llm_max_tokens: int = _int("LOCAL_LLM_MAX_TOKENS", 800)
+    local_llm_timeout_seconds: int = _int("LOCAL_LLM_TIMEOUT_SECONDS", 180)
+    lmstudio_base_url: str = os.getenv("LMSTUDIO_BASE_URL", "http://localhost:1234/v1").rstrip("/")
+    lmstudio_model: str = os.getenv("LMSTUDIO_MODEL", "local-model").strip()
+    lmstudio_api_key: str = os.getenv("LMSTUDIO_API_KEY", "lm-studio").strip()
 
     openrouter_api_key: str | None = os.getenv("OPENROUTER_API_KEY")
     openrouter_base_url: str = os.getenv("OPENROUTER_BASE_URL", "https://openrouter.ai/api/v1")
@@ -85,7 +117,7 @@ class Settings:
     huggingface_base_url: str = os.getenv("HUGGINGFACE_BASE_URL", "https://router.huggingface.co/v1")
     huggingface_model: str = os.getenv("HF_MODEL", "meta-llama/Llama-3.1-8B-Instruct")
 
-    embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "openai").strip().lower()
+    embedding_provider: str = os.getenv("EMBEDDING_PROVIDER", "local_e5").strip().lower()
     embedding_model: str = os.getenv("EMBEDDING_MODEL", "text-embedding-3-small")
     embedding_profile: str = os.getenv("EMBEDDING_PROFILE", "local-e5-small-v1").strip()
     embedding_version: str = os.getenv("EMBEDDING_VERSION", "1").strip()
@@ -129,7 +161,7 @@ class Settings:
     llm_max_retries: int = _int("LLM_MAX_RETRIES", 2)
     llm_retry_backoff_seconds: float = _float("LLM_RETRY_BACKOFF_SECONDS", 2.0)
     llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", True)
-    llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "openai")
+    llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "gemini,openai")
 
     # Corroboration-Gated Claim Verification (CGCV). Off by default until the
     # evaluation harness can measure its faithfulness/abstention impact; the
@@ -180,13 +212,15 @@ class Settings:
     web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
 
     firecrawl_api_key: str | None = os.getenv("FIRECRAWL_API_KEY")
-    firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "https://api.firecrawl.dev/v2").rstrip("/")
+    firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "http://localhost:3002").rstrip("/")
+    firecrawl_self_hosted: bool = _bool("FIRECRAWL_SELF_HOSTED", True)
     firecrawl_default_limit: int = _int("FIRECRAWL_DEFAULT_LIMIT", 500)
     firecrawl_timeout_seconds: int = _int("FIRECRAWL_TIMEOUT_SECONDS", 60)
     firecrawl_max_retries: int = _int("FIRECRAWL_MAX_RETRIES", 3)
     firecrawl_retry_backoff_seconds: float = _float("FIRECRAWL_RETRY_BACKOFF_SECONDS", 2.0)
     firecrawl_delay_seconds: float = _float("FIRECRAWL_DELAY_SECONDS", 1.0)
     firecrawl_max_concurrency: int = _int("FIRECRAWL_MAX_CONCURRENCY", 2)
+    firecrawl_max_related_links_per_page: int = _int("FIRECRAWL_MAX_RELATED_LINKS_PER_PAGE", 500)
     firecrawl_poll_interval_seconds: float = _float("FIRECRAWL_POLL_INTERVAL_SECONDS", 10.0)
     firecrawl_max_wait_seconds: int = _int("FIRECRAWL_MAX_WAIT_SECONDS", 1800)
     firecrawl_zero_data_retention: bool = _bool("FIRECRAWL_ZERO_DATA_RETENTION", True)
@@ -213,6 +247,10 @@ class Settings:
     enable_ocr: bool = _bool("ENABLE_OCR", False)
     ocr_provider: str = os.getenv("OCR_PROVIDER", "tesseract")
     ocr_languages: str = os.getenv("OCR_LANGUAGES", "ind+eng")
+    multimodal_embedding_provider: str = os.getenv("MULTIMODAL_EMBEDDING_PROVIDER", "disabled").strip().lower()
+    jina_embedding_model: str = os.getenv("JINA_EMBEDDING_MODEL", "jinaai/jina-embeddings-v4").strip()
+    vision_provider: str = os.getenv("VISION_PROVIDER", "disabled").strip().lower()
+    qwen_vl_model: str = os.getenv("QWEN_VL_MODEL", "Qwen/Qwen2.5-VL-3B-Instruct").strip()
     enable_asr: bool = _bool("ENABLE_ASR", False)
     asr_provider: str = os.getenv("ASR_PROVIDER", "faster-whisper")
     asr_model_size: str = os.getenv("ASR_MODEL_SIZE", "base")
