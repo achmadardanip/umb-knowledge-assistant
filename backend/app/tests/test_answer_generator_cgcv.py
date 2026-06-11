@@ -35,7 +35,7 @@ class _StubChecker:
 
 
 def _patch_cgcv(monkeypatch, answer_json: str):
-    def fake_chat_with_failover(messages, provider_override, max_retries):
+    def fake_chat_with_failover(messages, provider_override, max_retries, temperature=None):
         return (
             _FakeProvider(),
             LLMResponse(content=answer_json, provider_used="openrouter", model_used="test-model"),
@@ -74,7 +74,7 @@ def test_generate_answer_strips_prompt_leak_from_output(monkeypatch):
         '"confidence":"high","not_found":false}'
     )
 
-    def fake_chat_with_failover(messages, provider_override, max_retries):
+    def fake_chat_with_failover(messages, provider_override, max_retries, temperature=None):
         return (_FakeProvider(), LLMResponse(content=leaked, provider_used="openrouter", model_used="test-model"), None)
 
     monkeypatch.setattr("app.rag.answer_generator._chat_with_failover", fake_chat_with_failover)

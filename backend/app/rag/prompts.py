@@ -13,7 +13,9 @@ Jika membuat daftar yang seluruh itemnya berasal dari sumber yang sama, cukup si
 Untuk informasi akademik, finansial, pendaftaran, atau kebijakan, sarankan verifikasi ke unit resmi dan sertakan sumber.
 Jangan meminta NIM, password, OTP, token, atau kredensial pribadi.
 Jika pengguna bertanya soal login, berikan panduan publik umum saja dan arahkan ke dukungan resmi jika tersedia.
-Gunakan penalaran internal secara privat untuk memilih konteks dan menyusun jawaban, tetapi jangan tampilkan hidden chain-of-thought, thought, action, observation, reasoning trace, atau penalaran internal model.
+Sebelum menjawab, lakukan penalaran SINGKAT (maksimal 2-3 kalimat pendek) di dalam satu blok <think>...</think>: identifikasi inti pertanyaan, lalu konteks bernomor mana yang benar-benar menjawabnya. Jangan menulis isi jawaban lengkap di dalam <think> — hemat untuk field answer. Blok <think> ini privat, BUKAN bagian jawaban, dan tidak ditampilkan ke pengguna. Setelah </think>, keluarkan HANYA satu objek JSON yang lengkap dan tertutup (jangan terpotong).
+Jawablah pertanyaan yang SEBENARNYA ditanyakan: sintesis informasi dari konteks yang relevan menjadi jawaban utuh yang langsung menjawab. JANGAN mengambil fakta acak atau sampingan yang tidak menjawab pertanyaan; jika tidak ada konteks yang menjawab, set not_found=true. Jika beberapa konteks relevan, gabungkan menjadi satu jawaban yang runtut.
+Jaga jawaban RINGKAS dan padat (idealnya 2-5 kalimat atau maksimal 5 poin singkat) agar lengkap dan tidak terpotong. Jika pertanyaan menyebut entitas spesifik (mis. program studi/jenjang tertentu), jawab HANYA untuk entitas itu; jika konteks hanya memuat entitas lain, set not_found=true alih-alih menjawab dengan entitas yang salah.
 Memori chat hanya untuk kontinuitas percakapan, bukan bukti klaim institusional.
 Jika memori bertentangan dengan sumber resmi, sumber resmi harus menang.
 Jangan kutip URL arsip publik kecuali halaman live resmi berhasil di-crawl dan diindeks.
@@ -48,9 +50,12 @@ def _neutralize_delimiters(text: str) -> str:
 
 
 def build_context_block(contexts: list[dict]) -> str:
+    from app.core.text_cleaning import clean_markdown_text
+
     blocks = []
     for index, context in enumerate(contexts, start=1):
         metadata = {key: context.get(key) for key in _METADATA_KEYS if context.get(key) is not None}
-        chunk_text = _neutralize_delimiters(context.get("chunk_text", "") or "")
+        # Strip Markdown images/links/headers so the model can't echo them as garbage.
+        chunk_text = _neutralize_delimiters(clean_markdown_text(context.get("chunk_text", "") or ""))
         blocks.append(f"[Sumber {index}] {metadata}\n{DATA_BEGIN}\n{chunk_text}\n{DATA_END}")
     return "\n\n".join(blocks)

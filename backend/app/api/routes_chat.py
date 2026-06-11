@@ -27,6 +27,7 @@ from app.chat.clarify import clarification_suggestions, clarifying_questions
 from app.chat.followups import suggest_followups
 from app.chat.prepare_store import PreparedGeneration, prepare_store
 from app.chat.role_inference import infer_audience
+from app.retrieval.intent_gate import detect_retrieval_intent, history_conflicts, refusal_message
 from app.chat.summarizer import compact_context
 from app.core.config import get_settings
 from app.db.database import get_db, get_session_local
@@ -153,7 +154,11 @@ def _context_matches_fasilkom(context: dict) -> bool:
     return _mentions_fasilkom(combined)
 
 
-def _filter_contexts_for_question(query: str, contexts: list[dict]) -> tuple[list[dict], str | None]:
+def _filter_contexts_for_question(query: str, contexts: list[dict], intent: str | None = None) -> tuple[list[dict], str | None]:
+    # The Fasilkom entity narrowing only applies to faculty questions; a login or
+    # support query must never be filtered through Fasilkom conversation context.
+    if intent and intent not in ("faculty", "general"):
+        return contexts, None
     if not contexts or not _mentions_fasilkom(query):
         return contexts, None
     focused = [context for context in contexts if _context_matches_fasilkom(context)]
@@ -177,8 +182,19 @@ def _agent_step(step_id: str, label: str, status: StepStatus, detail: str | None
     }
 
 
-def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None) -> str:
+def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None, intent: str | None = None) -> str:
     prior_messages = list(history or [])
+    # Conversation context must never override the current query's intent: a chat
+    # titled "Informasi Fasilkom UMB" must not steer a SIA-login question into
+    # faculty pages. Drop conflicting title/turns before building the query.
+    if intent:
+        if chat_title and chat_title != "New Chat" and history_conflicts(intent, chat_title):
+            chat_title = None
+        prior_messages = [
+            message
+            for message in prior_messages
+            if not history_conflicts(intent, message.get("content") or "")
+        ]
     normalized_question = " ".join((question or "").split()).lower()
     for index in range(len(prior_messages) - 1, -1, -1):
         message = prior_messages[index]
@@ -210,6 +226,38 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
     return compact_context(parts, max_chars=1600)
 
 
+def _apply_answer_policy(answer_payload: dict, intent: str, language: str | None) -> str | None:
+    """Final answer policy (spec #7/#8/#10/#13).
+
+    A verified answer is left untouched (its validated citations stay). But an
+    *unverified* result — ``not_found`` or the extractive "could not verify" fallback —
+    must never masquerade as an answer backed by candidate source cards. For sensitive
+    intents that have a refusal template (login/SSO, support, faculty) we replace the
+    text with a safe refusal and drop all source cards. Returns a refusal reason or None.
+    """
+    is_extractive = (answer_payload.get("metadata") or {}).get("fallback") == "extractive"
+    unverified = bool(answer_payload.get("not_found")) or is_extractive
+    if not unverified:
+        return None
+    # Never show candidate source cards on a non-answer.
+    answer_payload["sources"] = []
+    answer_payload["confidence"] = "low"
+    answer_payload["not_found"] = True
+    answer_payload["provider_used"] = "system"
+    # Sensitive intents get a tailored refusal; everything else gets the clean
+    # "no verified answer -> contact the WhatsApp admin" fallback. Either way: no guessing.
+    refusal = refusal_message(intent, language)
+    if refusal:
+        answer_payload["answer"] = refusal
+        answer_payload["model_used"] = "intent-refusal"
+        answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "intent_refusal": True}
+        return f"unverified_context_for_intent:{intent}"
+    answer_payload["answer"] = _fallback_answer_for_language(language)
+    answer_payload["model_used"] = "fallback"
+    answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "fallback": "no_verified_answer"}
+    return "no_verified_answer"
+
+
 def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
     hosts = [context.get("hostname") for context in contexts if context.get("hostname")]
     source_types = [context.get("source_type") or "unknown" for context in contexts]
@@ -223,19 +271,15 @@ def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
 
 
 def _fallback_answer_for_language(language: str | None, query: str | None = None) -> str:
-    if _mentions_fasilkom(query or ""):
-        if (language or "").lower().startswith("en"):
-            return (
-                "I have not found sufficiently relevant official sources about the Faculty of Computer Science/Fasilkom "
-                "in the current index. Please index the faculty, structure, or study-program pages first."
-            )
-        return (
-            "Saya belum menemukan sumber resmi yang cukup relevan tentang Fakultas Ilmu Komputer/Fasilkom dari indeks saat ini. "
-            "Coba indeks halaman fakultas, struktural, atau program studi UMB terlebih dahulu."
-        )
+    # NOTE: `query` must be the ORIGINAL user question, not the context-enriched retrieval
+    # query — otherwise a Fasilkom chat title bleeds into unrelated (e.g. library) answers.
+    from app.retrieval.intent_gate import admin_contact_line
+
     if (language or "").lower().startswith("en"):
-        return "I have not found official information related to that question in the available public Universitas Mercu Buana sources."
-    return "Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia."
+        body = "I could not find verified official Universitas Mercu Buana information for that question, so I will not guess."
+    else:
+        body = "Saya belum menemukan informasi resmi yang terverifikasi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana, jadi saya tidak menebak."
+    return f"{body}\n\n{admin_contact_line(language)}"
 
 
 def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_generation: bool = False) -> dict:
@@ -467,7 +511,24 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             "agent_tool_calls": 0,
         }
 
-    retrieval_query = _build_retrieval_query(payload.question, history, title)
+    retrieval_intent = detect_retrieval_intent(payload.question)
+    conversation_context_rejected = bool(
+        (title and title != "New Chat" and history_conflicts(retrieval_intent, title))
+        or any(
+            history_conflicts(retrieval_intent, message.get("content") or "")
+            for message in history
+            if message.get("role") == "user"
+        )
+    )
+    if conversation_context_rejected:
+        emit(
+            "conversation_context",
+            "Memeriksa konteks percakapan vs intent pertanyaan",
+            "done",
+            f"Konteks percakapan diabaikan karena konflik intent (intent saat ini: {retrieval_intent})",
+            {"conversation_context_used": False, "conversation_context_rejected_reason": "intent_conflict"},
+        )
+    retrieval_query = _build_retrieval_query(payload.question, history, title, intent=retrieval_intent)
     if intent_result.topic != "general":
         retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
@@ -499,13 +560,14 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                 root_domain=settings.allowed_domain,
                 emit=emit,
                 indexed_retriever_cls=HybridRetriever,
+                intent=retrieval_intent,
             )
         except WebSearchConfigurationError as exc:
             db.rollback()
             emit("umb_live_web_search", "Mencari sumber live resmi UMB", "error", str(exc))
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         contexts = agent_result.contexts
-        filtered_contexts, filter_detail = _filter_contexts_for_question(retrieval_query, contexts)
+        filtered_contexts, filter_detail = _filter_contexts_for_question(retrieval_query, contexts, intent=retrieval_intent)
         if filter_detail:
             emit(
                 "context_filter",
@@ -522,15 +584,25 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     provider_used, model_used = _provider_meta(payload.provider_override)
     emit("provider", "Memilih provider AI", "done", f"{provider_used} / {model_used}")
 
+    refusal_reason: str | None = None
     if not contexts:
-        emit("answer", "Menyusun jawaban fallback", "done", "Tidak ada konteks resmi yang cukup")
+        # Intent-aware refusal: for sensitive intents (login/SSO, support, dean) we
+        # refuse to guess instead of answering from nothing — and never attach
+        # irrelevant source cards (sources stays empty).
+        refusal = refusal_message(retrieval_intent, language_detected)
+        if refusal:
+            refusal_reason = f"no_valid_context_for_intent:{retrieval_intent}"
+            emit("answer", "Menyusun jawaban penolakan aman", "done",
+                 f"Tidak ada konteks valid untuk intent {retrieval_intent}; menolak menebak")
+        else:
+            emit("answer", "Menyusun jawaban fallback", "done", "Tidak ada konteks resmi yang cukup")
         answer_payload = {
-            "answer": _fallback_answer_for_language(language_detected, retrieval_query),
+            "answer": refusal or _fallback_answer_for_language(language_detected, payload.question),
             "sources": [],
             "confidence": "low",
             "not_found": True,
-            "provider_used": provider_used,
-            "model_used": model_used,
+            "provider_used": "system" if refusal else provider_used,
+            "model_used": "intent-refusal" if refusal else model_used,
             "memory_used": bool(memories),
         }
     else:
@@ -618,8 +690,9 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     memories=memories,
                     provider_override=payload.provider_override,
                     language=language_detected,
+                    intent=retrieval_intent,
                 )
-                if cache_enabled and not answer_payload.get("not_found"):
+                if cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
                     store_cached_answer(
                         db,
                         cache_key=cache_key,
@@ -630,6 +703,16 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                         answer_payload=answer_payload,
                         ttl_seconds=settings.rag_answer_cache_ttl_seconds,
                     )
+            policy_reason = _apply_answer_policy(answer_payload, retrieval_intent, language_detected)
+            if policy_reason:
+                refusal_reason = policy_reason
+                emit(
+                    "answer",
+                    "Menerapkan kebijakan jawaban berbasis intent",
+                    "done",
+                    "Konteks tidak terverifikasi untuk intent ini; menampilkan penolakan aman tanpa kartu sumber",
+                    {"refusal_reason": policy_reason},
+                )
             emit(
                 "citation",
                 "Memvalidasi sumber dan sitasi",
@@ -673,6 +756,15 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         "retrieval_warnings": agent_result.retrieval_warnings if agent_result else [],
         "cache_hit": bool(answer_payload.get("cache_hit")),
         "regenerate_from_message_id": payload.regenerate_from_message_id,
+        "retrieval_debug": {
+            "current_user_query": payload.question,
+            "detected_intent": retrieval_intent,
+            "conversation_context_used": not conversation_context_rejected,
+            "conversation_context_rejected_reason": "intent_conflict" if conversation_context_rejected else None,
+            **(agent_result.gate_debug or {} if agent_result else {}),
+            "final_citations": len(answer_payload.get("sources") or []),
+            "refusal_reason": refusal_reason,
+        },
     }
     assistant = save_message(
         db,
@@ -723,6 +815,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         "agent_tool_calls": agent_result.agent_tool_calls if agent_result else 0,
         "retrieval_fallback_used": agent_result.retrieval_fallback_used if agent_result else False,
         "retrieval_warnings": agent_result.retrieval_warnings if agent_result else [],
+        "retrieval_debug": metadata["retrieval_debug"],
     }
 
 
@@ -809,9 +902,14 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         memory_used=prepared.memory_used,
         language=prepared.language,
     )
+    # Same intent answer policy as the server path: an unverified/extractive browser
+    # answer for a sensitive intent becomes a safe refusal with no candidate cards.
+    finalize_refusal_reason = _apply_answer_policy(
+        answer_payload, detect_retrieval_intent(prepared.raw_question), prepared.language
+    )
     final_model = answer_payload.get("model_used") or model_used
 
-    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found"):
+    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
         try:
             cache_key = build_cache_key(
                 question=prepared.raw_question,
@@ -845,6 +943,11 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         "web_context_count": prepared.web_context_count,
         "agent_tool_calls": prepared.agent_tool_calls,
         "cache_hit": False,
+        "retrieval_debug": {
+            "detected_intent": detect_retrieval_intent(prepared.raw_question),
+            "final_citations": len(answer_payload.get("sources") or []),
+            "refusal_reason": finalize_refusal_reason,
+        },
     }
     assistant = save_message(
         db,

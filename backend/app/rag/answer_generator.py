@@ -6,7 +6,7 @@ import re
 import time
 
 from app.core.config import get_settings
-from app.core.output_filter import sanitize_answer
+from app.core.output_filter import sanitize_answer, strip_reasoning
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider, normalize_provider
 from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
@@ -172,27 +172,35 @@ def _clean_dean_candidate(raw: str) -> str | None:
     return candidate
 
 
+_NEWS_CONTEXT_MARKERS = (
+    "campus-update", "berita", "/event", "/news", "pamerkan", "inovasi", "kabar",
+    "kegiatan", "gandeng", "menekankan", "press", "siaran",
+)
+
+
+def _is_news_context(context: dict) -> bool:
+    """A dean/structure name must come from a structural page, never a news/event article."""
+    blob = f"{context.get('url') or ''} {context.get('title') or ''}".lower()
+    return any(marker in blob for marker in _NEWS_CONTEXT_MARKERS)
+
+
 def _extract_dean_name(contexts: list[dict]) -> str | None:
     for context in contexts:
+        if _is_news_context(context):
+            continue  # never read a dean name out of a news/event article
         text = context.get("chunk_text") or ""
-        lines = [line.strip() for line in re.split(r"[\r\n]+", text) if line.strip()]
-        if not lines:
-            lines = [text]
-        for index, line in enumerate(lines):
-            lowered = line.lower()
-            if "dekan" not in lowered or "wakil dekan" in lowered:
+        for match in re.finditer(
+            r"\bdekan(?:\s+fakultas\s+ilmu\s+komputer|\s+fasilkom)?\s*[:\-–—]?\s+",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            if "wakil dekan" in text[max(0, match.start() - 6) : match.end()].lower():
                 continue
-            match = re.search(
-                r"\bdekan(?:\s+fakultas\s+ilmu\s+komputer|\s+fasilkom)?\s*[:\-–—]?\s+(.{3,140})",
-                line,
-                flags=re.IGNORECASE,
-            )
-            if match:
-                cleaned = _clean_dean_candidate(match.group(1))
-                if cleaned:
-                    return cleaned
-            if index + 1 < len(lines):
-                cleaned = _clean_dean_candidate(lines[index + 1])
+            tail = text[match.end() : match.end() + 160]
+            # require a real "Name, Degree" pattern so we never capture trailing prose
+            person = _PERSON_WITH_DEGREES_RE.search(tail)
+            if person:
+                cleaned = _clean_dean_candidate(person.group(1))
                 if cleaned:
                     return cleaned
     return None
@@ -532,7 +540,7 @@ def _provider_candidates(provider_override: str | None) -> list[str | None]:
     return candidates
 
 
-def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int):
+def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int, temperature: float | None = None):
     settings = get_settings()
     last_error: Exception | None = None
     selected_provider = normalize_provider(provider_override)
@@ -540,7 +548,12 @@ def _chat_with_failover(messages: list[dict], provider_override: str | None, max
         provider = get_provider(candidate)
         for attempt in range(max_retries + 1):
             try:
-                return provider, provider.chat(messages), None
+                response = (
+                    provider.chat(messages, temperature=temperature)
+                    if temperature is not None
+                    else provider.chat(messages)
+                )
+                return provider, response, None
             except ProviderConfigurationError as exc:
                 if provider.provider_name == selected_provider:
                     raise
@@ -679,6 +692,77 @@ Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran
     return messages, contexts
 
 
+def _is_contentless_answer(answer: str) -> bool:
+    """True for non-answers: near-empty, or a lead-in that promised a list it never gave
+    (e.g. 'Jam operasional ... dapat dilihat sebagai berikut:' with nothing after)."""
+    if not answer:
+        return True
+    without_markers = re.sub(r"\[\d+\]", "", answer).strip()
+    alnum = re.sub(r"[^0-9A-Za-zÀ-ɏ]+", " ", without_markers).strip()
+    if len(alnum) < 15:
+        return True
+    tail = without_markers.rstrip().rstrip(".").rstrip()
+    return tail.endswith(":")
+
+
+def _reconcile_citations(answer: str, contexts: list[dict]) -> tuple[str, list[dict]]:
+    """Map the model's ``[k]`` markers — which reference the prompt's k-th context, not
+    the model's own (often wrong/short) sources array — to real contexts, dedup by URL
+    with sequential renumbering, and rewrite the markers so answer and sources agree.
+    Returns (rewritten_answer, sources). Empty sources when no usable markers exist."""
+    if not answer:
+        return answer, []
+    url_to_id: dict[str, int] = {}
+    ordered: list[dict] = []
+
+    def _remap(match: "re.Match") -> str:
+        k = int(match.group(1))
+        if not (1 <= k <= len(contexts)):
+            return ""  # drop a dangling marker the model invented
+        context = contexts[k - 1]
+        url = context.get("url") or f"__ctx_{k}"
+        if url not in url_to_id:
+            url_to_id[url] = len(url_to_id) + 1
+            ordered.append(context)
+        return f"[{url_to_id[url]}]"
+
+    rewritten = re.sub(r"\[(\d+)\]", _remap, answer)
+    sources: list[dict] = []
+    for index, context in enumerate(ordered, start=1):
+        source = _build_sources([context])[0]
+        source["citation_id"] = index
+        sources.append(source)
+    return rewritten, sources
+
+
+def _salvage_truncated_answer(content: str) -> dict | None:
+    """Recover an answer from truncated/invalid JSON (weak local models that run out of
+    tokens mid-list). Returns a clean payload or None if nothing usable is found."""
+    text = content or ""
+    marker = re.search(r'"answer"\s*:\s*', text)
+    if not marker:
+        return None
+    rest = text[marker.end():].lstrip()
+    items: list[str] = []
+    if rest.startswith("["):
+        items = re.findall(r'"((?:[^"\\]|\\.)*)"', rest)
+    elif rest.startswith('"'):
+        match = re.match(r'"((?:[^"\\]|\\.)*)"', rest)
+        if match:
+            items = [match.group(1)]
+    def _unescape(value: str) -> str:
+        try:
+            return json.loads(f'"{value}"')
+        except (json.JSONDecodeError, ValueError):
+            return value.replace("\\n", "\n").replace('\\"', '"').strip()
+
+    items = [_unescape(item) for item in items if item.strip()]
+    if not items:
+        return None
+    answer = items[0] if len(items) == 1 else "\n".join(f"- {item}" for item in items)
+    return {"answer": answer, "sources": [], "confidence": "medium", "not_found": False}
+
+
 def finalize_generated_answer(
     content: str,
     contexts: list[dict],
@@ -696,22 +780,31 @@ def finalize_generated_answer(
     provider or from a browser LLM (Puter.js), so the browser path is just as gated.
     """
     settings = get_settings()
+    content = strip_reasoning(content or "")  # drop <think> CoT scratchpad before parsing
     try:
         parsed_payload = json.loads(_json_text(content))
         payload = parsed_payload if isinstance(parsed_payload, dict) else {"answer": parsed_payload}
     except json.JSONDecodeError:
-        payload = {
+        # Small local models often exceed the token budget and truncate the JSON
+        # mid-list. Recover the complete answer items instead of dumping raw JSON.
+        salvaged = _salvage_truncated_answer(content)
+        payload = salvaged or {
             "answer": (content or "").strip(),
             "sources": _build_sources(contexts[:3]),
             "confidence": "medium",
             "not_found": False,
         }
+        if salvaged and not payload.get("sources"):
+            payload["sources"] = _build_sources(contexts[:3])
     raw_answer = payload.get("answer")
     if isinstance(raw_answer, list):
-        payload["answer"] = "\n".join(
-            f"- {item}" if isinstance(item, str) else f"- {json.dumps(item, ensure_ascii=False)}"
-            for item in raw_answer
-        )
+        items = []
+        for item in raw_answer:
+            text = item if isinstance(item, str) else json.dumps(item, ensure_ascii=False)
+            text = text.strip().lstrip("-•*").strip()  # avoid "- -" when the model already bullets
+            if text:
+                items.append(f"- {text}")
+        payload["answer"] = "\n".join(items)
     elif not isinstance(raw_answer, str):
         payload["answer"] = "" if raw_answer is None else json.dumps(raw_answer, ensure_ascii=False)
     if not isinstance(payload.get("sources"), list):
@@ -719,9 +812,23 @@ def finalize_generated_answer(
     payload["provider_used"] = provider_used
     payload["model_used"] = model_used
     payload["memory_used"] = memory_used
-    if not payload.get("sources"):
-        payload["sources"] = _build_sources(contexts[:3])
-    validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
+    # Reconcile the model's [n] markers against the prompt-numbered contexts (weak local
+    # models mis-number or under-populate their sources array), rewriting markers + building
+    # matching sources. If the answer carries no usable markers, attach the unique official
+    # contexts it was generated from and skip the strict marker check (CGCV still grounds it).
+    reconciled_answer, reconciled_sources = _reconcile_citations(payload.get("answer") or "", contexts)
+    if reconciled_sources:
+        payload["answer"] = reconciled_answer
+        payload["sources"] = reconciled_sources
+        require_markers = True
+    else:
+        if not payload.get("sources"):
+            payload["sources"] = _build_sources(_unique_contexts_by_source(contexts))
+        require_markers = False
+    # A contentless answer ("...sebagai berikut:" with no list, or near-empty) is a non-answer.
+    if _is_contentless_answer(payload.get("answer") or ""):
+        payload["not_found"] = True
+    validated_payload = validate_citations(payload, contexts, require_citation_markers=require_markers)
     if not validated_payload.get("not_found") and _cgcv_enabled():
         validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
     if validated_payload.get("not_found") and settings.llm_fallback_extractive:
@@ -745,38 +852,40 @@ def generate_answer(
     memories: list[dict] | None = None,
     provider_override: str | None = None,
     language: str | None = None,
+    intent: str | None = None,
 ) -> dict:
     settings = get_settings()
     memory_used = bool(memories)
     if not contexts:
         return fallback_payload(memory_used=memory_used)
 
-    structured_payload = _structured_location_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+    # Structured extractors are deterministic shortcuts — only fire them when the detected
+    # intent matches, so "lokasi perpustakaan" (library) never hits the campus-location
+    # extractor and a login/support query never hits the Fasilkom extractor.
+    if intent in (None, "location"):
+        structured_payload = _structured_location_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
 
-    structured_payload = _structured_faculty_overview_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+    if intent in (None, "faculty"):
+        structured_payload = _structured_faculty_overview_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
 
-    structured_payload = _structured_fasilkom_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+        structured_payload = _structured_fasilkom_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
+
+        # Dean/lecturer "who is" questions are exactly where a weak LLM invents or truncates
+        # a name. If the deterministic extractor couldn't find one, refuse instead of guessing.
+        if intent == "faculty" and _question_has(question, _DEAN_QUERIES + _LECTURER_QUERIES):
+            return fallback_payload(memory_used=memory_used)
 
     messages, contexts = build_generation_messages(
         question=question,
@@ -786,28 +895,39 @@ def generate_answer(
         language=language,
     )
     max_retries = max(settings.llm_max_retries, 0)
-    provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries)
+    # Weak local models fail validation non-deterministically. Regenerate once with more
+    # sampling diversity before giving up — turns false "belum menemukan" into real answers
+    # without relaxing grounding (every attempt still goes through citation + CGCV).
+    retry_temperatures: list[float | None] = [None, 0.6]
+    last_result: dict | None = None
+    for temperature in retry_temperatures:
+        provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries, temperature)
+        if response is None:
+            break
+        result = finalize_generated_answer(
+            response.content,
+            contexts,
+            provider_used=response.provider_used,
+            model_used=response.model_used,
+            memory_used=memory_used,
+            provider_override=provider_override,
+            language=language,
+        )
+        last_result = result
+        if not result.get("not_found"):
+            return result
 
-    if response is None:
-        if settings.llm_fallback_extractive:
-            return extractive_fallback_payload(
-                contexts=contexts,
-                memory_used=memory_used,
-                provider_used=provider.provider_name if provider else normalize_provider(provider_override),
-                model_used=provider.model if provider else None,
-                reason=str(last_error) if last_error else "provider_unavailable",
-                language=language,
-            )
-        if last_error:
-            raise last_error
-        raise RuntimeError("Provider returned no response.")
-
-    return finalize_generated_answer(
-        response.content,
-        contexts,
-        provider_used=response.provider_used,
-        model_used=response.model_used,
-        memory_used=memory_used,
-        provider_override=provider_override,
-        language=language,
-    )
+    if last_result is not None:
+        return last_result
+    if settings.llm_fallback_extractive:
+        return extractive_fallback_payload(
+            contexts=contexts,
+            memory_used=memory_used,
+            provider_used=provider.provider_name if provider else normalize_provider(provider_override),
+            model_used=provider.model if provider else None,
+            reason=str(last_error) if last_error else "provider_unavailable",
+            language=language,
+        )
+    if last_error:
+        raise last_error
+    raise RuntimeError("Provider returned no response.")

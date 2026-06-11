@@ -338,7 +338,7 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
         }
     ]
 
-    def fake_chat_with_failover(messages, provider_override, max_retries):
+    def fake_chat_with_failover(messages, provider_override, max_retries, temperature=None):
         return (
             FakeProvider(),
             LLMResponse(
@@ -360,20 +360,26 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
         language="id",
     )
 
-    assert result["not_found"] is False
-    assert result["sources"][0]["hostname"] == "lib.mercubuana.ac.id"
-    assert "kutipan paling relevan" in result["answer"]
-    assert "[1]" in result["answer"]
+    # Extractive snippet-dumps are disabled (LLM_FALLBACK_EXTRACTIVE=false): an
+    # unverifiable answer becomes a clean not_found, not a messy quote dump.
+    assert result["not_found"] is True
+    assert "kutipan paling relevan" not in result["answer"]
 
 
 def test_top_k_is_capped_before_retrieval(db, monkeypatch):
     captured = {}
 
-    def fake_search(self, query, top_k=5, source_types=None):
+    def fake_search(self, query, top_k=5, source_types=None, **kwargs):
         captured["top_k"] = top_k
         return []
 
+    class _NoLive:
+        def search(self, query, top_k=5):
+            return []
+
     monkeypatch.setattr("app.api.routes_chat.HybridRetriever.search", fake_search)
+    # Empty KB now triggers the live (Tavily) fallback by design; stub it offline.
+    monkeypatch.setattr("app.agent.umb_agent.UMBLiveWebRetriever", lambda: _NoLive())
     result = process_chat(
         ChatRequest(
             anonymous_session_id="anon-topk",

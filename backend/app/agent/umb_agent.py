@@ -33,6 +33,7 @@ class AgentResult:
     agent_tool_calls: int
     retrieval_fallback_used: bool = False
     retrieval_warnings: list[str] | None = None
+    gate_debug: dict | None = None
 
 
 def _dedupe_contexts(contexts: list[dict]) -> list[dict]:
@@ -135,6 +136,7 @@ def run_umb_agent(
     root_domain: str,
     emit: AgentEmitter | None = None,
     indexed_retriever_cls=HybridRetriever,
+    intent: str | None = None,
 ) -> AgentResult:
     settings = get_settings()
     max_iterations = max(1, settings.agent_max_tool_iterations)
@@ -267,6 +269,84 @@ def run_umb_agent(
             {"indexed_context_count": len(indexed_contexts), "web_context_count": len(web_contexts)},
         )
 
+    # Intent gate: junk contexts must not satisfy retrieval. Hard-filter off-intent
+    # sources, then trigger the live fallback on "no answerable intent-matched
+    # contexts" — not on "no contexts" — even in indexed mode.
+    gate_debug: dict | None = None
+    if intent:
+        from app.retrieval.intent_gate import (
+            gate_contexts,
+            live_query_for_intent,
+            should_trigger_live_fallback,
+        )
+
+        candidates_before = len(contexts)
+        kept, rejected = gate_contexts(query, intent, contexts)
+        reject_reasons: dict[str, int] = {}
+        for item in rejected:
+            reason_key = str(item.get("_reject_reason") or "unknown").split(":")[0]
+            reject_reasons[reason_key] = reject_reasons.get(reason_key, 0) + 1
+        contexts = kept
+        emit_step(
+            "intent_gate",
+            "Memfilter sumber sesuai intent pertanyaan",
+            "done" if kept or not candidates_before else "running",
+            f"{len(kept)}/{candidates_before} kandidat lolos filter intent '{intent}'",
+            {"intent": intent, "kept": len(kept), "rejected": len(rejected), "reject_reasons": reject_reasons},
+        )
+
+        trigger, fallback_reason = should_trigger_live_fallback(intent, kept)
+        live_accepted = 0
+        live_found = 0
+        if (
+            trigger
+            and getattr(settings, "enable_live_fallback_on_low_answerability", True)
+            and not web_contexts
+        ):
+            live_query = live_query_for_intent(query, intent)
+            emit_step(
+                "fallback_retrieval",
+                "Konteks KB tidak menjawab intent — mencari sumber live resmi",
+                "running",
+                f"Alasan: {fallback_reason}",
+            )
+            try:
+                fallback_web = live_retriever.search(live_query, top_k=top_k)
+            except Exception as exc:
+                fallback_web = []
+                retrieval_warnings.append(str(exc))
+                logger.info("Intent fallback live retrieval skipped: %s", exc)
+            live_found = len(fallback_web)
+            kept_web, rejected_web = gate_contexts(query, intent, fallback_web)
+            live_accepted = len(kept_web)
+            if kept_web:
+                web_contexts = list(kept_web)
+                contexts = contexts + kept_web
+            retrieval_fallback_used = True
+            emit_step(
+                "fallback_retrieval",
+                "Konteks KB tidak menjawab intent — mencari sumber live resmi",
+                "done" if kept_web else "skipped",
+                f"{live_accepted}/{live_found} sumber live lolos filter intent",
+                {
+                    "fallback_reason": fallback_reason,
+                    "live_results": live_found,
+                    "live_results_accepted": live_accepted,
+                    "live_results_rejected": len(rejected_web),
+                },
+            )
+        gate_debug = {
+            "intent": intent,
+            "retrieved_candidates": candidates_before,
+            "rejected_candidates": len(rejected),
+            "reject_reasons": reject_reasons,
+            "kept_candidates": len(kept),
+            "fallback_triggered": bool(trigger),
+            "fallback_reason": fallback_reason,
+            "live_results": live_found,
+            "live_results_accepted": live_accepted,
+        }
+
     graph_settings = get_settings()
     if graph_settings.graph_rag_enabled and retrieval_mode != "web" and contexts:
         try:
@@ -283,14 +363,25 @@ def run_umb_agent(
                     limit=graph_settings.graph_expansion_top_k,
                     exclude_chunk_ids=exclude_ids,
                 )
+                graph_found = len(graph_ctx)
+                graph_rejected = 0
+                if graph_ctx and intent and getattr(graph_settings, "enable_graph_intent_filter", True):
+                    from app.retrieval.intent_gate import gate_contexts as _gate_graph
+
+                    graph_ctx, graph_dropped = _gate_graph(query, intent, graph_ctx)
+                    graph_rejected = len(graph_dropped)
+                if gate_debug is not None:
+                    gate_debug["graph_contexts_found"] = graph_found
+                    gate_debug["graph_contexts_rejected"] = graph_rejected
+                    gate_debug["graph_contexts_final"] = len(graph_ctx)
                 if graph_ctx:
                     contexts = contexts + graph_ctx
                     emit_step(
                         "graph_rag",
                         "Memperluas konteks via knowledge graph",
                         "done",
-                        f"{len(graph_ctx)} konteks tambahan dari relasi entitas",
-                        {"graph_context_count": len(graph_ctx)},
+                        f"{len(graph_ctx)} konteks tambahan dari relasi entitas ({graph_rejected} ditolak filter intent)",
+                        {"graph_context_count": len(graph_ctx), "graph_contexts_rejected": graph_rejected},
                     )
         except Exception as exc:  # graph is best-effort; never break retrieval
             logging.getLogger(__name__).warning("GraphRAG expansion skipped: %s", exc)
@@ -335,4 +426,5 @@ def run_umb_agent(
         agent_tool_calls=tool_calls,
         retrieval_fallback_used=retrieval_fallback_used,
         retrieval_warnings=retrieval_warnings,
+        gate_debug=gate_debug,
     )
