@@ -373,7 +373,13 @@ def test_top_k_is_capped_before_retrieval(db, monkeypatch):
         captured["top_k"] = top_k
         return []
 
+    class _NoLive:
+        def search(self, query, top_k=5):
+            return []
+
     monkeypatch.setattr("app.api.routes_chat.HybridRetriever.search", fake_search)
+    # Empty KB now triggers the live (Tavily) fallback by design; stub it offline.
+    monkeypatch.setattr("app.agent.umb_agent.UMBLiveWebRetriever", lambda: _NoLive())
     result = process_chat(
         ChatRequest(
             anonymous_session_id="anon-topk",

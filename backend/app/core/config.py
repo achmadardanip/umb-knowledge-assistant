@@ -194,6 +194,16 @@ class Settings:
     reranker_model_weight: float = _float("RERANKER_MODEL_WEIGHT", 0.8)
     reranker_prewarm_enabled: bool = _bool("RERANKER_PREWARM_ENABLED", True)
 
+    # Intent gate: hard per-intent domain/term filtering, answerability scoring, and
+    # answerability-driven live fallback (replaces "context count > 0" as the trigger).
+    enable_strict_intent_filter: bool = _bool("ENABLE_STRICT_INTENT_FILTER", True)
+    enable_graph_intent_filter: bool = _bool("ENABLE_GRAPH_INTENT_FILTER", True)
+    enable_live_fallback_on_low_answerability: bool = _bool("ENABLE_LIVE_FALLBACK_ON_LOW_ANSWERABILITY", True)
+    retrieval_min_answerability_score: float = _float("RETRIEVAL_MIN_ANSWERABILITY_SCORE", 0.30)
+    retrieval_max_negative_keyword_hits: int = _int("RETRIEVAL_MAX_NEGATIVE_KEYWORD_HITS", 1)
+    citation_strict_mode: bool = _bool("CITATION_STRICT_MODE", True)
+    show_rejected_sources_in_debug_only: bool = _bool("SHOW_REJECTED_SOURCES_IN_DEBUG_ONLY", True)
+
     # Volatility-Aware Just-in-Time verification. Off (needs live web + cost budget).
     va_jit_enabled: bool = _bool("VA_JIT_ENABLED", False)
     va_jit_budget: int = _int("VA_JIT_BUDGET", 2)
