@@ -60,6 +60,70 @@ DEFAULT_SEEDS = [
 
 _ERROR_MARKERS = ("404 not found", "page not found", "tidak ditemukan", "halaman tidak ditemukan", "error 404")
 
+# Already-heavy corpora — never re-ingest these during prioritized informational enrichment.
+_DEPRIORITIZED_HOSTS = ("repository.", "publikasi.", "proceeding.", "jurnal.")
+
+# (seed, natural-language Tavily crawl instructions) in the user's exact priority order:
+# informational content first, research/repository corpora intentionally excluded.
+PRIORITY_CRAWLS: list[tuple[str, str]] = [
+    ("https://mercubuana.ac.id", "profil universitas, sejarah, visi misi, lokasi dan alamat kampus, struktur organisasi, pimpinan rektorat, fasilitas kampus, akreditasi institusi, kerjasama dan mitra industri"),
+    ("https://mercubuana.ac.id", "informasi akademik, kurikulum, kalender akademik, panduan akademik, peraturan akademik"),
+    ("https://mercubuana.ac.id", "daftar fakultas, program studi, daftar dosen, dekan dan wakil dekan, tenaga kependidikan, struktur organisasi fakultas"),
+    ("https://pendaftaran.mercubuana.ac.id", "pendaftaran mahasiswa baru, jalur seleksi, biaya kuliah dan uang pangkal, gelombang pendaftaran, persyaratan"),
+    ("https://baa.mercubuana.ac.id", "layanan akademik, kalender akademik, panduan akademik, jadwal"),
+    ("https://mercubuana.ac.id", "pengumuman, biro, lembaga, unit pelayanan, layanan mahasiswa"),
+    ("https://ditmawa.mercubuana.ac.id", "beasiswa, kemahasiswaan, organisasi mahasiswa, layanan kemahasiswaan"),
+    ("https://lib.mercubuana.ac.id", "layanan perpustakaan, jam operasional, cara meminjam buku, keanggotaan, fasilitas perpustakaan"),
+    ("https://support.mercubuana.ac.id", "dukungan teknis, bantuan SIA SSO, kontak helpdesk, panduan"),
+    ("https://sia.mercubuana.ac.id", "panduan SIA, cara login, lupa password, bantuan akun"),
+]
+
+
+def prioritized_enrich(*, per_seed: int = 150, max_depth: int = 3, only_new: bool = True) -> dict:
+    """Instruction-guided crawl in the user's priority order (informational first;
+    repository/journal corpora excluded). Upserts new pages to Supabase via the E5 profile."""
+    client = TavilyClient()
+    client.ensure_configured()
+    db = get_session_local()()
+    try:
+        existing = _existing_urls(db) if only_new else set()
+        stats = {"indexed": 0, "skipped": 0, "chunks": 0}
+        for tier, (seed, instructions) in enumerate(PRIORITY_CRAWLS, start=1):
+            try:
+                pages = client.crawl(seed, max_depth=max_depth, limit=per_seed, instructions=instructions)
+            except Exception as exc:
+                logger.warning("tier %d crawl failed for %s: %s", tier, seed, exc)
+                continue
+            for item in pages:
+                norm = normalize_url(item.url)
+                host = (item.url.split("/")[2] if "://" in item.url else "").lower()
+                if any(host.startswith(p) for p in _DEPRIORITIZED_HOSTS):
+                    stats["skipped"] += 1
+                    continue
+                if (only_new and norm in existing) or _is_junk(item.raw_content):
+                    stats["skipped"] += 1
+                    continue
+                try:
+                    n = upsert_source_document(
+                        db, item.url, item.raw_content, item.title or item.url,
+                        {"discovery_source": "tavily_crawl"}, 200,
+                        discovery_source="tavily_crawl", extraction_method="tavily_crawl",
+                        extraction_confidence=0.92,
+                    )
+                    db.commit()
+                    stats["indexed"] += 1
+                    stats["chunks"] += n
+                    existing.add(norm)
+                except Exception as exc:
+                    db.rollback()
+                    stats["skipped"] += 1
+                    logger.warning("upsert failed for %s: %s", item.url, exc)
+            logger.info("tier %d (%s) -> indexed=%d skipped=%d chunks=%d",
+                        tier, seed, stats["indexed"], stats["skipped"], stats["chunks"])
+        return stats
+    finally:
+        db.close()
+
 
 def _existing_urls(db) -> set[str]:
     return {normalize_url(url or "") for (url,) in db.query(Source.url).all()}
@@ -143,8 +207,12 @@ if __name__ == "__main__":
     parser.add_argument("--max-depth", type=int, default=2)
     parser.add_argument("--no-map", action="store_true", help="crawl only (skip map+extract)")
     parser.add_argument("--all", action="store_true", help="re-extract even if URL already indexed")
+    parser.add_argument("--prioritized", action="store_true", help="instruction-guided crawl in priority order (repository excluded)")
     args = parser.parse_args()
-    summary = enrich(
-        per_seed=args.per_seed, max_depth=args.max_depth, only_new=not args.all, use_map=not args.no_map
-    )
+    if args.prioritized:
+        summary = prioritized_enrich(per_seed=args.per_seed, max_depth=args.max_depth, only_new=not args.all)
+    else:
+        summary = enrich(
+            per_seed=args.per_seed, max_depth=args.max_depth, only_new=not args.all, use_map=not args.no_map
+        )
     print("DONE", summary)
