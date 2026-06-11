@@ -50,9 +50,12 @@ def _neutralize_delimiters(text: str) -> str:
 
 
 def build_context_block(contexts: list[dict]) -> str:
+    from app.core.text_cleaning import clean_markdown_text
+
     blocks = []
     for index, context in enumerate(contexts, start=1):
         metadata = {key: context.get(key) for key in _METADATA_KEYS if context.get(key) is not None}
-        chunk_text = _neutralize_delimiters(context.get("chunk_text", "") or "")
+        # Strip Markdown images/links/headers so the model can't echo them as garbage.
+        chunk_text = _neutralize_delimiters(clean_markdown_text(context.get("chunk_text", "") or ""))
         blocks.append(f"[Sumber {index}] {metadata}\n{DATA_BEGIN}\n{chunk_text}\n{DATA_END}")
     return "\n\n".join(blocks)

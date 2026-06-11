@@ -45,5 +45,8 @@ def strip_prompt_leak(answer: str) -> str:
 
 
 def sanitize_answer(answer: str) -> str:
-    """Full output guard: strip CoT reasoning, drop prompt-leak lines, redact secrets/PII."""
-    return redact_sensitive(strip_prompt_leak(strip_reasoning(answer or "")))
+    """Full output guard: strip CoT reasoning + Markdown noise (images/broken links),
+    drop prompt-leak lines, redact secrets/PII."""
+    from app.core.text_cleaning import clean_markdown_text
+
+    return redact_sensitive(strip_prompt_leak(clean_markdown_text(strip_reasoning(answer or ""))))

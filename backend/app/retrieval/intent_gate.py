@@ -27,6 +27,15 @@ from app.rag.intent_classifier import classify_topic
 
 _ROOT = "mercubuana.ac.id"
 
+# Single official escalation channel for "we don't have a verified answer" cases.
+UMB_ADMIN_WHATSAPP = "https://api.whatsapp.com/send/?phone=628119852020"
+
+
+def admin_contact_line(language: str | None) -> str:
+    if (language or "id").lower().startswith("en"):
+        return f"For further help, contact the UMB admin via WhatsApp: {UMB_ADMIN_WHATSAPP}"
+    return f"Untuk bantuan lebih lanjut, hubungi admin resmi UMB via WhatsApp: {UMB_ADMIN_WHATSAPP}"
+
 
 def _subdomain(hostname: str | None) -> str:
     host = (hostname or "").lower().strip()
@@ -329,7 +338,10 @@ def refusal_message(intent: str, language: str | None) -> str | None:
     if profile is None:
         return None
     is_en = (language or "id").lower().startswith("en")
-    return (profile.refusal_en if is_en else profile.refusal_id) or None
+    message = (profile.refusal_en if is_en else profile.refusal_id) or None
+    if message:
+        message = f"{message}\n\n{admin_contact_line(language)}"
+    return message
 
 
 def history_conflicts(current_intent: str, history_text: str) -> bool:

@@ -360,10 +360,10 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
         language="id",
     )
 
-    assert result["not_found"] is False
-    assert result["sources"][0]["hostname"] == "lib.mercubuana.ac.id"
-    assert "kutipan paling relevan" in result["answer"]
-    assert "[1]" in result["answer"]
+    # Extractive snippet-dumps are disabled (LLM_FALLBACK_EXTRACTIVE=false): an
+    # unverifiable answer becomes a clean not_found, not a messy quote dump.
+    assert result["not_found"] is True
+    assert "kutipan paling relevan" not in result["answer"]
 
 
 def test_top_k_is_capped_before_retrieval(db, monkeypatch):

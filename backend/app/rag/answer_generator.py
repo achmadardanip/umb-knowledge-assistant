@@ -172,27 +172,35 @@ def _clean_dean_candidate(raw: str) -> str | None:
     return candidate
 
 
+_NEWS_CONTEXT_MARKERS = (
+    "campus-update", "berita", "/event", "/news", "pamerkan", "inovasi", "kabar",
+    "kegiatan", "gandeng", "menekankan", "press", "siaran",
+)
+
+
+def _is_news_context(context: dict) -> bool:
+    """A dean/structure name must come from a structural page, never a news/event article."""
+    blob = f"{context.get('url') or ''} {context.get('title') or ''}".lower()
+    return any(marker in blob for marker in _NEWS_CONTEXT_MARKERS)
+
+
 def _extract_dean_name(contexts: list[dict]) -> str | None:
     for context in contexts:
+        if _is_news_context(context):
+            continue  # never read a dean name out of a news/event article
         text = context.get("chunk_text") or ""
-        lines = [line.strip() for line in re.split(r"[\r\n]+", text) if line.strip()]
-        if not lines:
-            lines = [text]
-        for index, line in enumerate(lines):
-            lowered = line.lower()
-            if "dekan" not in lowered or "wakil dekan" in lowered:
+        for match in re.finditer(
+            r"\bdekan(?:\s+fakultas\s+ilmu\s+komputer|\s+fasilkom)?\s*[:\-–—]?\s+",
+            text,
+            flags=re.IGNORECASE,
+        ):
+            if "wakil dekan" in text[max(0, match.start() - 6) : match.end()].lower():
                 continue
-            match = re.search(
-                r"\bdekan(?:\s+fakultas\s+ilmu\s+komputer|\s+fasilkom)?\s*[:\-–—]?\s+(.{3,140})",
-                line,
-                flags=re.IGNORECASE,
-            )
-            if match:
-                cleaned = _clean_dean_candidate(match.group(1))
-                if cleaned:
-                    return cleaned
-            if index + 1 < len(lines):
-                cleaned = _clean_dean_candidate(lines[index + 1])
+            tail = text[match.end() : match.end() + 160]
+            # require a real "Name, Degree" pattern so we never capture trailing prose
+            person = _PERSON_WITH_DEGREES_RE.search(tail)
+            if person:
+                cleaned = _clean_dean_candidate(person.group(1))
                 if cleaned:
                     return cleaned
     return None
@@ -679,6 +687,19 @@ Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran
     return messages, contexts
 
 
+def _is_contentless_answer(answer: str) -> bool:
+    """True for non-answers: near-empty, or a lead-in that promised a list it never gave
+    (e.g. 'Jam operasional ... dapat dilihat sebagai berikut:' with nothing after)."""
+    if not answer:
+        return True
+    without_markers = re.sub(r"\[\d+\]", "", answer).strip()
+    alnum = re.sub(r"[^0-9A-Za-zÀ-ɏ]+", " ", without_markers).strip()
+    if len(alnum) < 15:
+        return True
+    tail = without_markers.rstrip().rstrip(".").rstrip()
+    return tail.endswith(":")
+
+
 def _reconcile_citations(answer: str, contexts: list[dict]) -> tuple[str, list[dict]]:
     """Map the model's ``[k]`` markers — which reference the prompt's k-th context, not
     the model's own (often wrong/short) sources array — to real contexts, dedup by URL
@@ -799,6 +820,9 @@ def finalize_generated_answer(
         if not payload.get("sources"):
             payload["sources"] = _build_sources(_unique_contexts_by_source(contexts))
         require_markers = False
+    # A contentless answer ("...sebagai berikut:" with no list, or near-empty) is a non-answer.
+    if _is_contentless_answer(payload.get("answer") or ""):
+        payload["not_found"] = True
     validated_payload = validate_citations(payload, contexts, require_citation_markers=require_markers)
     if not validated_payload.get("not_found") and _cgcv_enabled():
         validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
@@ -823,38 +847,40 @@ def generate_answer(
     memories: list[dict] | None = None,
     provider_override: str | None = None,
     language: str | None = None,
+    intent: str | None = None,
 ) -> dict:
     settings = get_settings()
     memory_used = bool(memories)
     if not contexts:
         return fallback_payload(memory_used=memory_used)
 
-    structured_payload = _structured_location_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+    # Structured extractors are deterministic shortcuts — only fire them when the detected
+    # intent matches, so "lokasi perpustakaan" (library) never hits the campus-location
+    # extractor and a login/support query never hits the Fasilkom extractor.
+    if intent in (None, "location"):
+        structured_payload = _structured_location_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
 
-    structured_payload = _structured_faculty_overview_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+    if intent in (None, "faculty"):
+        structured_payload = _structured_faculty_overview_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
 
-    structured_payload = _structured_fasilkom_payload(
-        question=question,
-        contexts=contexts,
-        memory_used=memory_used,
-        language=language,
-    )
-    if structured_payload:
-        return structured_payload
+        structured_payload = _structured_fasilkom_payload(
+            question=question, contexts=contexts, memory_used=memory_used, language=language
+        )
+        if structured_payload:
+            return structured_payload
+
+        # Dean/lecturer "who is" questions are exactly where a weak LLM invents or truncates
+        # a name. If the deterministic extractor couldn't find one, refuse instead of guessing.
+        if intent == "faculty" and _question_has(question, _DEAN_QUERIES + _LECTURER_QUERIES):
+            return fallback_payload(memory_used=memory_used)
 
     messages, contexts = build_generation_messages(
         question=question,

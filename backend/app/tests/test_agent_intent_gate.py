@@ -208,7 +208,9 @@ def test_verified_answer_is_untouched():
     assert payload["answer"].startswith("Dekan")
 
 
-def test_general_intent_extractive_is_left_alone():
+def test_general_intent_unverified_routes_to_whatsapp_fallback():
+    """No more messy extractive dumps: a general unverified answer becomes the clean
+    'no verified answer -> WhatsApp admin' fallback with zero source cards."""
     from app.api.routes_chat import _apply_answer_policy
 
     payload = {
@@ -218,8 +220,9 @@ def test_general_intent_extractive_is_left_alone():
         "metadata": {"fallback": "extractive"},
     }
     reason = _apply_answer_policy(payload, "general", "id")
-    assert reason is None
-    assert len(payload["sources"]) == 1
+    assert reason == "no_verified_answer"
+    assert payload["sources"] == []
+    assert "whatsapp" in payload["answer"].lower() and "628119852020" in payload["answer"]
 
 
 def test_no_intent_means_no_gating(db, monkeypatch):

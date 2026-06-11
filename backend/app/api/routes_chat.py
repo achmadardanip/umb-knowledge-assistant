@@ -239,17 +239,23 @@ def _apply_answer_policy(answer_payload: dict, intent: str, language: str | None
     unverified = bool(answer_payload.get("not_found")) or is_extractive
     if not unverified:
         return None
-    refusal = refusal_message(intent, language)
-    if not refusal:
-        return None
-    answer_payload["answer"] = refusal
+    # Never show candidate source cards on a non-answer.
     answer_payload["sources"] = []
     answer_payload["confidence"] = "low"
     answer_payload["not_found"] = True
     answer_payload["provider_used"] = "system"
-    answer_payload["model_used"] = "intent-refusal"
-    answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "intent_refusal": True}
-    return f"unverified_context_for_intent:{intent}"
+    # Sensitive intents get a tailored refusal; everything else gets the clean
+    # "no verified answer -> contact the WhatsApp admin" fallback. Either way: no guessing.
+    refusal = refusal_message(intent, language)
+    if refusal:
+        answer_payload["answer"] = refusal
+        answer_payload["model_used"] = "intent-refusal"
+        answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "intent_refusal": True}
+        return f"unverified_context_for_intent:{intent}"
+    answer_payload["answer"] = _fallback_answer_for_language(language)
+    answer_payload["model_used"] = "fallback"
+    answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "fallback": "no_verified_answer"}
+    return "no_verified_answer"
 
 
 def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
@@ -265,19 +271,15 @@ def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
 
 
 def _fallback_answer_for_language(language: str | None, query: str | None = None) -> str:
-    if _mentions_fasilkom(query or ""):
-        if (language or "").lower().startswith("en"):
-            return (
-                "I have not found sufficiently relevant official sources about the Faculty of Computer Science/Fasilkom "
-                "in the current index. Please index the faculty, structure, or study-program pages first."
-            )
-        return (
-            "Saya belum menemukan sumber resmi yang cukup relevan tentang Fakultas Ilmu Komputer/Fasilkom dari indeks saat ini. "
-            "Coba indeks halaman fakultas, struktural, atau program studi UMB terlebih dahulu."
-        )
+    # NOTE: `query` must be the ORIGINAL user question, not the context-enriched retrieval
+    # query — otherwise a Fasilkom chat title bleeds into unrelated (e.g. library) answers.
+    from app.retrieval.intent_gate import admin_contact_line
+
     if (language or "").lower().startswith("en"):
-        return "I have not found official information related to that question in the available public Universitas Mercu Buana sources."
-    return "Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia."
+        body = "I could not find verified official Universitas Mercu Buana information for that question, so I will not guess."
+    else:
+        body = "Saya belum menemukan informasi resmi yang terverifikasi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana, jadi saya tidak menebak."
+    return f"{body}\n\n{admin_contact_line(language)}"
 
 
 def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_generation: bool = False) -> dict:
@@ -595,7 +597,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         else:
             emit("answer", "Menyusun jawaban fallback", "done", "Tidak ada konteks resmi yang cukup")
         answer_payload = {
-            "answer": refusal or _fallback_answer_for_language(language_detected, retrieval_query),
+            "answer": refusal or _fallback_answer_for_language(language_detected, payload.question),
             "sources": [],
             "confidence": "low",
             "not_found": True,
@@ -688,6 +690,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     memories=memories,
                     provider_override=payload.provider_override,
                     language=language_detected,
+                    intent=retrieval_intent,
                 )
                 if cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
                     store_cached_answer(
