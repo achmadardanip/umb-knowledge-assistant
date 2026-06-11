@@ -338,7 +338,7 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
         }
     ]
 
-    def fake_chat_with_failover(messages, provider_override, max_retries):
+    def fake_chat_with_failover(messages, provider_override, max_retries, temperature=None):
         return (
             FakeProvider(),
             LLMResponse(

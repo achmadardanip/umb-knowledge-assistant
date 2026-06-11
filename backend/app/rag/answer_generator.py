@@ -540,7 +540,7 @@ def _provider_candidates(provider_override: str | None) -> list[str | None]:
     return candidates
 
 
-def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int):
+def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int, temperature: float | None = None):
     settings = get_settings()
     last_error: Exception | None = None
     selected_provider = normalize_provider(provider_override)
@@ -548,7 +548,12 @@ def _chat_with_failover(messages: list[dict], provider_override: str | None, max
         provider = get_provider(candidate)
         for attempt in range(max_retries + 1):
             try:
-                return provider, provider.chat(messages), None
+                response = (
+                    provider.chat(messages, temperature=temperature)
+                    if temperature is not None
+                    else provider.chat(messages)
+                )
+                return provider, response, None
             except ProviderConfigurationError as exc:
                 if provider.provider_name == selected_provider:
                     raise
@@ -890,28 +895,39 @@ def generate_answer(
         language=language,
     )
     max_retries = max(settings.llm_max_retries, 0)
-    provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries)
+    # Weak local models fail validation non-deterministically. Regenerate once with more
+    # sampling diversity before giving up — turns false "belum menemukan" into real answers
+    # without relaxing grounding (every attempt still goes through citation + CGCV).
+    retry_temperatures: list[float | None] = [None, 0.6]
+    last_result: dict | None = None
+    for temperature in retry_temperatures:
+        provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries, temperature)
+        if response is None:
+            break
+        result = finalize_generated_answer(
+            response.content,
+            contexts,
+            provider_used=response.provider_used,
+            model_used=response.model_used,
+            memory_used=memory_used,
+            provider_override=provider_override,
+            language=language,
+        )
+        last_result = result
+        if not result.get("not_found"):
+            return result
 
-    if response is None:
-        if settings.llm_fallback_extractive:
-            return extractive_fallback_payload(
-                contexts=contexts,
-                memory_used=memory_used,
-                provider_used=provider.provider_name if provider else normalize_provider(provider_override),
-                model_used=provider.model if provider else None,
-                reason=str(last_error) if last_error else "provider_unavailable",
-                language=language,
-            )
-        if last_error:
-            raise last_error
-        raise RuntimeError("Provider returned no response.")
-
-    return finalize_generated_answer(
-        response.content,
-        contexts,
-        provider_used=response.provider_used,
-        model_used=response.model_used,
-        memory_used=memory_used,
-        provider_override=provider_override,
-        language=language,
-    )
+    if last_result is not None:
+        return last_result
+    if settings.llm_fallback_extractive:
+        return extractive_fallback_payload(
+            contexts=contexts,
+            memory_used=memory_used,
+            provider_used=provider.provider_name if provider else normalize_provider(provider_override),
+            model_used=provider.model if provider else None,
+            reason=str(last_error) if last_error else "provider_unavailable",
+            language=language,
+        )
+    if last_error:
+        raise last_error
+    raise RuntimeError("Provider returned no response.")
