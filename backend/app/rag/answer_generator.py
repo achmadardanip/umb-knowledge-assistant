@@ -6,7 +6,7 @@ import re
 import time
 
 from app.core.config import get_settings
-from app.core.output_filter import sanitize_answer
+from app.core.output_filter import sanitize_answer, strip_reasoning
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider, normalize_provider
 from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
@@ -679,6 +679,64 @@ Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran
     return messages, contexts
 
 
+def _reconcile_citations(answer: str, contexts: list[dict]) -> tuple[str, list[dict]]:
+    """Map the model's ``[k]`` markers — which reference the prompt's k-th context, not
+    the model's own (often wrong/short) sources array — to real contexts, dedup by URL
+    with sequential renumbering, and rewrite the markers so answer and sources agree.
+    Returns (rewritten_answer, sources). Empty sources when no usable markers exist."""
+    if not answer:
+        return answer, []
+    url_to_id: dict[str, int] = {}
+    ordered: list[dict] = []
+
+    def _remap(match: "re.Match") -> str:
+        k = int(match.group(1))
+        if not (1 <= k <= len(contexts)):
+            return ""  # drop a dangling marker the model invented
+        context = contexts[k - 1]
+        url = context.get("url") or f"__ctx_{k}"
+        if url not in url_to_id:
+            url_to_id[url] = len(url_to_id) + 1
+            ordered.append(context)
+        return f"[{url_to_id[url]}]"
+
+    rewritten = re.sub(r"\[(\d+)\]", _remap, answer)
+    sources: list[dict] = []
+    for index, context in enumerate(ordered, start=1):
+        source = _build_sources([context])[0]
+        source["citation_id"] = index
+        sources.append(source)
+    return rewritten, sources
+
+
+def _salvage_truncated_answer(content: str) -> dict | None:
+    """Recover an answer from truncated/invalid JSON (weak local models that run out of
+    tokens mid-list). Returns a clean payload or None if nothing usable is found."""
+    text = content or ""
+    marker = re.search(r'"answer"\s*:\s*', text)
+    if not marker:
+        return None
+    rest = text[marker.end():].lstrip()
+    items: list[str] = []
+    if rest.startswith("["):
+        items = re.findall(r'"((?:[^"\\]|\\.)*)"', rest)
+    elif rest.startswith('"'):
+        match = re.match(r'"((?:[^"\\]|\\.)*)"', rest)
+        if match:
+            items = [match.group(1)]
+    def _unescape(value: str) -> str:
+        try:
+            return json.loads(f'"{value}"')
+        except (json.JSONDecodeError, ValueError):
+            return value.replace("\\n", "\n").replace('\\"', '"').strip()
+
+    items = [_unescape(item) for item in items if item.strip()]
+    if not items:
+        return None
+    answer = items[0] if len(items) == 1 else "\n".join(f"- {item}" for item in items)
+    return {"answer": answer, "sources": [], "confidence": "medium", "not_found": False}
+
+
 def finalize_generated_answer(
     content: str,
     contexts: list[dict],
@@ -696,22 +754,31 @@ def finalize_generated_answer(
     provider or from a browser LLM (Puter.js), so the browser path is just as gated.
     """
     settings = get_settings()
+    content = strip_reasoning(content or "")  # drop <think> CoT scratchpad before parsing
     try:
         parsed_payload = json.loads(_json_text(content))
         payload = parsed_payload if isinstance(parsed_payload, dict) else {"answer": parsed_payload}
     except json.JSONDecodeError:
-        payload = {
+        # Small local models often exceed the token budget and truncate the JSON
+        # mid-list. Recover the complete answer items instead of dumping raw JSON.
+        salvaged = _salvage_truncated_answer(content)
+        payload = salvaged or {
             "answer": (content or "").strip(),
             "sources": _build_sources(contexts[:3]),
             "confidence": "medium",
             "not_found": False,
         }
+        if salvaged and not payload.get("sources"):
+            payload["sources"] = _build_sources(contexts[:3])
     raw_answer = payload.get("answer")
     if isinstance(raw_answer, list):
-        payload["answer"] = "\n".join(
-            f"- {item}" if isinstance(item, str) else f"- {json.dumps(item, ensure_ascii=False)}"
-            for item in raw_answer
-        )
+        items = []
+        for item in raw_answer:
+            text = item if isinstance(item, str) else json.dumps(item, ensure_ascii=False)
+            text = text.strip().lstrip("-•*").strip()  # avoid "- -" when the model already bullets
+            if text:
+                items.append(f"- {text}")
+        payload["answer"] = "\n".join(items)
     elif not isinstance(raw_answer, str):
         payload["answer"] = "" if raw_answer is None else json.dumps(raw_answer, ensure_ascii=False)
     if not isinstance(payload.get("sources"), list):
@@ -719,9 +786,20 @@ def finalize_generated_answer(
     payload["provider_used"] = provider_used
     payload["model_used"] = model_used
     payload["memory_used"] = memory_used
-    if not payload.get("sources"):
-        payload["sources"] = _build_sources(contexts[:3])
-    validated_payload = validate_citations(payload, contexts, require_citation_markers=True)
+    # Reconcile the model's [n] markers against the prompt-numbered contexts (weak local
+    # models mis-number or under-populate their sources array), rewriting markers + building
+    # matching sources. If the answer carries no usable markers, attach the unique official
+    # contexts it was generated from and skip the strict marker check (CGCV still grounds it).
+    reconciled_answer, reconciled_sources = _reconcile_citations(payload.get("answer") or "", contexts)
+    if reconciled_sources:
+        payload["answer"] = reconciled_answer
+        payload["sources"] = reconciled_sources
+        require_markers = True
+    else:
+        if not payload.get("sources"):
+            payload["sources"] = _build_sources(_unique_contexts_by_source(contexts))
+        require_markers = False
+    validated_payload = validate_citations(payload, contexts, require_citation_markers=require_markers)
     if not validated_payload.get("not_found") and _cgcv_enabled():
         validated_payload = _apply_cgcv(validated_payload, contexts, provider_override)
     if validated_payload.get("not_found") and settings.llm_fallback_extractive:

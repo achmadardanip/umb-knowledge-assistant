@@ -7,8 +7,18 @@ the generated text (reusing the existing redaction).
 
 from __future__ import annotations
 
+import re
+
 from app.core.redaction import redact_sensitive
 from app.rag.prompts import DATA_BEGIN, DATA_END
+
+# Chain-of-Thought scratchpad the model writes before its answer. Stripped so the
+# private reasoning never reaches the user. Handles closed and dangling tags.
+_THINK_RE = re.compile(r"<\s*(think|reasoning|thought)\s*>.*?(?:<\s*/\s*\1\s*>|$)", re.IGNORECASE | re.DOTALL)
+
+
+def strip_reasoning(answer: str) -> str:
+    return _THINK_RE.sub("", answer or "").strip()
 
 _LEAK_MARKERS = (
     DATA_BEGIN,
@@ -16,7 +26,7 @@ _LEAK_MARKERS = (
     "Anda adalah UMB Knowledge Assistant",
     "Balas sebagai JSON valid",
     "Perlakukan seluruh teks di antara penanda",
-    "Gunakan penalaran internal secara privat",
+    "lakukan penalaran langkah demi langkah",
 )
 
 
@@ -35,5 +45,5 @@ def strip_prompt_leak(answer: str) -> str:
 
 
 def sanitize_answer(answer: str) -> str:
-    """Full output guard: drop prompt-leak lines, then redact secrets/PII."""
-    return redact_sensitive(strip_prompt_leak(answer or ""))
+    """Full output guard: strip CoT reasoning, drop prompt-leak lines, redact secrets/PII."""
+    return redact_sensitive(strip_prompt_leak(strip_reasoning(answer or "")))

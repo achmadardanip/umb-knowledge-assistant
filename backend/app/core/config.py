@@ -185,7 +185,7 @@ class Settings:
     dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
     # Optional local multilingual cross-encoder, gated by offline ranking/latency evaluation.
     reranker_enabled: bool = _bool("RERANKER_ENABLED", False)
-    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_bge").strip().lower()
+    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_qwen3").strip().lower()
     reranker_model: str = os.getenv("RERANKER_MODEL", "BAAI/bge-reranker-v2-m3").strip()
     reranker_device: str = os.getenv("RERANKER_DEVICE", "auto").strip().lower()
     reranker_candidate_k: int = _int("RERANKER_CANDIDATE_K", 20)

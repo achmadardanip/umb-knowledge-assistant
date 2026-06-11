@@ -369,7 +369,7 @@ def test_provider_answer_without_valid_citation_uses_extractive_fallback(monkeyp
 def test_top_k_is_capped_before_retrieval(db, monkeypatch):
     captured = {}
 
-    def fake_search(self, query, top_k=5, source_types=None):
+    def fake_search(self, query, top_k=5, source_types=None, **kwargs):
         captured["top_k"] = top_k
         return []
 

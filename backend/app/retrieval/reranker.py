@@ -114,12 +114,93 @@ class LocalBGEReranker:
         return scores
 
 
-def get_reranker() -> LocalBGEReranker:
+class Qwen3Reranker:
+    """Qwen3-Reranker (causal LM) scoring P(relevant) as softmax over the 'yes'/'no'
+    next-token logits, per the Qwen3-Reranker model card. Heavier than the BGE
+    cross-encoder but a stronger multilingual judge of intent-document relevance."""
+
+    provider_name = "local_qwen3"
+    _INSTRUCT = (
+        "Given a user question about Universitas Mercu Buana, judge whether the Document "
+        "contains official information that directly answers the question."
+    )
+    _PREFIX = (
+        "<|im_start|>system\nJudge whether the Document meets the requirements based on the "
+        'Query and the Instruct provided. Note that the answer can only be "yes" or "no".'
+        "<|im_end|>\n<|im_start|>user\n"
+    )
+    _SUFFIX = "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+
+    def __init__(self, model: str | None = None):
+        settings = get_settings()
+        configured = (model or settings.reranker_model or "").strip()
+        # Allow RERANKER_MODEL to stay on the BGE default; auto-pick the Qwen3 model here.
+        self.model = configured if "qwen3-reranker" in configured.lower() else "Qwen/Qwen3-Reranker-0.6B"
+        self.device = _resolve_device(settings.reranker_device)
+        self.max_length = max(64, settings.reranker_max_length)
+        self.batch_size = max(1, settings.reranker_batch_size)
+        self._bundle = None
+
+    def _load(self):
+        if self._bundle is not None:
+            return self._bundle
+        key = (self.model, self.device, self.max_length)
+        cached = _RERANKER_CACHE.get(key)
+        if cached is None:
+            with _RERANKER_CACHE_LOCK:
+                cached = _RERANKER_CACHE.get(key)
+                if cached is None:
+                    try:
+                        import torch
+                        from transformers import AutoModelForCausalLM, AutoTokenizer
+                    except ImportError as exc:
+                        raise RerankerConfigurationError(
+                            "Qwen3 reranking requires backend/requirements-local.txt (transformers+torch)."
+                        ) from exc
+                    tok = AutoTokenizer.from_pretrained(self.model, padding_side="left")
+                    dtype = torch.float16 if self.device in {"cuda", "mps"} else torch.float32
+                    model = AutoModelForCausalLM.from_pretrained(self.model, torch_dtype=dtype).to(self.device).eval()
+                    yes_id = tok.convert_tokens_to_ids("yes")
+                    no_id = tok.convert_tokens_to_ids("no")
+                    cached = (tok, model, yes_id, no_id)
+                    _RERANKER_CACHE[key] = cached
+        self._bundle = cached
+        return cached
+
+    def _format(self, query: str, document: str) -> str:
+        return f"{self._PREFIX}<Instruct>: {self._INSTRUCT}\n<Query>: {query}\n<Document>: {document}{self._SUFFIX}"
+
+    def score(self, query: str, documents: Sequence[str]) -> list[float]:
+        if not documents:
+            return []
+        import torch
+
+        tok, model, yes_id, no_id = self._load()
+        scores: list[float] = []
+        with _RERANKER_INFERENCE_LOCK:
+            for start in range(0, len(documents), self.batch_size):
+                batch = [self._format(query, document) for document in documents[start : start + self.batch_size]]
+                inputs = tok(batch, return_tensors="pt", padding=True, truncation=True, max_length=self.max_length)
+                inputs = {name: tensor.to(self.device) for name, tensor in inputs.items()}
+                with torch.no_grad():
+                    logits = model(**inputs).logits[:, -1, :]
+                yes_no = torch.stack([logits[:, no_id], logits[:, yes_id]], dim=1)
+                probs = torch.softmax(yes_no.float(), dim=1)[:, 1]
+                scores.extend(probs.cpu().tolist())
+        if len(scores) != len(documents):
+            raise RuntimeError(f"Qwen3 reranker returned {len(scores)} scores for {len(documents)} documents.")
+        return scores
+
+
+def get_reranker():
     settings = get_settings()
-    if settings.reranker_provider in {"local", "local_bge", "bge"}:
+    provider = settings.reranker_provider
+    if provider in {"local", "local_bge", "bge"}:
         return LocalBGEReranker()
+    if provider in {"local_qwen3", "qwen3", "qwen"}:
+        return Qwen3Reranker()
     raise RerankerConfigurationError(
-        f"Unsupported RERANKER_PROVIDER={settings.reranker_provider}. Supported: local_bge."
+        f"Unsupported RERANKER_PROVIDER={provider}. Supported: local_bge, local_qwen3."
     )
 
 

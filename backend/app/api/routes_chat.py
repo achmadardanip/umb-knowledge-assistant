@@ -689,7 +689,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     provider_override=payload.provider_override,
                     language=language_detected,
                 )
-                if cache_enabled and not answer_payload.get("not_found"):
+                if cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
                     store_cached_answer(
                         db,
                         cache_key=cache_key,
@@ -906,7 +906,7 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
     )
     final_model = answer_payload.get("model_used") or model_used
 
-    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found"):
+    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
         try:
             cache_key = build_cache_key(
                 question=prepared.raw_question,
