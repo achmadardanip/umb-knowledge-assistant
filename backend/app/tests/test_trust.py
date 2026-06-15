@@ -23,6 +23,26 @@ def test_authority_medium_for_unknown_in_scope_subdomain():
     assert 0.0 < score < 0.8
 
 
+def test_authority_tiers_ordering():
+    # Tier 1 (official) > Tier 2 (default) > Tier 3 (library) > Tier 4 (archive)
+    tier1 = host_authority("baa.mercubuana.ac.id")
+    tier2 = host_authority("klubmahasiswa.mercubuana.ac.id")
+    tier3 = host_authority("lib.mercubuana.ac.id")
+    tier4 = host_authority("repository.mercubuana.ac.id")
+    assert tier1 > tier2 > tier3 > tier4
+    assert tier4 == 0.25
+
+
+def test_faculty_subdomains_are_tier1():
+    for host in ("feb", "ft", "fasilkom", "fikom", "fdsk"):
+        assert host_authority(f"{host}.mercubuana.ac.id") >= 0.8
+
+
+def test_library_below_official_above_archive():
+    lib = host_authority("lib.mercubuana.ac.id")
+    assert host_authority("pmb.mercubuana.ac.id") > lib > host_authority("repository.mercubuana.ac.id")
+
+
 def test_freshness_full_at_zero_age_and_half_at_one_half_life():
     assert freshness(0, half_life_seconds=86400) == 1.0
     assert freshness(86400, half_life_seconds=86400) == 0.5

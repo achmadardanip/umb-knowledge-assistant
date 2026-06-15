@@ -377,3 +377,200 @@ Index("ix_chunk_embeddings_profile_chunk", ChunkEmbedding.profile, ChunkEmbeddin
 Index("ix_chat_messages_session_created", ChatMessage.session_id, ChatMessage.created_at)
 Index("ix_chat_memories_scope", ChatMemory.session_id, ChatMemory.anonymous_session_id, ChatMemory.is_active)
 Index("ix_rag_answer_cache_key_expires", RAGAnswerCache.cache_key, RAGAnswerCache.expires_at)
+
+
+# ---------------------------------------------------------------------------
+# Phase 2 — Structured Entity Knowledge Layer
+# ---------------------------------------------------------------------------
+
+
+class UMBFaculty(Base):
+    """Deterministic lookup table for UMB faculties."""
+
+    __tablename__ = "umb_faculties"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    name = Column(Text, unique=True, nullable=False)
+    name_short = Column(Text, index=True)
+    dean = Column(Text)
+    website_url = Column(Text)
+    contact_email = Column(Text)
+    contact_phone = Column(Text)
+    whatsapp = Column(Text)
+    accreditation_grade = Column(Text)
+    accreditation_body = Column(Text, default="BAN-PT")
+    campus = Column(Text)
+    description = Column(Text)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    programs = relationship("UMBStudyProgram", back_populates="faculty")
+
+
+class UMBStudyProgram(Base):
+    """Deterministic lookup table for UMB study programs."""
+
+    __tablename__ = "umb_study_programs"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    upsert_key = Column(Text, unique=True, nullable=False, index=True)
+    program_name = Column(Text, nullable=False, index=True)
+    degree_level = Column(Text, default="S1")
+    faculty_id = Column(GUID, ForeignKey("umb_faculties.id", ondelete="SET NULL"), nullable=True)
+    faculty_name = Column(Text, index=True)
+    head_of_program = Column(Text)
+    accreditation_grade = Column(Text)
+    accreditation_body = Column(Text, default="BAN-PT")
+    website_url = Column(Text)
+    description = Column(Text)
+    campus = Column(Text)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    faculty = relationship("UMBFaculty", back_populates="programs")
+
+
+class UMBCampus(Base):
+    """Deterministic lookup table for UMB campuses."""
+
+    __tablename__ = "umb_campuses"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    campus_name = Column(Text, unique=True, nullable=False)
+    address = Column(Text)
+    city = Column(Text)
+    postal_code = Column(Text)
+    phone = Column(Text)
+    fax = Column(Text)
+    website_url = Column(Text)
+    latitude = Column(Float)
+    longitude = Column(Float)
+    facilities = Column(JSON, default=list)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class UMBScholarship(Base):
+    """Deterministic lookup table for UMB scholarships."""
+
+    __tablename__ = "umb_scholarships"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    scholarship_name = Column(Text, unique=True, nullable=False)
+    provider = Column(Text)
+    description = Column(Text)
+    requirements = Column(Text)
+    eligibility = Column(Text)
+    amount = Column(Text)
+    deadline = Column(Text)
+    programs_eligible = Column(JSON, default=list)
+    contact = Column(Text)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+
+class UMBContact(Base):
+    """Deterministic lookup table for UMB contact offices."""
+
+    __tablename__ = "umb_contacts"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    upsert_key = Column(Text, unique=True, nullable=False, index=True)
+    office_name = Column(Text, nullable=False, index=True)
+    unit = Column(Text)
+    email = Column(Text)
+    phone = Column(Text)
+    whatsapp = Column(Text)
+    location = Column(Text)
+    campus = Column(Text)
+    service_hours = Column(Text)
+    service_type = Column(Text, index=True)
+    url = Column(Text)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    services = relationship("UMBService", back_populates="contact")
+
+
+class UMBService(Base):
+    """Deterministic lookup table for UMB student/academic services."""
+
+    __tablename__ = "umb_services"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    service_name = Column(Text, unique=True, nullable=False)
+    description = Column(Text)
+    unit = Column(Text)
+    contact_id = Column(GUID, ForeignKey("umb_contacts.id", ondelete="SET NULL"), nullable=True)
+    url = Column(Text)
+    category = Column(Text, index=True)
+    source_urls = Column(JSON, default=list)
+    confidence = Column(Float, default=0.5)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
+
+    contact = relationship("UMBContact", back_populates="services")
+
+
+class CanonicalURL(Base):
+    """Authoritative entity → verified KB URL map (v3 P1). Citations and entity/
+    graph contexts use these URLs; URLs are NEVER reconstructed from names/slugs."""
+
+    __tablename__ = "canonical_urls"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    entity_type = Column(Text, index=True)
+    entity_name = Column(Text, index=True)
+    canonical_url = Column(Text, nullable=False)
+    source_id = Column(GUID, nullable=True)
+    last_verified_at = Column(DateTime(timezone=True), default=utcnow)
+    __table_args__ = (UniqueConstraint("entity_type", "entity_name", "canonical_url", name="uq_canonical_url"),)
+
+
+class KnowledgeDiscoveryCache(Base):
+    """Records questions resolved via the live Tavily fallback and the official UMB
+    URLs that answered them (Batch 4). Lets a later similar question skip the billed
+    Tavily round-trip once the content has been acquired into the KB."""
+
+    __tablename__ = "knowledge_discovery_cache"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    question_hash = Column(Text, index=True, nullable=False)
+    query = Column(Text)
+    normalized_url = Column(Text, index=True)
+    source_domain = Column(Text, index=True)
+    indexed = Column(Boolean, default=False, index=True)
+    created_at = Column(DateTime(timezone=True), default=utcnow, index=True)
+
+
+class UMBFAQ(Base):
+    """Canonical FAQ store — Phase 3 answer-retrieval layer.
+
+    Each row is a verified question/answer pair with paraphrase ``aliases`` for
+    matching and ``source_urls`` for citation.  Distinct from
+    ``chat.faq_service`` (a home-page popular-questions widget)."""
+
+    __tablename__ = "umb_faqs"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    canonical_question = Column(Text, unique=True, nullable=False)
+    normalized_question = Column(Text, index=True, nullable=False)
+    answer = Column(Text, nullable=False)
+    aliases = Column(JSON, default=list)
+    category = Column(Text, index=True)
+    intent = Column(Text, index=True)
+    source_urls = Column(JSON, default=list)
+    source_confidence = Column(Float, default=0.8)
+    is_active = Column(Boolean, default=True, index=True)
+    extracted_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)

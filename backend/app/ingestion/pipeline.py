@@ -99,8 +99,12 @@ def upsert_source_document(
         embedder = get_embedder()
     except EmbeddingConfigurationError:
         embedder = None
+    # v3 P5: prune incoming metadata to the small retrieval allowlist so chunks
+    # never store the EPrints/links bloat (avg ~13 KB) that drove Supabase egress.
+    from app.ingestion.metadata_pruning import prune_metadata
+
     chunk_metadata = {
-        **(metadata or {}),
+        **prune_metadata(metadata or {}),
         "url": url,
         "hostname": hostname,
         "path": path,

@@ -7,7 +7,7 @@ import math
 from weakref import WeakKeyDictionary
 
 from sqlalchemy import inspect, text
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from app.db.models import Chunk, ChunkEmbedding, Source
 from app.discovery.scope_validator import is_allowed_host, validate_url_scope
@@ -112,6 +112,7 @@ def _postgres_profile_candidates(
     rank = {str(row.chunk_id): (index, float(row.similarity)) for index, row in enumerate(rows)}
     joined = (
         db.query(Chunk, Source)
+        .options(defer(Chunk.embedding))  # v3 P5: never transfer the legacy vector
         .join(Source, Chunk.source_id == Source.id)
         .filter(Chunk.id.in_(list(rank)))
         .all()

@@ -33,7 +33,6 @@ from app.db.database import get_db, get_session_local
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider
 from app.rag.answer_cache import build_cache_key, get_cached_answer, store_cached_answer
-from app.ingestion.web_kb_ingest import persist_web_contexts
 from app.rag.answer_generator import build_generation_messages, finalize_generated_answer, generate_answer
 from app.rag.guardrails import guardrail_response
 from app.rag.intent_classifier import classify_intent
@@ -177,7 +176,14 @@ def _agent_step(step_id: str, label: str, status: StepStatus, detail: str | None
     }
 
 
-def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None) -> str:
+def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None, *, is_followup: bool = True) -> str:
+    # NEW_TOPIC: retrieve on the question alone. Carrying prior turns / source
+    # hints / entity hints would leak the previous topic's context into an
+    # unrelated question (e.g. SIA login after a FASILKOM-dean question). Only a
+    # genuine follow-up inherits conversation context.
+    if not is_followup:
+        return compact_context([question], max_chars=1600)
+
     prior_messages = list(history or [])
     normalized_question = " ".join((question or "").split()).lower()
     for index in range(len(prior_messages) - 1, -1, -1):
@@ -403,6 +409,16 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     clarifiers: list[str] = []
     if intent_result.intent != "out_of_scope" and not payload.regenerate_from_message_id:
         clarifiers = clarifying_questions(payload.question, recent_messages=history, language=language_detected)
+        if clarifiers:
+            # Don't ask to clarify a question the canonical FAQ already answers
+            # completely (e.g. "Beasiswa apa saja?"). A strong FAQ match means we
+            # have a grounded, complete answer — answer it instead of stalling.
+            from app.retrieval.faq_retriever import match_faq
+
+            faq_hits = match_faq(db, payload.question)
+            if any(not h.get("intent_demoted") and float(h.get("score") or 0.0) >= 12.0 for h in faq_hits):
+                clarifiers = []
+                emit("clarify", "Melewati klarifikasi", "skipped", "FAQ kanonik resmi sudah menjawab; lanjut ke retrieval")
     if clarifiers:
         is_en = language_detected.startswith("en")
         emit("clarify", "Meminta klarifikasi konteks", "done",
@@ -467,7 +483,17 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             "agent_tool_calls": 0,
         }
 
-    retrieval_query = _build_retrieval_query(payload.question, history, title)
+    from app.rag.intent_router import detect_followup
+
+    is_followup = detect_followup(payload.question, history)
+    emit(
+        "followup_detection",
+        "Mendeteksi pertanyaan lanjutan vs topik baru",
+        "done",
+        "Pertanyaan lanjutan: mewarisi konteks percakapan" if is_followup else "Topik baru: retrieval tanpa konteks percakapan sebelumnya",
+        {"is_followup": is_followup},
+    )
+    retrieval_query = _build_retrieval_query(payload.question, history, title, is_followup=is_followup)
     if intent_result.topic != "general":
         retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
@@ -499,6 +525,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                 root_domain=settings.allowed_domain,
                 emit=emit,
                 indexed_retriever_cls=HybridRetriever,
+                match_query=payload.question,
             )
         except WebSearchConfigurationError as exc:
             db.rollback()
@@ -571,11 +598,9 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     if settings.web_kb_ingest_enabled:
                         web_used = [c for c in contexts if c.get("discovery_source") == "live_web_search"]
                         if web_used:
-                            try:
-                                with db.begin_nested():
-                                    persist_web_contexts(db, web_used)
-                            except Exception:  # best-effort; never block prepare
-                                pass
+                            from app.ingestion.async_acquisition import schedule_kb_acquisition
+
+                            schedule_kb_acquisition(payload.question, web_used)
                     prepared = PreparedGeneration(
                         session_id=session.id,
                         raw_question=payload.question,
@@ -642,21 +667,19 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             emit("provider", "Memilih provider AI", "error", str(exc))
             raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    # Web -> KB ingest: persist the live web sources we just answered from, so a
-    # similar future question is served straight from the indexed KB (no web round
-    # trip, no LLM). Best-effort inside a savepoint; never breaks the answer.
+    # Async knowledge acquisition (Batch 4): the user is answered FIRST; persisting
+    # the live-web sources into the KB + recording the discovery cache runs in a
+    # background thread (its own DB session), so a similar future question is served
+    # from the indexed KB without another billed Tavily round-trip.
     web_kb_ingested = 0
     if settings.web_kb_ingest_enabled and not answer_payload.get("not_found") and not answer_payload.get("cache_hit"):
         web_used = [c for c in contexts if c.get("discovery_source") == "live_web_search"]
         if web_used:
-            emit("kb_ingest", "Menyimpan sumber web ke KB", "running", f"{len(web_used)} konteks web kandidat")
-            try:
-                with db.begin_nested():
-                    web_kb_ingested = persist_web_contexts(db, web_used)
-                emit("kb_ingest", "Menyimpan sumber web ke KB", "done",
-                     f"{web_kb_ingested} chunk web disimpan ke KB untuk pertanyaan serupa berikutnya")
-            except Exception as exc:  # never fail the user's answer on ingest issues
-                emit("kb_ingest", "Menyimpan sumber web ke KB", "error", str(exc))
+            from app.ingestion.async_acquisition import schedule_kb_acquisition
+
+            scheduled = schedule_kb_acquisition(payload.question, web_used)
+            emit("kb_ingest", "Menjadwalkan akuisisi pengetahuan", "done" if scheduled else "skipped",
+                 f"{len(web_used)} sumber web dijadwalkan untuk diindeks di latar belakang" if scheduled else "Tidak ada sumber web untuk diindeks")
 
     emit("save_answer", "Menyimpan jawaban dan metadata", "running")
     metadata = {

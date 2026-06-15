@@ -158,6 +158,15 @@ class Settings:
     chat_history_max_messages: int = _int("CHAT_HISTORY_MAX_MESSAGES", 5)
     rag_answer_cache_enabled: bool = _bool("RAG_ANSWER_CACHE_ENABLED", True)
     rag_answer_cache_ttl_seconds: int = _int("RAG_ANSWER_CACHE_TTL_SECONDS", 86400)
+
+    # v3 P5 — shared cache layer (egress reduction). In-process TTL by default;
+    # set REDIS_URL to use Redis (auto-detected). Caches FAQ/entity/retrieval reads.
+    cache_enabled: bool = _bool("CACHE_ENABLED", True)
+    cache_ttl_seconds: int = _int("CACHE_TTL_SECONDS", 300)
+    redis_url: str | None = os.getenv("REDIS_URL") or None
+    faq_cache_ttl_seconds: int = _int("FAQ_CACHE_TTL_SECONDS", 600)
+    retrieval_cache_enabled: bool = _bool("RETRIEVAL_CACHE_ENABLED", True)
+    retrieval_cache_ttl_seconds: int = _int("RETRIEVAL_CACHE_TTL_SECONDS", 300)
     llm_max_retries: int = _int("LLM_MAX_RETRIES", 2)
     llm_retry_backoff_seconds: float = _float("LLM_RETRY_BACKOFF_SECONDS", 2.0)
     llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", True)
@@ -210,6 +219,12 @@ class Settings:
     # Persist live web-derived answer contexts into the KB so similar future
     # questions are served from the indexed KB (no second web round-trip / LLM call).
     web_kb_ingest_enabled: bool = _bool("WEB_KB_INGEST_ENABLED", True)
+    # KB-first policy: in hybrid mode only escalate to the live-web fallback when
+    # indexed retrieval is insufficient (fewer than N contexts, or top score below
+    # the floor). Keeps well-covered questions fast and grounded in the indexed KB,
+    # and reserves live web for genuine knowledge gaps (spec: controlled fallback).
+    web_fallback_min_contexts: int = _int("WEB_FALLBACK_MIN_CONTEXTS", 3)
+    web_fallback_min_score: float = _float("WEB_FALLBACK_MIN_SCORE", 1.2)
 
     firecrawl_api_key: str | None = os.getenv("FIRECRAWL_API_KEY")
     firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "http://localhost:3002").rstrip("/")
@@ -230,6 +245,13 @@ class Settings:
     graph_rag_enabled: bool = _bool("GRAPH_RAG_ENABLED", True)
     graph_path: str = os.getenv("GRAPH_PATH", "data/graph/umb_graph.json")
     graph_expansion_top_k: int = _int("GRAPH_EXPANSION_TOP_K", 3)
+
+    # Typed GraphRAG (Phase 4): typed property graph over the structured entity
+    # tables (faculty/program/campus/scholarship + typed relations). Produces
+    # deterministic relational-answer contexts; built offline to JSON.
+    typed_graph_enabled: bool = _bool("TYPED_GRAPH_ENABLED", True)
+    typed_graph_path: str = os.getenv("TYPED_GRAPH_PATH", "data/graph/umb_typed_graph.json")
+    typed_graph_expansion_top_k: int = _int("TYPED_GRAPH_EXPANSION_TOP_K", 3)
 
     agent_mode_enabled: bool = _bool("AGENT_MODE_ENABLED", True)
     agent_max_tool_iterations: int = _int("AGENT_MAX_TOOL_ITERATIONS", 3)

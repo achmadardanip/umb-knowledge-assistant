@@ -434,6 +434,41 @@ def _structured_faculty_overview_payload(
     return validated
 
 
+def _structured_faq_payload(
+    *,
+    contexts: list[dict],
+    memory_used: bool,
+) -> dict | None:
+    """A high-confidence canonical FAQ match is a verified, complete, source-cited
+    answer by construction. Return it directly (synthesised, not snippet-dumped)
+    instead of risking LLM over-abstention — guarantees that PMB / tuition /
+    scholarship / SIA / SSO style questions get a complete grounded answer fast."""
+    if not contexts:
+        return None
+    top = contexts[0]
+    if top.get("source_type") != "faq" or top.get("intent_demoted"):
+        return None
+    # Only short-circuit on a strong (exact / high-fuzzy) match.
+    if float(top.get("score") or 0.0) < 12.0:
+        return None
+    answer_text = (top.get("chunk_text") or "").strip()
+    if not answer_text:
+        return None
+    answer = answer_text if "[1]" in answer_text else f"{answer_text} [1]"
+    payload = {
+        "answer": answer,
+        "sources": _build_sources([top]),
+        "confidence": "high" if float(top.get("score") or 0.0) >= 14.0 else "medium",
+        "not_found": False,
+        "provider_used": "system",
+        "model_used": "canonical-faq",
+        "memory_used": memory_used,
+    }
+    validated = validate_citations(payload, [top], require_citation_markers=True)
+    validated["answer"] = sanitize_answer(validated.get("answer") or "")
+    return validated
+
+
 def extractive_fallback_payload(
     *,
     contexts: list[dict],
@@ -750,6 +785,11 @@ def generate_answer(
     memory_used = bool(memories)
     if not contexts:
         return fallback_payload(memory_used=memory_used)
+
+    # A strong canonical-FAQ match is already a complete, source-cited answer.
+    structured_payload = _structured_faq_payload(contexts=contexts, memory_used=memory_used)
+    if structured_payload:
+        return structured_payload
 
     structured_payload = _structured_location_payload(
         question=question,

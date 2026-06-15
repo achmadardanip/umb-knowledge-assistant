@@ -126,6 +126,20 @@ def _maybe_va_jit(query: str, contexts: list[dict], live_retriever, emit_step) -
     return _dedupe_contexts(fresh + contexts)
 
 
+def _kb_contexts_sufficient(indexed_contexts: list[dict], top_k: int, settings) -> bool:
+    """KB-first gate: return True when indexed retrieval is strong enough that the
+    live-web fallback can be skipped (keeps well-covered questions fast and grounded
+    in the indexed KB; live web is reserved for genuine gaps). ``getattr`` defaults
+    keep monkeypatched test settings that omit the knobs working."""
+    if not indexed_contexts:
+        return False
+    min_contexts = getattr(settings, "web_fallback_min_contexts", 3)
+    min_score = getattr(settings, "web_fallback_min_score", 1.2)
+    if len(indexed_contexts) < min(top_k, min_contexts):
+        return False
+    return float(indexed_contexts[0].get("score") or 0.0) >= min_score
+
+
 def run_umb_agent(
     *,
     db: Session,
@@ -135,11 +149,20 @@ def run_umb_agent(
     root_domain: str,
     emit: AgentEmitter | None = None,
     indexed_retriever_cls=HybridRetriever,
+    match_query: str | None = None,
 ) -> AgentResult:
     settings = get_settings()
+    # ``query`` is the (possibly context-augmented) vector-retrieval query.
+    # ``match_query`` is the bare user question used for the deterministic
+    # structured layers (FAQ / entity / typed-graph) and intent routing — their
+    # exact matching degrades when topic/history text is appended to the query.
+    structured_query = match_query or query
     max_iterations = max(1, settings.agent_max_tool_iterations)
     contexts: list[dict] = []
     indexed_contexts: list[dict] = []
+    faq_contexts: list[dict] = []
+    entity_contexts: list[dict] = []
+    graph_contexts: list[dict] = []
     web_contexts: list[dict] = []
     retrieval_warnings: list[str] = []
     retrieval_fallback_used = False
@@ -191,6 +214,103 @@ def run_umb_agent(
     def can_call_tool() -> bool:
         return tool_calls < max_iterations
 
+    def run_faq_lookup() -> None:
+        """FAQ-first: match the query against curated canonical FAQs. Runs before
+        entity lookup and vector search; matches rank above all other contexts."""
+        nonlocal faq_contexts
+        try:
+            from app.retrieval.faq_retriever import match_faq
+
+            faq_contexts = match_faq(db, structured_query)
+        except Exception as exc:
+            faq_contexts = []
+            logger.debug("FAQ lookup skipped: %s", exc)
+        if faq_contexts:
+            via = faq_contexts[0].get("faq_matched_via", "match")
+            emit_step(
+                "faq_lookup",
+                "Mencocokkan FAQ kanonik",
+                "done",
+                f"{len(faq_contexts)} FAQ resmi cocok ({via})",
+                {"faq_count": len(faq_contexts), "matched_via": via},
+            )
+        else:
+            emit_step(
+                "faq_lookup",
+                "Mencocokkan FAQ kanonik",
+                "skipped",
+                "Tidak ada FAQ kanonik yang cocok",
+                {"faq_count": 0},
+            )
+
+    def run_entity_lookup() -> None:
+        nonlocal entity_contexts
+        try:
+            from app.retrieval.entity_retriever import query_entities
+
+            entity_contexts = query_entities(db, structured_query, root_domain=root_domain)
+        except Exception as exc:
+            entity_contexts = []
+            logger.debug("Entity lookup skipped: %s", exc)
+        if entity_contexts:
+            emit_step(
+                "entity_lookup",
+                "Lookup entitas terstruktur",
+                "done",
+                f"{len(entity_contexts)} entitas ditemukan dari tabel terstruktur",
+                {"entity_count": len(entity_contexts)},
+            )
+        else:
+            emit_step(
+                "entity_lookup",
+                "Lookup entitas terstruktur",
+                "skipped",
+                "Tidak ada entitas relevan ditemukan",
+                {"entity_count": 0},
+            )
+
+    def run_typed_graph_lookup() -> None:
+        """Typed GraphRAG: walk typed relations over the entity tables to produce
+        deterministic relational-answer contexts (e.g. a faculty's program list).
+        ``getattr`` defaults keep monkeypatched test settings (which omit the knobs)
+        working."""
+        nonlocal graph_contexts
+        if not getattr(settings, "typed_graph_enabled", True):
+            return
+        try:
+            from app.graph.typed_graph_store import typed_expansion_from_db
+
+            graph_contexts = typed_expansion_from_db(
+                db,
+                structured_query,
+                root_domain=root_domain,
+                limit=getattr(settings, "typed_graph_expansion_top_k", 3),
+                path=getattr(settings, "typed_graph_path", None),
+            )
+        except Exception as exc:
+            graph_contexts = []
+            logger.debug("Typed graph lookup skipped: %s", exc)
+        if graph_contexts:
+            emit_step(
+                "typed_graph",
+                "Menelusuri relasi entitas tertipe",
+                "done",
+                f"{len(graph_contexts)} relasi entitas ditemukan",
+                {"graph_relation_count": len(graph_contexts)},
+            )
+
+    def _merge_structured_contexts() -> None:
+        """Prepend FAQ + entity + typed-graph contexts into indexed_contexts after
+        run_indexed completes (FAQ first, then entities, then graph relations, then
+        indexed chunks).
+
+        Must be called after run_indexed() because indexed_tool() assigns a fresh
+        list to indexed_contexts, which would overwrite any premature merge.
+        """
+        nonlocal indexed_contexts
+        if faq_contexts or entity_contexts or graph_contexts:
+            indexed_contexts = faq_contexts + entity_contexts + graph_contexts + indexed_contexts
+
     def run_indexed(*, fallback: bool = False) -> None:
         nonlocal tool_calls
         if not can_call_tool():
@@ -228,16 +348,55 @@ def run_umb_agent(
             {"web_context_count": len(web_contexts), "warning": retrieval_warnings[-1] if retrieval_warnings else None},
         )
 
+    run_faq_lookup()
+    run_entity_lookup()
+    run_typed_graph_lookup()
+
     if retrieval_mode == "indexed":
         run_indexed()
+        _merge_structured_contexts()
     elif retrieval_mode == "web":
         run_web()
         if not web_contexts:
             retrieval_fallback_used = True
             run_indexed(fallback=True)
+            _merge_structured_contexts()
     else:
         run_indexed()
-        run_web()
+        _merge_structured_contexts()
+        # Confidence Check: gate the billed Tavily live fallback on retrieval
+        # confidence. FAQ → Entity → Graph → Hybrid → confidence → (only if low) Tavily.
+        from app.rag.discovery_cache import evaluate_confidence, was_recently_discovered
+
+        confidence_score, confidence_sufficient = evaluate_confidence(indexed_contexts, root_domain=root_domain)
+        kb_ok = _kb_contexts_sufficient(indexed_contexts, top_k, settings)
+        recently = (
+            was_recently_discovered(db, structured_query)
+            if not (kb_ok or confidence_sufficient)
+            else False
+        )
+        emit_step(
+            "confidence_check",
+            "Mengevaluasi keyakinan retrieval",
+            "done",
+            f"Confidence {confidence_score:.2f}; {'memadai' if (kb_ok or confidence_sufficient or recently) else 'rendah → fallback live'}",
+            {"confidence": round(confidence_score, 3), "sufficient": bool(kb_ok or confidence_sufficient or recently)},
+        )
+        if kb_ok or confidence_sufficient or recently:
+            reason = (
+                "Sudah pernah ditemukan via web & terindeks; pakai KB"
+                if recently
+                else "Konteks resmi sudah memadai; live web tidak diperlukan"
+            )
+            emit_step(
+                "umb_live_web_search",
+                "Melewati pencarian live",
+                "skipped",
+                reason,
+                {"web_context_count": 0, "indexed_context_count": len(indexed_contexts), "confidence": round(confidence_score, 3)},
+            )
+        else:
+            run_web()
         if retrieval_warnings and indexed_contexts:
             retrieval_fallback_used = True
             emit_step(
@@ -298,15 +457,41 @@ def run_umb_agent(
     contexts = _dedupe_contexts(contexts)
     if _va_jit_enabled() and contexts:
         contexts = _maybe_va_jit(query, contexts, live_retriever, emit_step)
-    if settings.reranker_enabled and contexts:
+
+    # v3 P2: intent-aware host hard filter — boost on-intent hosts, heavily
+    # penalise an official-but-off-intent vector chunk (so a SIA-login query can
+    # never be answered by a tuition page). Uses the bare question for intent.
+    if contexts:
+        from app.rag.intent_router import apply_intent_host_filter, detect_intent
+
+        _intent = detect_intent(structured_query)
+        apply_intent_host_filter(structured_query, contexts, intent=_intent, root_domain=root_domain)
+        emit_step("intent_host_filter", "Filter host sesuai intent", "done",
+                  f"Intent {_intent}: host kompatibel diprioritaskan", {"intent": _intent})
+
+    # Structured contexts (FAQ, entity, typed-graph relations) are deterministic,
+    # high-precision, and pre-scored; keep them pinned above the vector results.
+    # The reranker (a passage cross-encoder) only reorders the chunk/vector
+    # candidates — this realizes the pipeline order
+    # FAQ → Entity → Graph → Vector → Reranker.
+    # A structured context is pinned only if it is NOT intent-demoted. An
+    # intent-demoted entity/graph context (fired on an incidental entity name in
+    # a topical question) joins the rerankable pool and competes by score, so it
+    # can't bury the topical FAQ/vector source. (v2 entity over-firing fix.)
+    _structured_types = {"faq", "entity", "graph"}
+    structured = [c for c in contexts if c.get("source_type") in _structured_types and not c.get("intent_demoted")]
+    rerankable = [c for c in contexts if c.get("source_type") not in _structured_types or c.get("intent_demoted")]
+    structured.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
+
+    if settings.reranker_enabled and rerankable:
         emit_step(
             "model_reranker",
             "Mengurutkan ulang kandidat multilingual",
             "running",
             f"Maksimal {settings.reranker_candidate_k} kandidat",
         )
-        contexts = model_rerank_contexts(query, contexts, root_domain=root_domain)
-        reranker_used = any(context.get("reranker_used") for context in contexts)
+        rerankable = model_rerank_contexts(query, rerankable, root_domain=root_domain)
+        reranker_used = any(context.get("reranker_used") for context in rerankable)
         emit_step(
             "model_reranker",
             "Mengurutkan ulang kandidat multilingual",
@@ -315,8 +500,8 @@ def run_umb_agent(
             {"reranker_used": reranker_used, "reranker_model": settings.reranker_model},
         )
     else:
-        contexts.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
-    contexts = contexts[:top_k]
+        rerankable.sort(key=lambda context: float(context.get("score") or 0.0), reverse=True)
+    contexts = (structured + rerankable)[:top_k]
     emit_step(
         "agent",
         "Menyiapkan retrieval UMB",

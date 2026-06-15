@@ -5,7 +5,7 @@ from dataclasses import dataclass
 from datetime import datetime, timezone
 
 from sqlalchemy import or_
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, defer
 
 from app.core.config import get_settings
 from app.db.models import Chunk, Source
@@ -573,6 +573,34 @@ class HybridRetriever:
         apply_model_reranker: bool | None = None,
         candidate_k: int | None = None,
     ) -> list[dict]:
+        # v3 P5: cache retrieval results so repeated/popular queries don't re-read
+        # candidate chunks from Supabase. Returns shallow copies (downstream mutates
+        # scores via intent filters / reranking).
+        settings = get_settings()
+        if settings.retrieval_cache_enabled:
+            from app.core.cache import cache_get, cache_set, make_key
+
+            key = make_key("retrieval", self.root_domain, query, top_k, source_types,
+                           apply_model_reranker, candidate_k, self._dense_enabled)
+            cached = cache_get(key)
+            if cached is not None:
+                return [dict(c) for c in cached]
+            result = self._search_impl(query, top_k, source_types,
+                                       apply_model_reranker=apply_model_reranker, candidate_k=candidate_k)
+            cache_set(key, result, settings.retrieval_cache_ttl_seconds)
+            return [dict(c) for c in result]
+        return self._search_impl(query, top_k, source_types,
+                                 apply_model_reranker=apply_model_reranker, candidate_k=candidate_k)
+
+    def _search_impl(
+        self,
+        query: str,
+        top_k: int = 5,
+        source_types: list[str] | None = None,
+        *,
+        apply_model_reranker: bool | None = None,
+        candidate_k: int | None = None,
+    ) -> list[dict]:
         settings = get_settings()
         model_enabled = settings.reranker_enabled if apply_model_reranker is None else apply_model_reranker
         candidate_limit = max(
@@ -739,7 +767,16 @@ class HybridRetriever:
                 )
         required_anchors = _required_anchors_for_query(terms)
         min_score = _min_relevance_score(terms)
-        db_query = self.db.query(Chunk, Source).join(Source, Chunk.source_id == Source.id).filter(Source.status == "indexed")
+        # Defer the legacy ``chunks.embedding`` column: the keyword path never
+        # uses it, and ~1k chunks carry a large legacy vector that otherwise
+        # dominates row-transfer time (≈2-3× slower). The pg_trgm GIN index
+        # (migration 004) makes the scan itself fast.
+        db_query = (
+            self.db.query(Chunk, Source)
+            .options(defer(Chunk.embedding))
+            .join(Source, Chunk.source_id == Source.id)
+            .filter(Source.status == "indexed")
+        )
         if source_types:
             db_query = db_query.filter(Chunk.source_type.in_(source_types))
         priority_metadata_rows = (

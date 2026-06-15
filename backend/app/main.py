@@ -85,11 +85,28 @@ def _prewarm_local_answer_model() -> None:
     threading.Thread(target=_warm, daemon=True, name="local-ollama-prewarm").start()
 
 
+def _prewarm_canonical_urls() -> None:
+    """Warm the canonical-URL cache (v3 P1) so per-answer citation validation never
+    triggers a Supabase read."""
+
+    def _warm() -> None:
+        try:
+            from app.rag.canonical_urls import canonical_url_set
+
+            count = len(canonical_url_set())
+            logger.info("Canonical URL cache warmed (%s URLs).", count)
+        except Exception:
+            logger.warning("Canonical URL pre-warm failed.", exc_info=True)
+
+    threading.Thread(target=_warm, daemon=True, name="canonical-urls-prewarm").start()
+
+
 @asynccontextmanager
 async def lifespan(_app: FastAPI):
     _prewarm_local_embedder()
     _prewarm_local_reranker()
     _prewarm_local_answer_model()
+    _prewarm_canonical_urls()
     yield
 
 
