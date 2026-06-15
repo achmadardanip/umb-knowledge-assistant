@@ -21,10 +21,97 @@ RAG digunakan karena informasi kampus berubah dari waktu ke waktu. Model LLM tid
 - Discovery: Sublist3r, Katana, Hakrawler, gau, waybackurls, ffuf/dirsearch opsional.
 - Crawling: domain-scoped crawler, robots.txt check, rate limit konservatif.
 - Ekstraksi: HTML, PDF, DOCX, PPTX, spreadsheet/CSV, OCR opsional, ASR opsional, metadata video opsional.
-- Ingestion: source-aware chunking, embedding provider abstraction.
-- Retrieval: hybrid keyword/vector-ready retrieval dengan metadata sitasi.
-- LLM: Ollama lokal default, LM Studio opsional, serta provider cloud dan Puter sebagai fallback.
-- Chat: session history, source cards, visible operational steps, memory aman.
+- Ingestion: source-aware chunking, embedding provider abstraction, Tavily map/crawl/extract enrichment.
+- Embeddings: `intfloat/multilingual-e5-small` lokal (384 dim, sidecar `chunk_embeddings`) default; cloud (Gemini/OpenAI) sebagai fallback.
+- Retrieval: hybrid keyword + dense pgvector (HNSW) + RRF + TAHF, **intent gate** (hard domain/answerability filter), **Qwen3-Reranker** opsional, GraphRAG.
+- Generasi: Ollama lokal default (`qwen2.5:7b-instruct`) dengan chain-of-thought, citation reconcile, CGCV, regeneration retry; Puter `gpt-5.5` (browser) + provider cloud sebagai fallback. Jawaban tak terverifikasi → fallback bersih ke admin WhatsApp, bukan tebakan.
+- Chat: session history, source cards (hanya sitasi tervalidasi), visible operational steps, memory aman.
+
+## Prasyarat (Prerequisites)
+
+| Kebutuhan | Versi / Catatan |
+| --- | --- |
+| **Python** | 3.12+ (diuji pada 3.12.13) |
+| **Node.js** | 20+ (diuji pada 26) + npm |
+| **Ollama** | https://ollama.com — untuk LLM lokal default; `ollama pull qwen2.5:7b-instruct` |
+| **Supabase** | satu project PostgreSQL (pgvector tersedia) — butuh connection string |
+| **Tavily API key** | gratis di https://tavily.com — untuk live fallback + enrichment KB |
+| Disk | ~3–4 GB untuk model lokal (E5 ~120 MB, Qwen3-Reranker-0.6B ~1.2 GB, torch ~2 GB) |
+| GPU (opsional) | Apple Silicon (MPS) / CUDA otomatis dipakai untuk E5 + reranker; CPU juga jalan |
+| **Docker** (opsional) | hanya untuk self-host Firecrawl (`:3002`) |
+
+## Quick Start — Setup & Menjalankan Aplikasi
+
+```bash
+# 1) Clone
+git clone <repo-url> umb-knowledge-assistant && cd umb-knowledge-assistant
+
+# 2) Backend: virtualenv + dependencies
+cd backend
+python3.12 -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+pip install -r requirements-local.txt   # E5 + Qwen3 reranker (torch, sentence-transformers, transformers)
+cd ..
+
+# 3) LLM lokal (Ollama)
+ollama pull qwen2.5:7b-instruct
+
+# 4) Environment — salin template, lalu isi DATABASE_URL (Supabase) & TAVILY_API_KEY
+cp .env.example .env
+#   Default sudah mengaktifkan: local E5 + dense retrieval + Qwen3 reranker + Ollama.
+```
+
+**5) Database (sekali saja)** — jalankan di Supabase SQL Editor atau `psql`:
+
+```sql
+CREATE EXTENSION IF NOT EXISTS vector;            -- isi: backend/app/db/migrations/setup_pgvector.sql
+```
+```bash
+# tabel sidecar non-destruktif untuk vector E5 384-dim (legacy chunks.embedding tidak diubah)
+psql "$(printf '%s' "$DATABASE_URL" | sed 's#^postgresql+psycopg://#postgresql://#')" \
+  -f backend/app/db/migrations/add_chunk_embeddings.sql
+```
+
+**6) Backfill embedding E5** (sekali, mengisi tabel `chunk_embeddings`):
+
+```bash
+cd backend && PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill --batch-size 64 && cd ..
+```
+
+**7) Jalankan backend & frontend** (dua terminal):
+
+```bash
+# Terminal A — backend
+cd backend && .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+
+# Terminal B — frontend
+cd frontend && npm install && npm run dev
+```
+
+Buka **http://localhost:3000**. Health check: `curl http://localhost:8000/health`.
+
+> Provider default frontend adalah **Puter `gpt-5.5`** (gratis, di browser, kualitas terbaik). Untuk full-local pilih **"Local Ollama"** di dropdown. Keduanya memakai grounding + sitasi + fallback WhatsApp yang sama.
+
+### Enrich Knowledge Base (opsional)
+
+KB diperkaya dari sumber publik resmi UMB via Tavily (map → crawl → extract → Supabase, profil E5), lalu graph di-rebuild:
+
+```bash
+cd backend
+# urutan prioritas (profil → akademik → fakultas/dosen → PMB → … ; repository dikecualikan karena sudah berat)
+.venv/bin/python -m app.ingestion.tavily_enrich --prioritized --per-seed 250 --max-depth 3
+.venv/bin/python -m app.graph.build_graph
+```
+
+### Tavily Agent Skill (opsional, untuk Claude Code / agent)
+
+Skill Tavily resmi sudah disertakan di `.claude/skills/` (search/extract/map/crawl/research). Untuk reinstall + auth CLI:
+
+```bash
+npx skills add tavily-ai/skills --all
+curl -fsSL https://cli.tavily.com/install.sh | bash && tvly login --api-key tvly-YOUR_KEY
+```
 
 ## Supabase PostgreSQL
 
@@ -247,15 +334,17 @@ Sumber multimodal tetap dibatasi ke `mercubuana.ac.id` dan `*.mercubuana.ac.id`.
 
 ## Menjalankan Backend
 
+Lihat **Quick Start** di atas untuk setup lengkap. Ringkasnya:
+
 ```bash
 cd backend
-python -m venv .venv
-.venv\Scripts\activate
-pip install -r requirements.txt
-uvicorn app.main:app --reload
+python3.12 -m venv .venv
+source .venv/bin/activate            # Windows: .venv\Scripts\activate
+pip install -r requirements.txt -r requirements-local.txt
+.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
 ```
 
-Health check:
+`requirements-local.txt` wajib untuk embedding E5 + Qwen3 reranker (torch, sentence-transformers, transformers). Health check:
 
 ```bash
 curl http://localhost:8000/health

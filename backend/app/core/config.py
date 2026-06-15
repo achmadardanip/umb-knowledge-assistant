@@ -194,7 +194,7 @@ class Settings:
     dense_retrieval_enabled: bool = _bool("DENSE_RETRIEVAL_ENABLED", False)
     # Optional local multilingual cross-encoder, gated by offline ranking/latency evaluation.
     reranker_enabled: bool = _bool("RERANKER_ENABLED", False)
-    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_bge").strip().lower()
+    reranker_provider: str = os.getenv("RERANKER_PROVIDER", "local_qwen3").strip().lower()
     reranker_model: str = os.getenv("RERANKER_MODEL", "BAAI/bge-reranker-v2-m3").strip()
     reranker_device: str = os.getenv("RERANKER_DEVICE", "auto").strip().lower()
     reranker_candidate_k: int = _int("RERANKER_CANDIDATE_K", 20)
@@ -202,6 +202,16 @@ class Settings:
     reranker_max_length: int = _int("RERANKER_MAX_LENGTH", 512)
     reranker_model_weight: float = _float("RERANKER_MODEL_WEIGHT", 0.8)
     reranker_prewarm_enabled: bool = _bool("RERANKER_PREWARM_ENABLED", True)
+
+    # Intent gate: hard per-intent domain/term filtering, answerability scoring, and
+    # answerability-driven live fallback (replaces "context count > 0" as the trigger).
+    enable_strict_intent_filter: bool = _bool("ENABLE_STRICT_INTENT_FILTER", True)
+    enable_graph_intent_filter: bool = _bool("ENABLE_GRAPH_INTENT_FILTER", True)
+    enable_live_fallback_on_low_answerability: bool = _bool("ENABLE_LIVE_FALLBACK_ON_LOW_ANSWERABILITY", True)
+    retrieval_min_answerability_score: float = _float("RETRIEVAL_MIN_ANSWERABILITY_SCORE", 0.30)
+    retrieval_max_negative_keyword_hits: int = _int("RETRIEVAL_MAX_NEGATIVE_KEYWORD_HITS", 1)
+    citation_strict_mode: bool = _bool("CITATION_STRICT_MODE", True)
+    show_rejected_sources_in_debug_only: bool = _bool("SHOW_REJECTED_SOURCES_IN_DEBUG_ONLY", True)
 
     # Volatility-Aware Just-in-Time verification. Off (needs live web + cost budget).
     va_jit_enabled: bool = _bool("VA_JIT_ENABLED", False)
