@@ -95,3 +95,83 @@ class LLMJudgeEntailmentChecker:
             return 1.0
         # Anything else (NO, ambiguous, or empty) is treated as not entailed.
         return 0.0
+
+
+class NLIEntailmentChecker:
+    """Cross-encoder NLI entailment — the upgrade over ``LexicalEntailmentChecker``
+    (which false-flags correct paraphrases). Returns the model's ENTAILMENT
+    probability as the support score, so a paraphrase that is genuinely entailed
+    scores high without relying on token overlap.
+
+    The transformers model is loaded LAZILY on first use; construction raises
+    ``RuntimeError`` if transformers/torch or the weights are unavailable, so the
+    factory can fall back. Multilingual by default (handles Indonesian + English).
+    """
+
+    DEFAULT_MODEL = "MoritzLaurer/mDeBERTa-v3-base-xnli-multilingual-nli-2mil7"
+
+    def __init__(self, model_name: str | None = None) -> None:
+        try:
+            import torch  # noqa: F401
+            from transformers import AutoModelForSequenceClassification, AutoTokenizer
+        except Exception as exc:  # transformers/torch not installed
+            raise RuntimeError(f"NLI checker unavailable: {exc}") from exc
+        self._model_name = model_name or self.DEFAULT_MODEL
+        self._AutoModel = AutoModelForSequenceClassification
+        self._AutoTokenizer = AutoTokenizer
+        self._tokenizer = None
+        self._model = None
+        self._entail_idx: int | None = None
+
+    def _ensure_loaded(self) -> None:
+        if self._model is not None:
+            return
+        self._tokenizer = self._AutoTokenizer.from_pretrained(self._model_name)
+        self._model = self._AutoModel.from_pretrained(self._model_name)
+        self._model.eval()
+        # Locate the "entailment" class index from the model's label map.
+        id2label = {int(k): str(v).lower() for k, v in self._model.config.id2label.items()}
+        self._entail_idx = next((i for i, lbl in id2label.items() if "entail" in lbl), 0)
+
+    def entails(self, *, premise: str, hypothesis: str) -> float:
+        if not (premise or "").strip() or not (hypothesis or "").strip():
+            return 0.0
+        try:
+            import torch
+
+            self._ensure_loaded()
+            inputs = self._tokenizer(
+                premise, _MARKER_RE.sub(" ", hypothesis), truncation=True,
+                max_length=512, return_tensors="pt",
+            )
+            with torch.no_grad():
+                logits = self._model(**inputs).logits[0]
+            probs = torch.softmax(logits, dim=-1)
+            return float(probs[self._entail_idx].item())
+        except Exception:
+            # A model failure must not assert support.
+            return 0.0
+
+
+class MiniCheckEntailmentChecker:
+    """MiniCheck grounding checker (preferred when the optional ``minicheck`` package
+    is installed). Construction raises ``RuntimeError`` when unavailable so the
+    factory falls back to NLI → LLM-judge → lexical."""
+
+    def __init__(self, model_name: str = "flan-t5-large") -> None:
+        try:
+            from minicheck.minicheck import MiniCheck  # type: ignore
+        except Exception as exc:
+            raise RuntimeError(f"MiniCheck unavailable: {exc}") from exc
+        self._scorer = MiniCheck(model_name=model_name)
+
+    def entails(self, *, premise: str, hypothesis: str) -> float:
+        if not (premise or "").strip() or not (hypothesis or "").strip():
+            return 0.0
+        try:
+            _pred, probs, _raw, _ = self._scorer.score(
+                docs=[premise], claims=[_MARKER_RE.sub(" ", hypothesis)]
+            )
+            return float(probs[0])
+        except Exception:
+            return 0.0

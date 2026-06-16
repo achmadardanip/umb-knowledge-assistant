@@ -39,6 +39,30 @@ def faithfulness_score(
     return supported / len(claims)
 
 
+def unsupported_claim_rate(
+    answer: str,
+    contexts_by_citation: dict[int, dict],
+    checker: EntailmentChecker,
+    *,
+    threshold: float = 0.5,
+) -> float:
+    """Fraction of atomic claims NOT entailed by their cited evidence — the direct
+    hallucination signal (complement of ``faithfulness_score``)."""
+    return 1.0 - faithfulness_score(answer, contexts_by_citation, checker, threshold=threshold)
+
+
+def citation_alignment(answer: str, contexts_by_citation: dict[int, dict]) -> float:
+    """Structural citation alignment (no LLM): of the claims that carry a citation,
+    the fraction whose every ``[n]`` marker points to an actually-retrieved context.
+    A dangling/fabricated citation id (no such retrieved source) fails alignment."""
+    claims = extract_claims(answer)
+    cited = [c for c in claims if c.citation_ids]
+    if not cited:
+        return 1.0
+    aligned = sum(1 for c in cited if all(cid in contexts_by_citation for cid in c.citation_ids))
+    return aligned / len(cited)
+
+
 @dataclass
 class CitationMetrics:
     precision: float  # of the claims that cite a source, fraction actually supported

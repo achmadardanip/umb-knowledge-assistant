@@ -157,8 +157,12 @@ def test_run_firecrawl_indexes_crawl_documents_and_metadata(db):
     assert html_source.discovery_source == "firecrawl_crawl"
     assert html_chunk.extraction_method == "firecrawl"
     assert html_chunk.extraction_confidence == 0.95
-    assert html_chunk.meta["links"] == ["https://mercubuana.ac.id/kalender"]
-    assert html_chunk.meta["images"] == ["https://mercubuana.ac.id/image.jpg"]
+    # v3 P5: bloated crawl metadata (links/images) is pruned at ingest to the small
+    # retrieval allowlist so chunks never carry the ~13 KB egress bloat.
+    assert "links" not in html_chunk.meta
+    assert "images" not in html_chunk.meta
+    assert html_chunk.meta["url"] == "https://mercubuana.ac.id/akademik"
+    assert html_chunk.meta["source_type"] == html_chunk.source_type
     assert pdf_chunk.source_type == "pdf"
 
 

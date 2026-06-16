@@ -16,6 +16,7 @@ merge no longer pins it above the topical FAQ/vector sources.
 from __future__ import annotations
 
 import re
+from dataclasses import dataclass
 
 # Canonical intents (the 15 university domains).
 INTENT_ADMISSIONS = "admissions"
@@ -109,7 +110,9 @@ def detect_intent(query: str) -> str:
         return INTENT_TUITION
     if _has(t, "beasiswa", "scholarship", "kip", "kip-k", "ppa", "bidikmisi"):
         return INTENT_SCHOLARSHIP
-    if _has(t, "kalender akademik", "academic calendar", "jadwal akademik", "kapan mulai kuliah", "kapan uts", "kapan uas", "libur semester"):
+    if _has(t, "kalender akademik", "academic calendar", "jadwal akademik", "kapan mulai kuliah",
+            "kapan uts", "kapan uas", "uts", "uas", "ujian tengah semester", "ujian akhir semester",
+            "jadwal ujian", "jadwal kuliah", "libur semester", "semester ini", "semester depan"):
         return INTENT_ACADEMIC_CALENDAR
     if _has(t, "peraturan", "regulasi", "tata tertib", "sanksi", "regulation", "akademik peraturan", "drop out", "cuti akademik"):
         return INTENT_ACADEMIC_REGULATIONS
@@ -144,48 +147,103 @@ def detect_intent(query: str) -> str:
     return INTENT_GENERAL
 
 
-# Anaphora / continuation markers that signal a follow-up referring to the
-# previous turn rather than introducing a new topic.
-_FOLLOWUP_MARKERS = (
-    "itu", "tersebut", "tadi", "ini", "nya", "mereka", "beliau",
-    "lanjut", "lebih detail", "lebih lanjut", "jelaskan lagi", "jelaskan lebih",
-    "bagaimana dengan", "kalau", "terus", "lalu", "selain itu", "yang tadi",
-    "what about", "tell me more", "and ", "its ", "their ", "that one",
+# STRONG anaphora / continuation markers — unambiguously refer to the previous turn.
+_STRONG_FOLLOWUP_MARKERS = (
+    "tersebut", "tadi", "beliau", "lanjut", "lebih detail", "lebih lanjut",
+    "jelaskan lagi", "jelaskan lebih", "bagaimana dengan", "selain itu", "yang tadi",
+    "yang lain", "lainnya", "what about", "tell me more", "that one",
 )
+# WEAK markers — also used as determiners ("semester INI", "buku ITU") or possessive
+# suffixes, so they only signal a follow-up in a SHORT, non-new-topic question
+# (e.g. "apa ITU?", "yang INI"). Otherwise they are ignored to avoid false positives.
+_WEAK_FOLLOWUP_MARKERS = ("itu", "ini", "nya", "mereka", "its", "their")
+_CONTINUATION_PREFIXES = ("dan ", "lalu ", "terus ", "kalau ", "and ", "what about")
+
+# Back-compat: the union, still referenced by older imports/tests.
+_FOLLOWUP_MARKERS = _STRONG_FOLLOWUP_MARKERS + _WEAK_FOLLOWUP_MARKERS
 
 
-def detect_followup(question: str, history: list[dict] | None) -> bool:
-    """Decide whether ``question`` is a FOLLOW_UP (refers to the previous turn)
-    or a NEW_TOPIC. Conservative by design: when uncertain, return NEW_TOPIC so
-    a fresh question never inherits the previous turn's entity/topic context
-    (the SIA-after-FASILKOM leakage). Deterministic, no LLM."""
+# Self-contained topical/system intents: a switch to one of these is a hard
+# NEW_TOPIC even if a stray pronoun appears (e.g. "Bagaimana cara akses SIA?").
+_SPECIFIC_INTENTS = {
+    INTENT_TUITION, INTENT_SCHOLARSHIP, INTENT_CAMPUS, INTENT_SIA, INTENT_SSO,
+    INTENT_LIBRARY, INTENT_ADMISSIONS, INTENT_ACADEMIC_CALENDAR,
+    INTENT_ACADEMIC_REGULATIONS, INTENT_STUDENT_SERVICES,
+}
+
+# P3 follow-up decision threshold: below this confidence we start a fresh context
+# (the plan's `if followup_confidence < 0.75: start_new_context()`).
+FOLLOWUP_CONFIDENCE_THRESHOLD = 0.75
+
+
+@dataclass(frozen=True)
+class FollowupDecision:
+    """Structured follow-up vs new-topic decision (P3 conversation-state isolation).
+
+    ``is_followup`` is derived solely from ``confidence >= FOLLOWUP_CONFIDENCE_THRESHOLD``
+    so the binary and the score never disagree. ``intent_changed`` / ``topic_changed``
+    drive the entity/topic memory-clearing rules; the canonical intent is the topic proxy.
+    """
+    is_followup: bool
+    confidence: float
+    cur_intent: str
+    prev_intent: str
+    intent_changed: bool
+    topic_changed: bool
+    reason: str
+
+
+def analyze_followup(question: str, history: list[dict] | None) -> FollowupDecision:
+    """Confidence-scored follow-up analysis. Conservative by design: when uncertain
+    the confidence stays below threshold so a fresh question never inherits the prior
+    turn's entity/topic context (the SIA-after-FASILKOM leakage). Deterministic, no LLM."""
     prior_user = [m for m in (history or []) if m.get("role") == "user" and (m.get("content") or "").strip()]
     if not prior_user:
-        return False  # nothing to follow up on
+        return FollowupDecision(False, 0.0, INTENT_GENERAL, INTENT_GENERAL, False, False, "no_history")
     t = re.sub(r"\s+", " ", (question or "").strip().lower())
     if not t:
-        return False
+        return FollowupDecision(False, 0.0, INTENT_GENERAL, INTENT_GENERAL, False, False, "empty_question")
 
     cur_intent = detect_intent(question)
     prev_intent = detect_intent(prior_user[-1].get("content") or "")
-    has_marker = _has(t, *_FOLLOWUP_MARKERS) or t.startswith(("dan ", "lalu ", "terus ", "kalau ", "and ", "what about"))
+    # A real intent switch = both turns carry a concrete (non-general) intent that differs.
+    intent_changed = cur_intent != prev_intent and INTENT_GENERAL not in (cur_intent, prev_intent)
+    topic_changed = cur_intent != prev_intent  # intent label is the topic proxy
+    strong_marker = _has(t, *_STRONG_FOLLOWUP_MARKERS) or t.startswith(_CONTINUATION_PREFIXES)
+    weak_marker = _has(t, *_WEAK_FOLLOWUP_MARKERS)
     token_count = len(t.split())
+    same_or_general = cur_intent == INTENT_GENERAL or cur_intent == prev_intent
 
-    # A clearly different, self-contained topical/system intent → NEW_TOPIC,
-    # even if a stray pronoun appears (e.g. "Bagaimana cara akses SIA?").
-    specific = {
-        INTENT_TUITION, INTENT_SCHOLARSHIP, INTENT_CAMPUS, INTENT_SIA, INTENT_SSO,
-        INTENT_LIBRARY, INTENT_ADMISSIONS, INTENT_ACADEMIC_CALENDAR,
-        INTENT_ACADEMIC_REGULATIONS, INTENT_STUDENT_SERVICES,
-    }
-    if cur_intent in specific and cur_intent != prev_intent:
-        return False
-    if has_marker:
-        return True
-    # Short, subject-omitting question that stays within the prior topic.
-    if token_count <= 4 and (cur_intent == INTENT_GENERAL or cur_intent == prev_intent):
-        return True
-    return False  # uncertain → NEW_TOPIC
+    if cur_intent in _SPECIFIC_INTENTS and cur_intent != prev_intent:
+        # Clearly different self-contained intent → strong NEW_TOPIC (markers ignored:
+        # a determiner like "semester INI" must not turn a calendar question into a
+        # follow-up of an unrelated faculty question).
+        confidence, reason = 0.10, "different_specific_intent"
+    elif strong_marker:
+        confidence, reason = 0.90, "anaphora_marker"
+    elif weak_marker and token_count <= 5 and same_or_general:
+        # A weak determiner/pronoun only signals continuation in a short, on-topic turn.
+        confidence, reason = 0.80, "weak_marker_short"
+    elif token_count <= 4 and same_or_general:
+        # Short, subject-omitting question that stays within the prior topic.
+        confidence, reason = 0.78, "short_same_topic"
+    else:
+        confidence, reason = 0.30, "uncertain_new_topic"
+
+    return FollowupDecision(
+        is_followup=confidence >= FOLLOWUP_CONFIDENCE_THRESHOLD,
+        confidence=confidence,
+        cur_intent=cur_intent,
+        prev_intent=prev_intent,
+        intent_changed=intent_changed,
+        topic_changed=topic_changed,
+        reason=reason,
+    )
+
+
+def detect_followup(question: str, history: list[dict] | None) -> bool:
+    """Binary follow-up vs new-topic (back-compat wrapper over ``analyze_followup``)."""
+    return analyze_followup(question, history).is_followup
 
 
 # v3 P2 — per-intent host allowlists. A context on a compatible host is boosted;

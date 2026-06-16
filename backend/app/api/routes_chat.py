@@ -38,6 +38,7 @@ from app.rag.guardrails import guardrail_response
 from app.rag.intent_classifier import classify_intent
 from app.rag.language import detect_language
 from app.retrieval.hybrid_retriever import HybridRetriever
+from app.retrieval.intent_gate import admin_contact_line, detect_retrieval_intent, history_conflicts, refusal_message
 from app.web_search.tavily_client import WebSearchConfigurationError
 
 
@@ -176,7 +177,7 @@ def _agent_step(step_id: str, label: str, status: StepStatus, detail: str | None
     }
 
 
-def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None, *, is_followup: bool = True) -> str:
+def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None, *, is_followup: bool = True, intent: str | None = None) -> str:
     # NEW_TOPIC: retrieve on the question alone. Carrying prior turns / source
     # hints / entity hints would leak the previous topic's context into an
     # unrelated question (e.g. SIA login after a FASILKOM-dean question). Only a
@@ -185,6 +186,17 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
         return compact_context([question], max_chars=1600)
 
     prior_messages = list(history or [])
+    # Conversation context must never override the current query's intent: a chat
+    # titled "Informasi Fasilkom UMB" must not steer a SIA-login question into
+    # faculty pages. Drop conflicting title/turns before building the query.
+    if intent:
+        if chat_title and chat_title != "New Chat" and history_conflicts(intent, chat_title):
+            chat_title = None
+        prior_messages = [
+            message
+            for message in prior_messages
+            if not history_conflicts(intent, message.get("content") or "")
+        ]
     normalized_question = " ".join((question or "").split()).lower()
     for index in range(len(prior_messages) - 1, -1, -1):
         message = prior_messages[index]
@@ -216,6 +228,38 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
     return compact_context(parts, max_chars=1600)
 
 
+def _apply_answer_policy(answer_payload: dict, intent: str, language: str | None) -> str | None:
+    """Final answer policy (spec #7/#8/#10/#13).
+
+    A verified answer is left untouched (its validated citations stay). But an
+    *unverified* result — ``not_found`` or the extractive "could not verify" fallback —
+    must never masquerade as an answer backed by candidate source cards. For sensitive
+    intents that have a refusal template (login/SSO, support, faculty) we replace the
+    text with a safe refusal and drop all source cards. Returns a refusal reason or None.
+    """
+    is_extractive = (answer_payload.get("metadata") or {}).get("fallback") == "extractive"
+    unverified = bool(answer_payload.get("not_found")) or is_extractive
+    if not unverified:
+        return None
+    # Never show candidate source cards on a non-answer.
+    answer_payload["sources"] = []
+    answer_payload["confidence"] = "low"
+    answer_payload["not_found"] = True
+    answer_payload["provider_used"] = "system"
+    # Sensitive intents get a tailored refusal; everything else gets the clean
+    # "no verified answer -> contact the WhatsApp admin" fallback. Either way: no guessing.
+    refusal = refusal_message(intent, language)
+    if refusal:
+        answer_payload["answer"] = refusal
+        answer_payload["model_used"] = "intent-refusal"
+        answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "intent_refusal": True}
+        return f"unverified_context_for_intent:{intent}"
+    answer_payload["answer"] = _fallback_answer_for_language(language)
+    answer_payload["model_used"] = "fallback"
+    answer_payload["metadata"] = {**(answer_payload.get("metadata") or {}), "fallback": "no_verified_answer"}
+    return "no_verified_answer"
+
+
 def _context_summary(contexts: list[dict]) -> tuple[str, dict]:
     hosts = [context.get("hostname") for context in contexts if context.get("hostname")]
     source_types = [context.get("source_type") or "unknown" for context in contexts]
@@ -240,8 +284,10 @@ def _fallback_answer_for_language(language: str | None, query: str | None = None
             "Coba indeks halaman fakultas, struktural, atau program studi UMB terlebih dahulu."
         )
     if (language or "").lower().startswith("en"):
-        return "I have not found official information related to that question in the available public Universitas Mercu Buana sources."
-    return "Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia."
+        body = "I could not find verified official Universitas Mercu Buana information for that question, so I will not guess."
+    else:
+        body = "Saya belum menemukan informasi resmi yang terverifikasi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana, jadi saya tidak menebak."
+    return f"{body}\n\n{admin_contact_line(language)}"
 
 
 def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_generation: bool = False) -> dict:
@@ -483,17 +529,42 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             "agent_tool_calls": 0,
         }
 
-    from app.rag.intent_router import detect_followup
+    from app.rag.intent_router import analyze_followup
 
-    is_followup = detect_followup(payload.question, history)
+    # P3 conversation-state isolation: a confidence-scored decision. Below the
+    # threshold (or on an intent/topic switch) we START A NEW CONTEXT — neither the
+    # retrieval query NOR the generation prompt inherits the prior turn's
+    # entity/topic context (the SIA-after-FASILKOM leakage). ``conversation_history``
+    # is the per-turn-scoped memory handed to generation; it is emptied on a new topic.
+    followup = analyze_followup(payload.question, history)
+    is_followup = followup.is_followup
+    conversation_history = history if is_followup else []
     emit(
         "followup_detection",
         "Mendeteksi pertanyaan lanjutan vs topik baru",
         "done",
-        "Pertanyaan lanjutan: mewarisi konteks percakapan" if is_followup else "Topik baru: retrieval tanpa konteks percakapan sebelumnya",
-        {"is_followup": is_followup},
+        (
+            f"Pertanyaan lanjutan (conf {followup.confidence:.2f}): mewarisi konteks percakapan"
+            if is_followup
+            else f"Topik baru (conf {followup.confidence:.2f}, {followup.reason}): konteks percakapan direset"
+        ),
+        {
+            "is_followup": is_followup,
+            "followup_confidence": followup.confidence,
+            "intent_changed": followup.intent_changed,
+            "topic_changed": followup.topic_changed,
+            "reason": followup.reason,
+            "prev_intent": followup.prev_intent,
+            "cur_intent": followup.cur_intent,
+        },
     )
-    retrieval_query = _build_retrieval_query(payload.question, history, title, is_followup=is_followup)
+    # Retrieval intent (login/SSO, support, faculty, tuition, …) drives the hard
+    # intent gate in the agent and the conversation-context conflict drop. It is
+    # distinct from intent_result.intent (smalltalk/capability/out_of_scope/general).
+    retrieval_intent = detect_retrieval_intent(payload.question)
+    retrieval_query = _build_retrieval_query(
+        payload.question, history, title, is_followup=is_followup, intent=retrieval_intent
+    )
     if intent_result.topic != "general":
         retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
@@ -526,6 +597,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                 emit=emit,
                 indexed_retriever_cls=HybridRetriever,
                 match_query=payload.question,
+                intent=retrieval_intent,
             )
         except WebSearchConfigurationError as exc:
             db.rollback()
@@ -591,7 +663,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     messages, prepared_contexts = build_generation_messages(
                         question=_with_audience(payload.question, payload.audience or infer_audience(payload.question)),
                         contexts=contexts,
-                        recent_messages=history,
+                        recent_messages=conversation_history,
                         memories=memories,
                         language=language_detected,
                     )
@@ -639,7 +711,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                 answer_payload = generate_answer(
                     question=_with_audience(payload.question, payload.audience or infer_audience(payload.question)),
                     contexts=contexts,
-                    recent_messages=history,
+                    recent_messages=conversation_history,
                     memories=memories,
                     provider_override=payload.provider_override,
                     language=language_detected,
@@ -666,6 +738,20 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             db.rollback()
             emit("provider", "Memilih provider AI", "error", str(exc))
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    # Final answer policy: an unverified result (not_found, or — if ever re-enabled —
+    # an extractive "could not verify" fallback) must never masquerade as an answer
+    # backed by candidate source cards. Sensitive intents get a tailored refusal;
+    # everything else gets the clean "no verified answer -> WhatsApp admin" fallback.
+    policy_reason = _apply_answer_policy(answer_payload, retrieval_intent, language_detected)
+    if policy_reason:
+        emit(
+            "answer_policy",
+            "Menerapkan kebijakan jawaban terverifikasi",
+            "done",
+            "Jawaban tak terverifikasi diganti dengan fallback aman; kartu sumber dikosongkan",
+            {"refusal_reason": policy_reason, "intent": retrieval_intent},
+        )
 
     # Async knowledge acquisition (Batch 4): the user is answered FIRST; persisting
     # the live-web sources into the KB + recording the discovery cache runs in a
@@ -832,9 +918,14 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         memory_used=prepared.memory_used,
         language=prepared.language,
     )
+    # Same intent answer policy as the server path: an unverified/extractive browser
+    # answer for a sensitive intent becomes a safe refusal with no candidate cards.
+    finalize_refusal_reason = _apply_answer_policy(
+        answer_payload, detect_retrieval_intent(prepared.raw_question), prepared.language
+    )
     final_model = answer_payload.get("model_used") or model_used
 
-    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found"):
+    if settings.rag_answer_cache_enabled and not answer_payload.get("not_found") and (answer_payload.get("metadata") or {}).get("fallback") != "extractive":
         try:
             cache_key = build_cache_key(
                 question=prepared.raw_question,
@@ -868,6 +959,11 @@ def chat_finalize(payload: ChatFinalizeRequest, db: Session = Depends(get_db)) -
         "web_context_count": prepared.web_context_count,
         "agent_tool_calls": prepared.agent_tool_calls,
         "cache_hit": False,
+        "retrieval_debug": {
+            "detected_intent": detect_retrieval_intent(prepared.raw_question),
+            "final_citations": len(answer_payload.get("sources") or []),
+            "refusal_reason": finalize_refusal_reason,
+        },
     }
     assistant = save_message(
         db,

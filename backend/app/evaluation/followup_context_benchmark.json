@@ -1,0 +1,4652 @@
+{
+  "description": "P3 conversation-state-isolation benchmark (multi-turn). Family A = new-topic intent switch (leakage test); Family B/C = genuine follow-up (context retained).",
+  "n_conversations": 348,
+  "n_new_topic": 240,
+  "n_followup": 108,
+  "conversations": [
+    {
+      "id": "fc-0001",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0002",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0003",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0004",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0005",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0006",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0007",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0008",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fasilkom",
+        "ilmu komputer"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0009",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0010",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0011",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0012",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0013",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0014",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0015",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0016",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0017",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0018",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0019",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0020",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0021",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0022",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0023",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0024",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fasilkom",
+        "ilmu komputer",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0025",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0026",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0027",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0028",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0029",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0030",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0031",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0032",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "dekan",
+        "ekonomi",
+        "feb"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0033",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0034",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0035",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0036",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0037",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0038",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0039",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0040",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0041",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0042",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0043",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0044",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0045",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0046",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0047",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0048",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "bisnis",
+        "ekonomi",
+        "feb",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0049",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0050",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0051",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0052",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0053",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0054",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0055",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0056",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0057",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0058",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0059",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0060",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0061",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0062",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0063",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0064",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "program studi",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0065",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0066",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0067",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0068",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0069",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0070",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0071",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0072",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "struktur",
+        "teknik"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0073",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0074",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0075",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0076",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0077",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0078",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0079",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0080",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "fikom",
+        "komunikasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0081",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0082",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0083",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0084",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0085",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0086",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0087",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0088",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0089",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0090",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0091",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0092",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0093",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0094",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0095",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0096",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "fikom",
+        "komunikasi",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0097",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0098",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0099",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0100",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0101",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0102",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0103",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0104",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "desain",
+        "fdsk",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0105",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0106",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0107",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0108",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0109",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0110",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0111",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0112",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "program studi",
+        "seni kreatif"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0113",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0114",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0115",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0116",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0117",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0118",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0119",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0120",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "desain",
+        "fdsk",
+        "seni kreatif",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0121",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0122",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0123",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0124",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0125",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0126",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0127",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0128",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "dekan",
+        "pascasarjana"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0129",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0130",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0131",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0132",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0133",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0134",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0135",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0136",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "program studi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0137",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0138",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0139",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0140",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0141",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0142",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0143",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0144",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "pascasarjana",
+        "struktur"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0145",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0146",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0147",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0148",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0149",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0150",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0151",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0152",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Informatika?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0153",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0154",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0155",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0156",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0157",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0158",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0159",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0160",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "informatika"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0161",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0162",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0163",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0164",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0165",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0166",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0167",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0168",
+      "turns": [
+        "Berapa biaya kuliah program Sistem Informasi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0169",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0170",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0171",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0172",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0173",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0174",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0175",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0176",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "sistem informasi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0177",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0178",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0179",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0180",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0181",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0182",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0183",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0184",
+      "turns": [
+        "Berapa biaya kuliah program Akuntansi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0185",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0186",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0187",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0188",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0189",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0190",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0191",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0192",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "akuntansi"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0193",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0194",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0195",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0196",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0197",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0198",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0199",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0200",
+      "turns": [
+        "Berapa biaya kuliah program Manajemen?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0201",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0202",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0203",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0204",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0205",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0206",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0207",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0208",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "manajemen"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0209",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0210",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0211",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0212",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0213",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0214",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0215",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0216",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Industri?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0217",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0218",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0219",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0220",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0221",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0222",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0223",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0224",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik industri"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0225",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0226",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0227",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0228",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0229",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0230",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0231",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0232",
+      "turns": [
+        "Berapa biaya kuliah program Teknik Elektro?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0233",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Bagaimana cara login SIA?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0234",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Bagaimana cara reset password SSO?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0235",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Berapa biaya kuliah per semester?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0236",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Beasiswa apa saja yang tersedia di UMB?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0237",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Bagaimana cara mendaftar mahasiswa baru?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0238",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Bagaimana cara meminjam buku di perpustakaan?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0239",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Di mana lokasi kampus Meruya?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0240",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Kapan jadwal UTS semester ini?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": false,
+      "prior_terms": [
+        "akreditasi",
+        "teknik elektro"
+      ],
+      "language": "id"
+    },
+    {
+      "id": "fc-0241",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0242",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0243",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0244",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0245",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komputer?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0246",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0247",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0248",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0249",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0250",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komputer?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0251",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0252",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0253",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0254",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0255",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komputer?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komputer UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0256",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0257",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0258",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0259",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0260",
+      "turns": [
+        "Siapa dekan Fakultas Ekonomi dan Bisnis?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0261",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0262",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0263",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0264",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0265",
+      "turns": [
+        "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0266",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0267",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0268",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0269",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0270",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ekonomi dan Bisnis?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ekonomi dan Bisnis UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0271",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0272",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0273",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0274",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0275",
+      "turns": [
+        "Siapa dekan Fakultas Teknik?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0276",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0277",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0278",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0279",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0280",
+      "turns": [
+        "Apa saja program studi di Fakultas Teknik?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0281",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0282",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0283",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0284",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0285",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Teknik?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Teknik UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0286",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0287",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0288",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0289",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0290",
+      "turns": [
+        "Siapa dekan Fakultas Ilmu Komunikasi?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0291",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0292",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0293",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0294",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0295",
+      "turns": [
+        "Apa saja program studi di Fakultas Ilmu Komunikasi?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0296",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0297",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0298",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0299",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0300",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Ilmu Komunikasi?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Ilmu Komunikasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0301",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0302",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0303",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0304",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0305",
+      "turns": [
+        "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0306",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0307",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0308",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0309",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0310",
+      "turns": [
+        "Apa saja program studi di Fakultas Desain dan Seni Kreatif?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0311",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0312",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0313",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0314",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0315",
+      "turns": [
+        "Bagaimana struktur organisasi Fakultas Desain dan Seni Kreatif?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Fakultas Desain dan Seni Kreatif UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0316",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0317",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0318",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0319",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0320",
+      "turns": [
+        "Siapa dekan Sekolah Pascasarjana?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0321",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0322",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0323",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0324",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0325",
+      "turns": [
+        "Apa saja program studi di Sekolah Pascasarjana?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0326",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0327",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0328",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0329",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "kalau akreditasinya bagaimana?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0330",
+      "turns": [
+        "Bagaimana struktur organisasi Sekolah Pascasarjana?",
+        "lalu siapa wakil dekannya?"
+      ],
+      "chat_title": "Informasi Sekolah Pascasarjana UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0331",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0332",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0333",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Informatika?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Teknik Informatika UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0334",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0335",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0336",
+      "turns": [
+        "Bagaimana akreditasi program Sistem Informasi?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Sistem Informasi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0337",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0338",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0339",
+      "turns": [
+        "Bagaimana akreditasi program Akuntansi?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Akuntansi UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0340",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0341",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0342",
+      "turns": [
+        "Bagaimana akreditasi program Manajemen?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Manajemen UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0343",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0344",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0345",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Industri?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Teknik Industri UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0346",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "Bagaimana dengan program studinya?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0347",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "jelaskan lebih detail"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    },
+    {
+      "id": "fc-0348",
+      "turns": [
+        "Bagaimana akreditasi program Teknik Elektro?",
+        "yang lainnya?"
+      ],
+      "chat_title": "Informasi Teknik Elektro UMB",
+      "expected_followup": true,
+      "prior_terms": [],
+      "language": "id"
+    }
+  ]
+}

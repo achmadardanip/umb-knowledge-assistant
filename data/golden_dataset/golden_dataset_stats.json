@@ -1,0 +1,33 @@
+{
+  "total": 1200,
+  "authentic": 648,
+  "synthetic": 552,
+  "synthetic_ratio": 0.46,
+  "answerable_ratio": 0.9917,
+  "intent_distribution": {
+    "admissions": 121,
+    "tuition": 107,
+    "scholarship": 110,
+    "general": 117,
+    "library": 14,
+    "faculty": 80,
+    "study_program": 214,
+    "lecturer": 91,
+    "academic_calendar": 62,
+    "academic_regulations": 58,
+    "student_services": 67,
+    "campus": 68,
+    "sia": 60,
+    "sso": 31
+  },
+  "source_distribution": {
+    "official_faq": 17,
+    "faq_alias": 81,
+    "benchmark_seed": 491,
+    "entity_lookup": 59,
+    "synthetic_variant": 552
+  },
+  "dataset_version": "golden-v1",
+  "generated_at": "2026-06-16T05:07:36.049675+00:00",
+  "followup_conversations": 348
+}

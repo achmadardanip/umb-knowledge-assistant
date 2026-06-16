@@ -53,6 +53,14 @@ def _float(name: str, default: float) -> float:
     return float(value)
 
 
+def _resolve_database_url() -> str | None:
+    """v3 P6: LOCAL_POSTGRES_MODE routes the app to a local pgvector Postgres
+    (docker-compose) instead of Supabase — fully local deployment, no Supabase dep."""
+    if _bool("LOCAL_POSTGRES_MODE", False):
+        return os.getenv("LOCAL_POSTGRES_URL", "postgresql://umb:umb@localhost:5432/umb")
+    return os.getenv("SUPABASE_POOLER_DATABASE_URL") or os.getenv("DATABASE_URL")
+
+
 def _provider(value: str | None) -> ProviderName:
     normalized = (value or "local_ollama").strip().lower()
     aliases = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio"}
@@ -74,7 +82,9 @@ def _provider(value: str | None) -> ProviderName:
 
 @dataclass(frozen=True)
 class Settings:
-    database_url: str | None = os.getenv("SUPABASE_POOLER_DATABASE_URL") or os.getenv("DATABASE_URL")
+    database_url: str | None = _resolve_database_url()
+    local_postgres_mode: bool = _bool("LOCAL_POSTGRES_MODE", False)
+    local_postgres_url: str = os.getenv("LOCAL_POSTGRES_URL", "postgresql://umb:umb@localhost:5432/umb")
     local_sqlite_fallback_enabled: bool = _bool("LOCAL_SQLITE_FALLBACK_ENABLED", True)
     local_sqlite_path: str = os.getenv("LOCAL_SQLITE_PATH", "local-dev.db")
 
@@ -169,7 +179,7 @@ class Settings:
     retrieval_cache_ttl_seconds: int = _int("RETRIEVAL_CACHE_TTL_SECONDS", 300)
     llm_max_retries: int = _int("LLM_MAX_RETRIES", 2)
     llm_retry_backoff_seconds: float = _float("LLM_RETRY_BACKOFF_SECONDS", 2.0)
-    llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", True)
+    llm_fallback_extractive: bool = _bool("LLM_FALLBACK_EXTRACTIVE", False)
     llm_fallback_providers: str = os.getenv("LLM_FALLBACK_PROVIDERS", "gemini,openai")
 
     # Corroboration-Gated Claim Verification (CGCV). Off by default until the
@@ -180,6 +190,13 @@ class Settings:
     cgcv_entailment_mode: str = os.getenv("CGCV_ENTAILMENT_MODE", "lexical").strip().lower()
     cgcv_entailment_threshold: float = _float("CGCV_ENTAILMENT_THRESHOLD", 0.5)
     cgcv_min_supported_claims: int = _int("CGCV_MIN_SUPPORTED_CLAIMS", 1)
+    # P4 groundedness verifier. 'auto' degrades MiniCheck -> NLI -> LLM-judge -> lexical.
+    groundedness_verifier: str = os.getenv("GROUNDEDNESS_VERIFIER", "auto").strip().lower()
+    # Post-generation decision gate (return/regenerate/abstain). Off by default: it
+    # adds an entailment pass per answer (CPU/latency); enable on a GPU verifier host.
+    groundedness_decision_enabled: bool = _bool("GROUNDEDNESS_DECISION_ENABLED", False)
+    groundedness_return_threshold: float = _float("GROUNDEDNESS_RETURN_THRESHOLD", 0.90)
+    groundedness_regenerate_threshold: float = _float("GROUNDEDNESS_REGENERATE_THRESHOLD", 0.70)
 
     # Safety floor (OWASP LLM10 / LLM01).
     rate_limit_enabled: bool = _bool("RATE_LIMIT_ENABLED", True)
