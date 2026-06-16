@@ -38,6 +38,7 @@ frontend/.next/
 
 # ── Generated artifacts / evaluation outputs (regenerated; not source) ────
 reports/
+**/reports/
 artifacts/
 evaluation_outputs/
 downloads/
@@ -49,6 +50,16 @@ data/downloads/
 data/multimodal/
 data/graph/
 backend/data/
+# Generated reports / benchmark / audit outputs (Phase-8: not tracked)
+*_REPORT.md
+*_report.md
+benchmark*.json
+evaluation*.json
+metrics*.json
+generated_datasets/
+tmp_datasets/
+exports/
+backups/
 
 # ── Crawled / downloaded binary assets ────────────────────────────────────
 *.pdf
