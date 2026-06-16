@@ -190,6 +190,13 @@ class Settings:
     cgcv_entailment_mode: str = os.getenv("CGCV_ENTAILMENT_MODE", "lexical").strip().lower()
     cgcv_entailment_threshold: float = _float("CGCV_ENTAILMENT_THRESHOLD", 0.5)
     cgcv_min_supported_claims: int = _int("CGCV_MIN_SUPPORTED_CLAIMS", 1)
+    # P4 groundedness verifier. 'auto' degrades MiniCheck -> NLI -> LLM-judge -> lexical.
+    groundedness_verifier: str = os.getenv("GROUNDEDNESS_VERIFIER", "auto").strip().lower()
+    # Post-generation decision gate (return/regenerate/abstain). Off by default: it
+    # adds an entailment pass per answer (CPU/latency); enable on a GPU verifier host.
+    groundedness_decision_enabled: bool = _bool("GROUNDEDNESS_DECISION_ENABLED", False)
+    groundedness_return_threshold: float = _float("GROUNDEDNESS_RETURN_THRESHOLD", 0.90)
+    groundedness_regenerate_threshold: float = _float("GROUNDEDNESS_REGENERATE_THRESHOLD", 0.70)
 
     # Safety floor (OWASP LLM10 / LLM01).
     rate_limit_enabled: bool = _bool("RATE_LIMIT_ENABLED", True)

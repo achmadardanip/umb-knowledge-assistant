@@ -607,15 +607,23 @@ def _cgcv_enabled() -> bool:
 def build_default_entailment_checker(provider_override: str | None) -> EntailmentChecker:
     """Entailment engine for CGCV. Default 'lexical' is free (no LLM call) so the trust
     gate runs on every answer without burning rate-limited quota; 'llm' uses a provider
-    judge. Swappable for MiniCheck/NLI via the model gateway later."""
+    judge; 'nli' / 'minicheck' / 'auto' use the P4 groundedness checker chain (graceful
+    degradation to lexical when the model/package is unavailable)."""
     settings = get_settings()
-    if settings.cgcv_entailment_mode == "lexical":
+    mode = settings.cgcv_entailment_mode
+    if mode == "lexical":
         return LexicalEntailmentChecker()
 
     def chat(messages: list[dict]) -> str:
         return get_provider(provider_override).chat(messages).content
 
-    return LLMJudgeEntailmentChecker(chat=chat)
+    if mode == "llm":
+        return LLMJudgeEntailmentChecker(chat=chat)
+    # nli / minicheck / auto → best-available checker, lexical as last resort.
+    from app.verification.groundedness import build_groundedness_checker
+
+    checker, _name = build_groundedness_checker(mode, chat=chat)
+    return checker
 
 
 def _contexts_by_citation(sources: list[dict], contexts: list[dict]) -> dict[int, dict]:
@@ -664,6 +672,52 @@ def _apply_cgcv(payload: dict, contexts: list[dict], provider_override: str | No
         "confidence": _min_confidence(payload.get("confidence"), result.confidence),
         "not_found": False,
     }
+
+
+def _apply_groundedness_decision(payload: dict, contexts: list[dict], provider_override: str | None) -> dict:
+    """P4 groundedness gate: score the answer against its cited evidence and act on the
+    decision. ABSTAIN → drop the unsupported answer but keep the official source cards
+    ('official sources only'). Always attaches a ``metadata.groundedness`` record. The
+    REGENERATE decision is surfaced in metadata; the actual re-generation hook lives in
+    ``generate_answer`` (a server-provider concern, not the shared finalize path)."""
+    from app.verification.groundedness import (
+        DECISION_ABSTAIN,
+        GroundednessVerifier,
+        build_groundedness_checker,
+    )
+
+    settings = get_settings()
+    sources = payload.get("sources") or []
+
+    def chat(messages: list[dict]) -> str:
+        return get_provider(provider_override).chat(messages).content
+
+    checker, name = build_groundedness_checker(settings.groundedness_verifier, chat=chat)
+    verifier = GroundednessVerifier(
+        checker,
+        checker_name=name,
+        claim_threshold=settings.cgcv_entailment_threshold,
+        return_threshold=settings.groundedness_return_threshold,
+        regenerate_threshold=settings.groundedness_regenerate_threshold,
+    )
+    result = verifier.verify(payload.get("answer") or "", _contexts_by_citation(sources, contexts))
+    metadata = {
+        **(payload.get("metadata") or {}),
+        "groundedness": {
+            "score": round(result.score, 3),
+            "decision": result.decision,
+            "unsupported_claim_rate": round(result.unsupported_claim_rate, 3),
+            "citation_alignment": round(result.citation_alignment, 3),
+            "checker": result.checker,
+        },
+    }
+    payload = {**payload, "metadata": metadata}
+    if result.decision == DECISION_ABSTAIN:
+        payload["answer"] = FALLBACK_ANSWER
+        payload["confidence"] = "low"
+        payload["not_found"] = True
+        payload["metadata"]["fallback"] = "groundedness_abstain"
+    return payload
 
 
 def build_generation_messages(
@@ -813,6 +867,10 @@ def finalize_generated_answer(
             reason="provider_answer_missing_valid_citations",
             language=language,
         )
+    # P4 groundedness decision gate (opt-in): score the verified answer and abstain on
+    # low groundedness. Runs only on an asserted answer; off by default (CPU/latency).
+    if not validated_payload.get("not_found") and settings.groundedness_decision_enabled:
+        validated_payload = _apply_groundedness_decision(validated_payload, contexts, provider_override)
     validated_payload["answer"] = sanitize_answer(validated_payload.get("answer") or "")
     return validated_payload
 
