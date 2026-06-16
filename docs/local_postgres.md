@@ -81,6 +81,33 @@ sets `LOCAL_POSTGRES_MODE=true` and talks to `postgres`/`redis` by service name)
 curl http://localhost:8000/health          # {"status":"ok"}
 ```
 
+## Persistence (named volume)
+Postgres data lives in a **named Docker volume** so it survives container restarts, Docker
+restarts, and host reboots (only `docker volume rm` deletes it):
+```yaml
+# docker-compose.local.yml
+services:
+  postgres:
+    volumes: [ umb_local_pgdata:/var/lib/postgresql/data ]
+volumes:
+  umb_local_pgdata:
+```
+Prefer the compose file (manages the volume) over a bare `docker run`:
+```bash
+docker compose -f docker-compose.local.yml up -d postgres
+```
+
+## Backup & restore
+```bash
+# backup (compressed custom format)
+docker exec umb-postgres pg_dump -U umb -d umb -Fc -f /tmp/umb.dump
+docker cp umb-postgres:/tmp/umb.dump ./backups/umb_$(date +%F).dump
+
+# restore into a fresh volume-backed container
+docker exec umb-postgres pg_restore -U umb -d umb --no-owner /tmp/umb.dump
+```
+`backups/` is gitignored. See `LOCAL_PERSISTENCE_VALIDATION.md` for validation results.
+
 ## Notes
 - pgvector image already bundles the `vector` extension; `pg_trgm` is created by the bootstrap.
 - Set `REDIS_URL` to share the FAQ/entity/retrieval cache across backend workers; without it an in-process cache is used.
