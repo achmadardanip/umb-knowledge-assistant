@@ -15,6 +15,7 @@ authority_tier, discovery_source). Only official ``*.mercubuana.ac.id`` URLs are
 from __future__ import annotations
 
 import logging
+from datetime import datetime, timezone
 from urllib.parse import urlparse
 
 import requests
@@ -122,10 +123,11 @@ def ingest_urls(db, urls: list[str], *, discovery_source: str = "phase7_official
         if ctype == "skip":
             stats["skipped"] += 1
             continue
+        crawl_date = datetime.now(timezone.utc).date().isoformat()
         try:
             if ctype == "pdf":
                 text, title, pages = extract_pdf(url)
-                meta = {"authority_tier": tier, "page_count": pages}
+                meta = {"authority_tier": tier, "page_count": pages, "crawl_date": crawl_date}
                 src_type, method = "pdf", "pymupdf"
             else:
                 results = client.extract([url])
@@ -133,7 +135,7 @@ def ingest_urls(db, urls: list[str], *, discovery_source: str = "phase7_official
                     stats["skipped"] += 1
                     continue
                 text, title = results[0].raw_content, None
-                meta = {"authority_tier": tier}
+                meta = {"authority_tier": tier, "crawl_date": crawl_date}
                 src_type, method = "html", "tavily_extract"
             if not text or len(text.split()) < 25:
                 stats["skipped"] += 1

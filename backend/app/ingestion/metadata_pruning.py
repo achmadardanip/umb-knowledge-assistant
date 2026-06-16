@@ -30,6 +30,8 @@ CHUNK_META_KEEP: frozenset[str] = frozenset({
     "discovery_source", "ingested_via", "extraction_method", "extraction_confidence",
     "page_number", "slide_number", "sheet_name", "row_range",
     "timestamp_start", "timestamp_end", "language", "chunk_index", "priority",
+    # Phase-7 provenance: official-source authority tier, PDF page count, crawl date.
+    "authority_tier", "page_count", "crawl_date",
 })
 
 
