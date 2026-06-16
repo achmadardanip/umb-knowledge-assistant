@@ -122,10 +122,105 @@ def run(*, write: bool = False) -> dict:
     return {"summary": summary, "dataset": dataset}
 
 
+_PROG_QUERIES = ["ketua program studi {prog} {fac}", "kaprodi {prog} mercu buana", "akreditasi {prog} mercu buana"]
+
+
+def _llm_extract_program(text: str, prog: str, fac: str, provider) -> dict:
+    snippet = text[:6000]
+    prompt = (
+        "Ekstrak fakta dari teks resmi UMB. JANGAN menebak; null jika tidak ada di TEKS.\n"
+        f"Program studi: {prog} ({fac})\n\nTEKS:\n{snippet}\n\n"
+        'Kembalikan HANYA JSON: {"head_of_program": <nama ketua prodi/kaprodi atau null>, '
+        '"accreditation_grade": <peringkat akreditasi prodi spt "Unggul"/"Baik Sekali"/"A"/"B" atau null>}'
+    )
+    try:
+        content = provider.chat([{"role": "user", "content": prompt}]).content
+    except Exception:
+        return {}
+    m = re.search(r"\{.*\}", content or "", re.DOTALL)
+    if not m:
+        return {}
+    try:
+        data = json.loads(m.group(0))
+    except Exception:
+        return {}
+    low = text.lower()
+    out: dict = {}
+    for k in ("head_of_program", "accreditation_grade"):
+        v = data.get(k)
+        if isinstance(v, str) and v.strip() and v.strip().lower() not in ("null", "none", "-"):
+            core = re.sub(r"^(dr\.?|prof\.?|ir\.?|drs\.?|s\.?\w+\.?|m\.?\w+\.?|,|\s)+", "", v.strip().lower()).strip()
+            if core and (core[:10] in low or v.strip().lower()[:10] in low):
+                out[k] = v.strip()
+    return out
+
+
+def run_programs(*, write: bool = False) -> dict:
+    from app.db.database import get_session_local
+    from app.db.models import UMBStudyProgram
+    from app.llm.provider_factory import get_provider
+
+    client = TavilyClient(); client.ensure_configured()
+    provider = get_provider("local_ollama")
+    SessionLocal = get_session_local()
+    with SessionLocal() as db:
+        progs = [(p.id, p.program_name, p.faculty_name, p.degree_level) for p in db.query(UMBStudyProgram).all()]
+
+    dataset = []
+    for pid, prog, fac, lvl in progs:
+        urls = []
+        for q in _PROG_QUERIES:
+            try:
+                for r in client.search(q.format(prog=prog, fac=fac or ""), max_results=2):
+                    if r.url not in urls:
+                        urls.append(r.url)
+            except Exception:
+                pass
+        found = {}
+        for url in urls[:3]:
+            try:
+                res = client.extract([url])
+            except Exception:
+                continue
+            if not res or not res[0].raw_content:
+                continue
+            found = {**_llm_extract_program(res[0].raw_content, prog, fac or "", provider), **found}
+            if "head_of_program" in found and "accreditation_grade" in found:
+                break
+        dataset.append({"program": prog, "faculty": fac, "level": lvl, **found})
+        if write and (found.get("head_of_program") or found.get("accreditation_grade")):
+            with SessionLocal() as db:
+                p = db.query(UMBStudyProgram).get(pid)
+                if p:
+                    if found.get("head_of_program") and not p.head_of_program:
+                        p.head_of_program = found["head_of_program"]
+                    if found.get("accreditation_grade") and not p.accreditation_grade:
+                        p.accreditation_grade = found["accreditation_grade"]
+                    db.commit()
+
+    summary = {
+        "programs_total": len(progs),
+        "programs_with_head": sum(1 for d in dataset if d.get("head_of_program")),
+        "programs_with_accreditation": sum(1 for d in dataset if d.get("accreditation_grade")),
+        "method": "tavily_search+extract + LLM extraction (text-grounded)", "written_to_db": bool(write),
+    }
+    return {"summary": summary, "dataset": dataset}
+
+
 def main() -> None:
     ap = argparse.ArgumentParser(description="Targeted leadership/accreditation enrichment")
     ap.add_argument("--write", action="store_true", help="update umb_faculties.dean for found deans")
+    ap.add_argument("--programs", action="store_true", help="enrich kaprodi + program accreditation instead of deans")
     args = ap.parse_args()
+
+    if args.programs:
+        result = run_programs(write=args.write)
+        rep = Path(__file__).resolve().parents[3] / "reports"; rep.mkdir(parents=True, exist_ok=True)
+        (rep / "kaprodi_accreditation_summary.json").write_text(json.dumps(result["summary"], ensure_ascii=False, indent=2), encoding="utf-8")
+        (rep / "kaprodi_dataset.json").write_text(json.dumps(result["dataset"], ensure_ascii=False, indent=2), encoding="utf-8")
+        s = result["summary"]
+        print(f"programs {s['programs_total']} | kaprodi {s['programs_with_head']} | accreditation {s['programs_with_accreditation']}")
+        return
 
     result = run(write=args.write)
     rep = Path(__file__).resolve().parents[3] / "reports"

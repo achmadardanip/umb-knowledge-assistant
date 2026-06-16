@@ -30,7 +30,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from urllib.parse import urlparse
 
-DATASET_VERSION = "golden-v1"
+DATASET_VERSION = "golden-v2"
 _BUILD_TS = datetime.now(timezone.utc).isoformat()
 
 _EVAL_DIR = Path(__file__).resolve().parent
