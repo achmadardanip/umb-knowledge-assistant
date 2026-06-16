@@ -46,7 +46,16 @@ TABLES: tuple[str, ...] = (
 )
 
 # Tables with a pgvector column needing an explicit ::text / ::vector cast.
-_VECTOR_COLUMNS = {"chunks": "embedding", "chunk_embeddings": "embedding"}
+# (chunks.embedding is a legacy 3072-dim column in prod — NOT used by retrieval, which
+#  reads the 384-dim chunk_embeddings table — so it is skipped, not cast, below.)
+_VECTOR_COLUMNS = {"chunk_embeddings": "embedding"}
+
+# Columns omitted from the copy (→ NULL/default): the legacy 3072-dim chunks.embedding
+# (dimension mismatch) and FK columns pointing at tables outside the retrieval set
+# (documents/source_assets/segments) — retrieval only needs chunks→sources + embeddings.
+_COLUMN_SKIP: dict[str, set[str]] = {
+    "chunks": {"embedding", "document_id", "asset_id", "segment_id"},
+}
 
 
 def _columns(engine, table: str) -> list[str]:
@@ -55,17 +64,47 @@ def _columns(engine, table: str) -> list[str]:
     return [c["name"] for c in inspect(engine).get_columns(table)]
 
 
+def _json_columns(engine, table: str) -> set[str]:
+    """Target columns whose type is JSON/JSONB — these must transfer as text so
+    psycopg3 doesn't try to adapt a Python dict/list (the 'cannot adapt type dict'
+    failure), and also handles prod array columns mapped to a local JSON column."""
+    from sqlalchemy import inspect
+
+    out: set[str] = set()
+    for c in inspect(engine).get_columns(table):
+        if "JSON" in str(c["type"]).upper():
+            out.add(c["name"])
+    return out
+
+
 def _copy_table(source_engine, target_engine, table: str, batch: int) -> dict:
     cols = _columns(target_engine, table)
     if not cols:
         return {"table": table, "skipped": "missing on target"}
+    skip = _COLUMN_SKIP.get(table, set())
+    cols = [c for c in cols if c not in skip]
     vec = _VECTOR_COLUMNS.get(table)
+    json_cols = _json_columns(target_engine, table)
 
-    # SELECT — cast any vector column to text so it transfers as a plain string.
-    select_cols = ", ".join(f"{c}::text AS {c}" if c == vec else c for c in cols)
-    # INSERT — cast the vector text back to vector(384); ON CONFLICT keeps it idempotent.
+    def _sel(c: str) -> str:
+        if c == vec:
+            return f"{c}::text AS {c}"  # vector → text
+        if c in json_cols:
+            return f"to_jsonb({c})::text AS {c}"  # jsonb/json/array → canonical JSON text
+        return c
+
+    def _ph(c: str) -> str:
+        if c == vec:
+            return f"CAST(:{c} AS vector(384))"
+        if c in json_cols:
+            return f"CAST(:{c} AS jsonb)"
+        return f":{c}"
+
+    # SELECT — JSON/vector columns transfer as plain text strings.
+    select_cols = ", ".join(_sel(c) for c in cols)
+    # INSERT — cast text back to its real type; ON CONFLICT keeps it idempotent.
     insert_cols = ", ".join(cols)
-    placeholders = ", ".join(f"CAST(:{c} AS vector(384))" if c == vec else f":{c}" for c in cols)
+    placeholders = ", ".join(_ph(c) for c in cols)
     insert_sql = text(
         f"INSERT INTO {table} ({insert_cols}) VALUES ({placeholders}) "
         f"ON CONFLICT DO NOTHING"

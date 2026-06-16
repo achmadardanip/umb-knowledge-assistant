@@ -62,6 +62,13 @@ backend/data/
 *.mp3
 *.wav
 
+# ── Local deployment / Docker volumes / temp ingestion ────────────────────
+.pgdata/
+pgdata/
+*.pgdata/
+data/ingestion_tmp/
+*.ingest.tmp
+
 # ── OS / editor ───────────────────────────────────────────────────────────
 .DS_Store
 .idea/

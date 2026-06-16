@@ -1,0 +1,88 @@
+# UMB Knowledge Assistant — full LOCAL deployment (no Supabase dependency).
+#
+#   docker compose -f docker-compose.local.yml up -d postgres pgadmin   # data + admin UI
+#   docker compose -f docker-compose.local.yml up -d                    # full stack
+#
+# Then bootstrap + (optionally) migrate prod data into local:
+#   LOCAL_POSTGRES_MODE=true python -m app.db.bootstrap_local
+#   python -m app.db.supabase_to_local --target postgresql://postgres:postgres@localhost:5432/umb
+#
+# Endpoints:  backend http://localhost:8000/health · frontend http://localhost:3000
+#             pgAdmin http://localhost:5050  (admin@local.dev / admin)
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: umb-postgres-local
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: umb
+    ports:
+      - "5432:5432"
+    volumes:
+      - umb_local_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d umb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: umb-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@local.dev
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+    ports:
+      - "5050:80"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  redis:
+    image: redis:7-alpine
+    container_name: umb-redis-local
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    env_file:
+      - .env
+    environment:
+      LOCAL_POSTGRES_MODE: "true"
+      LOCAL_POSTGRES_URL: postgresql://postgres:postgres@postgres:5432/umb
+      LOCAL_SQLITE_FALLBACK_ENABLED: "false"
+      REDIS_URL: redis://redis:6379/0
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    command: uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+  frontend:
+    build:
+      context: ./frontend
+    environment:
+      NEXT_PUBLIC_API_URL: ${FRONTEND_API_URL:-http://localhost:8000}
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+volumes:
+  umb_local_pgdata:
