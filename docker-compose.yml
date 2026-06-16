@@ -1,13 +1,64 @@
+# UMB Knowledge Assistant — full local stack (v3 P6: no Supabase dependency).
+#
+#   docker compose up -d postgres redis      # just the data services (run app on host)
+#   docker compose up -d                      # full stack (postgres + redis + backend + frontend)
+#
+# For LOCAL_POSTGRES_MODE set in .env:
+#   LOCAL_POSTGRES_MODE=true
+#   LOCAL_POSTGRES_URL=postgresql://umb:umb@localhost:5432/umb   # host run
+#   (inside compose the backend uses postgresql://umb:umb@postgres:5432/umb)
+# Bootstrap schema:  python -m app.db.bootstrap_local
+# Migrate data:      python -m app.db.supabase_to_local
+# Full guide:        docs/local_postgres.md
+
 services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: umb-postgres
+    environment:
+      POSTGRES_USER: umb
+      POSTGRES_PASSWORD: umb
+      POSTGRES_DB: umb
+    ports:
+      - "5432:5432"
+    volumes:
+      - umb_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U umb -d umb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: umb-redis
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
   backend:
     build:
       context: ./backend
     env_file:
       - .env
+    environment:
+      LOCAL_POSTGRES_MODE: "true"
+      LOCAL_POSTGRES_URL: postgresql://umb:umb@postgres:5432/umb
+      REDIS_URL: redis://redis:6379/0
     ports:
       - "8000:8000"
     volumes:
       - ./data:/app/data
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     command: uvicorn app.main:app --host 0.0.0.0 --port 8000
 
   frontend:
@@ -20,20 +71,5 @@ services:
     depends_on:
       - backend
 
-  # Optional local-only development database.
-  # The production-minded default is external Supabase PostgreSQL.
-  #
-  # db:
-  #   image: pgvector/pgvector:pg16
-  #   environment:
-  #     POSTGRES_DB: postgres
-  #     POSTGRES_USER: postgres
-  #     POSTGRES_PASSWORD: postgres
-  #   ports:
-  #     - "5432:5432"
-  #   volumes:
-  #     - pgdata:/var/lib/postgresql/data
-  #
-  # volumes:
-  #   pgdata:
-
+volumes:
+  umb_pgdata:

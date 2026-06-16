@@ -6,7 +6,7 @@ import re
 import time
 
 from app.core.config import get_settings
-from app.core.output_filter import sanitize_answer
+from app.core.output_filter import sanitize_answer, strip_reasoning
 from app.llm.base import ProviderConfigurationError
 from app.llm.provider_factory import get_provider, normalize_provider
 from app.rag.citation_validator import FALLBACK_ANSWER, validate_citations
@@ -687,11 +687,18 @@ def build_generation_messages(
         f"{message.get('role')}: {message.get('content')}" for message in (recent_messages or [])[-settings.chat_history_max_messages :]
     )
     language_block = language_instruction(language)
+    # v3 P3: shape the answer (procedure / list / fact / explanation).
+    from app.rag.answer_planner import answer_format_hint, plan_answer_type
+
+    format_hint = answer_format_hint(plan_answer_type(question), language)
     user_prompt = f"""Instruksi bahasa:
 {language_block}
 
 Pertanyaan:
 {question}
+
+Bentuk jawaban yang diharapkan:
+{format_hint}
 
 Konteks resmi yang boleh digunakan:
 {context_block}
@@ -714,6 +721,35 @@ Tulis isi field answer dengan rapi memakai Markdown: gunakan poin atau penomoran
     return messages, contexts
 
 
+def _salvage_truncated_answer(content: str) -> dict | None:
+    """Recover an answer from truncated/invalid JSON (weak local models that run out of
+    tokens mid-list). Returns a clean payload or None if nothing usable is found."""
+    text = content or ""
+    marker = re.search(r'"answer"\s*:\s*', text)
+    if not marker:
+        return None
+    rest = text[marker.end():].lstrip()
+    items: list[str] = []
+    if rest.startswith("["):
+        items = re.findall(r'"((?:[^"\\]|\\.)*)"', rest)
+    elif rest.startswith('"'):
+        match = re.match(r'"((?:[^"\\]|\\.)*)"', rest)
+        if match:
+            items = [match.group(1)]
+
+    def _unescape(value: str) -> str:
+        try:
+            return json.loads(f'"{value}"')
+        except (json.JSONDecodeError, ValueError):
+            return value.replace("\\n", "\n").replace('\\"', '"').strip()
+
+    items = [_unescape(item) for item in items if item.strip()]
+    if not items:
+        return None
+    answer = items[0] if len(items) == 1 else "\n".join(f"- {item}" for item in items)
+    return {"answer": answer, "sources": [], "confidence": "medium", "not_found": False}
+
+
 def finalize_generated_answer(
     content: str,
     contexts: list[dict],
@@ -731,22 +767,31 @@ def finalize_generated_answer(
     provider or from a browser LLM (Puter.js), so the browser path is just as gated.
     """
     settings = get_settings()
+    content = strip_reasoning(content or "")  # drop <think> CoT scratchpad before parsing
     try:
         parsed_payload = json.loads(_json_text(content))
         payload = parsed_payload if isinstance(parsed_payload, dict) else {"answer": parsed_payload}
     except json.JSONDecodeError:
-        payload = {
+        # Small local models often exceed the token budget and truncate the JSON
+        # mid-list. Recover the complete answer items instead of dumping raw JSON.
+        salvaged = _salvage_truncated_answer(content)
+        payload = salvaged or {
             "answer": (content or "").strip(),
             "sources": _build_sources(contexts[:3]),
             "confidence": "medium",
             "not_found": False,
         }
+        if salvaged and not payload.get("sources"):
+            payload["sources"] = _build_sources(contexts[:3])
     raw_answer = payload.get("answer")
     if isinstance(raw_answer, list):
-        payload["answer"] = "\n".join(
-            f"- {item}" if isinstance(item, str) else f"- {json.dumps(item, ensure_ascii=False)}"
-            for item in raw_answer
-        )
+        items = []
+        for item in raw_answer:
+            text = item if isinstance(item, str) else json.dumps(item, ensure_ascii=False)
+            text = text.strip().lstrip("-•*").strip()  # avoid "- -" when the model already bullets
+            if text:
+                items.append(f"- {text}")
+        payload["answer"] = "\n".join(items)
     elif not isinstance(raw_answer, str):
         payload["answer"] = "" if raw_answer is None else json.dumps(raw_answer, ensure_ascii=False)
     if not isinstance(payload.get("sources"), list):

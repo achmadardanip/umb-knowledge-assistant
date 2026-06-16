@@ -1,543 +1,159 @@
 # UMB Knowledge Assistant
 
-UMB Knowledge Assistant adalah MVP chatbot RAG multimodal untuk menjadi _single source of truth_ informasi publik Universitas Mercu Buana berdasarkan domain resmi `mercubuana.ac.id` dan `*.mercubuana.ac.id`.
+A grounded, multimodal **RAG** assistant for public Universitas Mercu Buana
+information (`mercubuana.ac.id` + subdomains). Answers are synthesized **only**
+from official sources that were crawled, indexed, and returned as cited context —
+never from model prior knowledge. If nothing official is found, it abstains.
 
-Sistem ini bukan chatbot FAQ generik. Jawaban hanya boleh disusun dari sumber publik resmi yang berhasil ditemukan, di-crawl, dibersihkan, diindeks, dan dikembalikan sebagai konteks RAG dengan sitasi.
+**Stack:** FastAPI · Supabase/Postgres + pgvector · local E5 embeddings · Ollama
+(`qwen2.5:7b-instruct`) · Tavily (live fallback) · Next.js.
 
-## Masalah
+```
+                     ┌─────────────────────────── FastAPI backend ───────────────────────────┐
+  Next.js  ──/chat──▶│ intent → FAQ → entity → typed-graph → hybrid vector → reranker         │
+  :3000             │            │                                  │            │            │
+                     │            ▼ (low confidence)                 ▼            ▼            │
+                     │         Tavily (UMB-only) ─▶ async KB acquire │   CGCV + citation guard │
+                     └───────────────┬───────────────────────────────┬─────────────┬─────────┘
+                          Supabase/pgvector + GraphRAG          Ollama LLM      canonical URLs
+```
 
-Ekosistem website resmi UMB memiliki banyak halaman, subdomain, dokumen, dan media publik. Tanpa satu chatbot terpadu, pengguna harus mencari manual di banyak tempat. MVP ini menyediakan alur otomatis untuk menemukan sumber publik resmi, mengindeksnya, lalu menjawab pertanyaan dalam bahasa Indonesia dengan sumber yang dapat diverifikasi.
+---
 
-## Mengapa RAG
-
-RAG digunakan karena informasi kampus berubah dari waktu ke waktu. Model LLM tidak dijadikan sumber kebenaran. LLM hanya menyusun jawaban dari konteks resmi yang diambil oleh retriever. Jika konteks resmi tidak ditemukan, sistem wajib menjawab:
-
-> Saya belum menemukan informasi resmi terkait pertanyaan tersebut pada sumber publik Universitas Mercu Buana yang tersedia.
-
-## Arsitektur
-
-- Backend: FastAPI, SQLAlchemy, Supabase PostgreSQL, pgvector.
-- Frontend: Next.js, React, Tailwind CSS.
-- Discovery: Sublist3r, Katana, Hakrawler, gau, waybackurls, ffuf/dirsearch opsional.
-- Crawling: domain-scoped crawler, robots.txt check, rate limit konservatif.
-- Ekstraksi: HTML, PDF, DOCX, PPTX, spreadsheet/CSV, OCR opsional, ASR opsional, metadata video opsional.
-- Ingestion: source-aware chunking, embedding provider abstraction, Tavily map/crawl/extract enrichment.
-- Embeddings: `intfloat/multilingual-e5-small` lokal (384 dim, sidecar `chunk_embeddings`) default; cloud (Gemini/OpenAI) sebagai fallback.
-- Retrieval: hybrid keyword + dense pgvector (HNSW) + RRF + TAHF, **intent gate** (hard domain/answerability filter), **Qwen3-Reranker** opsional, GraphRAG.
-- Generasi: Ollama lokal default (`qwen2.5:7b-instruct`) dengan chain-of-thought, citation reconcile, CGCV, regeneration retry; Puter `gpt-5.5` (browser) + provider cloud sebagai fallback. Jawaban tak terverifikasi → fallback bersih ke admin WhatsApp, bukan tebakan.
-- Chat: session history, source cards (hanya sitasi tervalidasi), visible operational steps, memory aman.
-
-## Prasyarat (Prerequisites)
-
-| Kebutuhan | Versi / Catatan |
-| --- | --- |
-| **Python** | 3.12+ (diuji pada 3.12.13) |
-| **Node.js** | 20+ (diuji pada 26) + npm |
-| **Ollama** | https://ollama.com — untuk LLM lokal default; `ollama pull qwen2.5:7b-instruct` |
-| **Supabase** | satu project PostgreSQL (pgvector tersedia) — butuh connection string |
-| **Tavily API key** | gratis di https://tavily.com — untuk live fallback + enrichment KB |
-| Disk | ~3–4 GB untuk model lokal (E5 ~120 MB, Qwen3-Reranker-0.6B ~1.2 GB, torch ~2 GB) |
-| GPU (opsional) | Apple Silicon (MPS) / CUDA otomatis dipakai untuk E5 + reranker; CPU juga jalan |
-| **Docker** (opsional) | hanya untuk self-host Firecrawl (`:3002`) |
-
-## Quick Start — Setup & Menjalankan Aplikasi
+## 1. Quick Start (5 minutes)
 
 ```bash
-# 1) Clone
 git clone <repo-url> umb-knowledge-assistant && cd umb-knowledge-assistant
 
-# 2) Backend: virtualenv + dependencies
-cd backend
-python3.12 -m venv .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -r requirements.txt
-pip install -r requirements-local.txt   # E5 + Qwen3 reranker (torch, sentence-transformers, transformers)
-cd ..
+# Backend
+cd backend && python3.12 -m venv .venv && . .venv/Scripts/activate   # macOS/Linux: source .venv/bin/activate
+pip install -r requirements.txt && pip install -r requirements-local.txt && cd ..
 
-# 3) LLM lokal (Ollama)
+# LLM + config
 ollama pull qwen2.5:7b-instruct
+cp .env.example .env        # set DATABASE_URL (Supabase) and TAVILY_API_KEY
 
-# 4) Environment — salin template, lalu isi DATABASE_URL (Supabase) & TAVILY_API_KEY
-cp .env.example .env
-#   Default sudah mengaktifkan: local E5 + dense retrieval + Qwen3 reranker + Ollama.
-```
-
-**5) Database (sekali saja)** — jalankan di Supabase SQL Editor atau `psql`:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;            -- isi: backend/app/db/migrations/setup_pgvector.sql
-```
-```bash
-# tabel sidecar non-destruktif untuk vector E5 384-dim (legacy chunks.embedding tidak diubah)
-psql "$(printf '%s' "$DATABASE_URL" | sed 's#^postgresql+psycopg://#postgresql://#')" \
-  -f backend/app/db/migrations/add_chunk_embeddings.sql
-```
-
-**6) Backfill embedding E5** (sekali, mengisi tabel `chunk_embeddings`):
-
-```bash
-cd backend && PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill --batch-size 64 && cd ..
-```
-
-**7) Jalankan backend & frontend** (dua terminal):
-
-```bash
-# Terminal A — backend
-cd backend && .venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-
-# Terminal B — frontend
+# Run (two terminals)
+cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
 cd frontend && npm install && npm run dev
+
+# Verify
+curl http://localhost:8000/health     # {"status":"ok"}   →  open http://localhost:3000
 ```
 
-Buka **http://localhost:3000**. Health check: `curl http://localhost:8000/health`.
+Prefer no Supabase? See **§4 Local PostgreSQL**.
 
-> Provider default frontend adalah **Puter `gpt-5.5`** (gratis, di browser, kualitas terbaik). Untuk full-local pilih **"Local Ollama"** di dropdown. Keduanya memakai grounding + sitasi + fallback WhatsApp yang sama.
+## 2. Local Setup
+- **Python 3.12+**, **Node 20+**, **Ollama**, ~3–4 GB disk (E5 + torch). GPU (CUDA/MPS) auto-used, CPU works.
+- `requirements-local.txt` installs the local E5 embedder (+ optional reranker). Without it the app falls back to keyword-only retrieval.
+- `.env` lives at the **project root** (not `backend/`).
 
-### Enrich Knowledge Base (opsional)
+## 3. Supabase Setup
+1. Create a Postgres project (pgvector available).
+2. Put the pooler connection string in `.env` as `SUPABASE_POOLER_DATABASE_URL` (or `DATABASE_URL`).
+3. Apply migrations (Supabase SQL editor or `psql`), in order:
+   `backend/app/db/migrations/setup_pgvector.sql`, then `002_umb_entities.sql` … `006_canonical_urls.sql`.
+   (`007_prune_chunk_metadata.sql` is an optional one-time egress cleanup — see `EGRESS_REDUCTION_REPORT.md`.)
 
-KB diperkaya dari sumber publik resmi UMB via Tavily (map → crawl → extract → Supabase, profil E5), lalu graph di-rebuild:
+## 4. Local PostgreSQL Setup (no Supabase)
+```bash
+docker compose up -d postgres redis
+# .env:  LOCAL_POSTGRES_MODE=true   REDIS_URL=redis://localhost:6379/0
+cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m app.db.bootstrap_local      # schema
+PYTHONPATH=. .venv/Scripts/python.exe -m app.db.supabase_to_local                  # (optional) copy data
+```
+Full guide: **[docs/local_postgres.md](docs/local_postgres.md)**.
 
+## 5. Ollama Setup
+```bash
+ollama pull qwen2.5:7b-instruct      # default answer model (CPU ok; ~30–100s/answer on CPU)
+ollama list                          # confirm
+```
+Snappier demos: a smaller model (`qwen2.5:3b`), lower `LOCAL_LLM_MAX_TOKENS`, or a GPU.
+
+## 6. Tavily Setup
+Free key at https://tavily.com → `.env`: `TAVILY_API_KEY=...`. Used only as a
+**confidence-gated, UMB-domain-only** live fallback; discoveries are acquired
+into the KB so repeat questions are answered locally (no repeat Tavily calls).
+
+## 7. Running the Frontend
+```bash
+cd frontend && npm install && npm run dev      # http://localhost:3000  (NEXT_PUBLIC_API_URL → :8000)
+```
+
+## 8. Running the Backend
+```bash
+cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+```
+
+## 9. Running the Full Stack
+```bash
+docker compose up -d        # postgres + redis + backend + frontend
+```
+
+## 10. Crawling UMB
 ```bash
 cd backend
-# urutan prioritas (profil → akademik → fakultas/dosen → PMB → … ; repository dikecualikan karena sudah berat)
-.venv/bin/python -m app.ingestion.tavily_enrich --prioritized --per-seed 250 --max-depth 3
-.venv/bin/python -m app.graph.build_graph
+PYTHONPATH=. .venv/Scripts/python.exe -m app.ingestion.tavily_ingest      # Tavily map→extract→chunk→embed→index
+# or the discovery + crawl pipeline (authorized, public pages only)
 ```
+Then seed structured layers: `-m app.ingestion.entity_extractor --seed --mine`,
+`-m app.ingestion.faq_seed`, `-m app.rag.canonical_urls`.
 
-### Tavily Agent Skill (opsional, untuk Claude Code / agent)
-
-Skill Tavily resmi sudah disertakan di `.claude/skills/` (search/extract/map/crawl/research). Untuk reinstall + auth CLI:
-
-```bash
-npx skills add tavily-ai/skills --all
-curl -fsSL https://cli.tavily.com/install.sh | bash && tvly login --api-key tvly-YOUR_KEY
-```
-
-## Supabase PostgreSQL
-
-Gunakan Supabase PostgreSQL sebagai database utama. Format variabel:
-
-```env
-DATABASE_URL=postgresql+psycopg://postgres:<SUPABASE_DB_PASSWORD>@db.<SUPABASE_PROJECT_REF>.supabase.co:5432/postgres
-```
-
-Jangan hardcode connection string di source code. Simpan hanya di `.env`.
-
-Untuk GitHub Actions, gunakan Supabase pooler jika direct database host gagal karena IPv6 di GitHub-hosted runner. Tambahkan repository secret:
-
-```env
-SUPABASE_POOLER_DATABASE_URL=postgresql+psycopg://postgres.<SUPABASE_PROJECT_REF>:<SUPABASE_DB_PASSWORD>@aws-0-<SUPABASE_REGION>.pooler.supabase.com:6543/postgres
-```
-
-Secret ini akan dipakai oleh workflow freshness sebagai `DATABASE_URL`. Secret `DATABASE_URL` tetap bisa dipakai untuk runtime lokal/server yang dapat menjangkau host direct Supabase.
-
-Untuk pipeline indexing production/demo, gunakan Supabase PostgreSQL saja dan matikan fallback SQLite agar tidak ada data KB tersimpan lokal tanpa sengaja:
-
-```env
-LOCAL_SQLITE_FALLBACK_ENABLED=false
-LOCAL_SQLITE_PATH=local-dev.db
-```
-
-Jika perlu eksperimen development terisolasi, fallback SQLite tetap tersedia, tetapi jangan dipakai untuk ingestion knowledge base resmi.
-
-## pgvector
-
-Jalankan SQL berikut melalui Supabase SQL Editor atau migration runner:
-
-```sql
-CREATE EXTENSION IF NOT EXISTS vector;
-```
-
-File lengkap tersedia di `backend/app/db/migrations/setup_pgvector.sql`.
-
-Untuk database yang sudah ada, local E5 memakai tabel sidecar non-destruktif
-`chunk_embeddings`; vector Gemini/OpenAI lama di `chunks.embedding` tidak diubah:
-
-```bash
-psql "$(printf '%s' "$DATABASE_URL" | sed 's#^postgresql+psycopg://#postgresql://#')" \
-  -f backend/app/db/migrations/add_chunk_embeddings.sql
-```
-
-Migration tersebut sengaja dijalankan manual. Aplikasi tidak mengubah schema
-Supabase saat startup.
-
-## Local E5 Embeddings
-
-Local embedding pertama yang didukung adalah
-`intfloat/multilingual-e5-small` (384 dimensi):
-
+## 11. Building GraphRAG
 ```bash
 cd backend
-.venv/bin/pip install -r requirements-local.txt
+PYTHONPATH=. .venv/Scripts/python.exe -m app.graph.build_graph          # co-occurrence graph
+PYTHONPATH=. .venv/Scripts/python.exe -m app.graph.build_typed_graph    # typed entity graph
 ```
 
-```env
-EMBEDDING_PROVIDER=local_e5
-EMBEDDING_MODEL=intfloat/multilingual-e5-small
-EMBEDDING_PROFILE=local-e5-small-v1
-LOCAL_EMBEDDING_DIMENSION=384
-LOCAL_EMBEDDING_DEVICE=auto
-```
-
-Audit kandidat tanpa model inference atau database write:
-
-```bash
-PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill \
-  --dry-run --only-keyword-only --limit 100
-```
-
-Setelah migration dan evaluasi siap, jalankan backfill secara eksplisit:
-
-```bash
-PYTHONPATH=. .venv/bin/python -m app.ingestion.embed_backfill \
-  --only-keyword-only --batch-size 32
-```
-
-Cloud embeddings dan provider generation tetap tersedia. Jangan aktifkan
-`DENSE_RETRIEVAL_ENABLED=true` sebelum profile lokal selesai di-backfill.
-
-## Local Multilingual Reranker
-
-Reranker lintas bahasa memakai `BAAI/bge-reranker-v2-m3` melalui
-`sentence-transformers`. Fitur ini opt-in dan mempertahankan ranking
-heuristic/TAHF bila model gagal dimuat atau inference gagal:
-
-```env
-RERANKER_ENABLED=false
-RERANKER_PROVIDER=local_bge
-RERANKER_MODEL=BAAI/bge-reranker-v2-m3
-RERANKER_DEVICE=auto
-RERANKER_CANDIDATE_K=20
-RERANKER_BATCH_SIZE=4
-RERANKER_MAX_LENGTH=512
-RERANKER_MODEL_WEIGHT=0.8
-RERANKER_PREWARM_ENABLED=true
-```
-
-Jalankan gate kualitas dan latensi sebelum mengaktifkannya:
-
+## 12. Running Evaluation
 ```bash
 cd backend
-PYTHONPATH=. .venv/bin/python -m app.evaluation.benchmark_reranker \
-  --out /tmp/umb-reranker-gate.json
+PYTHONPATH=. .venv/Scripts/python.exe -m pytest -q                                  # tests
+PYTHONPATH=. .venv/Scripts/python.exe -m app.evaluation.benchmark --strategy agent  # 501-Q benchmark (all layers)
+```
+Reports → `data/reports/`. Metrics: answerability, official-source@1, citation
+failures, intent-routing & follow-up accuracy, layer hit rates, latency.
+
+## 13. Troubleshooting
+| Symptom | Fix |
+|---|---|
+| Keyword-only retrieval / no dense | install `requirements-local.txt` (E5 needs torch) |
+| `gin_trgm_ops does not exist` | `CREATE EXTENSION pg_trgm;` in its **own** committed tx, then the index |
+| Hybrid retrieval ~10 s | apply `004_pg_trgm.sql` (trigram index) |
+| Stale answer after a change | clear `rag_answer_cache`; restart uvicorn (no auto-reload) |
+| Pytest crashes mid-run | stop the backend first (E5 in two processes exhausts memory) |
+| High Supabase egress | enable caching (default) + run the metadata prune — `EGRESS_REDUCTION_REPORT.md` |
+| `.env` ignored | it must be at the **project root** |
+
+---
+
+## Retrieval flow
+```
+query ─▶ detect_intent ─▶ FAQ (canonical, 12–14) ─▶ Entity (7–10) ─▶ Typed Graph (9)
+        ─▶ Hybrid Vector (keyword+dense) ─▶ intent-host filter (+boost / −penalty)
+        ─▶ confidence check ─▶ (low?) Tavily UMB-only ─▶ rerank ─▶ CGCV + citation/URL guard ─▶ answer
+```
+Structured layers are pinned above vector unless intent-demoted; the reranker only reorders vector passages.
+
+## Intent routing
+```
+detect_intent(q) ∈ {admissions, tuition, scholarship, sia, sso, library, faculty,
+                    study_program, lecturer, campus, academic_calendar/regulations,
+                    student_services, general}
+  → entity-intent compatibility (demote off-intent structured contexts)
+  → INTENT_HOSTS allowlist (boost on-intent host, penalise off-intent vector chunk)
 ```
 
-Exit code `0` berarti seluruh gate lolos. Exit code `1` berarti reranker harus
-tetap nonaktif. Profil fallback yang diizinkan dapat diuji tanpa mengubah
-`.env`:
-
-```bash
-RERANKER_CANDIDATE_K=12 RERANKER_MAX_LENGTH=384 \
-PYTHONPATH=. .venv/bin/python -m app.evaluation.benchmark_reranker \
-  --out /tmp/umb-reranker-gate-12x384.json
+## KB acquisition flow (Tavily fallback)
+```
+KB miss / low confidence ─▶ Tavily search (site:mercubuana.ac.id) ─▶ UMB filter
+  ─▶ fetch/extract ─▶ answer user FIRST
+  ─▶ [background thread] clean → chunk → embed → save KB → record discovery cache
+  ─▶ future identical question → served from KB (no Tavily)
 ```
 
-## Setup Provider AI
-
-Default answer provider adalah Ollama lokal:
-
-```env
-ANSWER_PROVIDER=local_ollama
-LOCAL_LLM_BASE_URL=http://localhost:11434
-LOCAL_LLM_MODEL=qwen2.5:7b-instruct
-LOCAL_LLM_TEMPERATURE=0.2
-LOCAL_LLM_MAX_TOKENS=800
-ANSWER_FALLBACK_PROVIDER=puter
-ANSWER_ENABLE_FALLBACK=true
-```
-
-Provider yang didukung:
-
-- Ollama lokal: `LOCAL_LLM_BASE_URL`, `LOCAL_LLM_MODEL`
-- LM Studio lokal: `LMSTUDIO_BASE_URL`, `LMSTUDIO_MODEL`
-- OpenRouter: `OPENROUTER_API_KEY`, `OPENROUTER_BASE_URL`, `OPENROUTER_MODEL`
-- OpenAI: `OPENAI_API_KEY`, `OPENAI_MODEL`
-- Gemini: `GEMINI_API_KEY`, `GEMINI_MODEL`
-- Claude/Anthropic: `ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`
-- Hermes Agent API Server: `HERMES_ENABLED`, `HERMES_BASE_URL`, `HERMES_API_KEY`, `HERMES_MODEL`
-
-Puter tetap berjalan di browser melalui `/chat/prepare` dan `/chat/finalize`;
-retrieved context, validasi sitasi, dan CGCV tetap dikendalikan backend.
-Frontend mengirim `provider_override` pada setiap request chat. API key tidak
-pernah dikirim ke frontend.
-
-## Discovery dan Crawling
-
-Sistem hanya dimulai dari satu root domain:
-
-```env
-DISCOVERY_DOMAIN=mercubuana.ac.id
-```
-
-Tidak ada seed subdomain manual yang di-hardcode. Sublist3r digunakan untuk menemukan subdomain publik. Jika tidak ada hasil, root domain `mercubuana.ac.id` digunakan sebagai fallback minimal, bukan daftar seed manual.
-
-Alur:
-
-1. `Sublist3r` menemukan subdomain publik.
-2. Host divalidasi hanya jika `mercubuana.ac.id` atau `*.mercubuana.ac.id`.
-3. `Katana` dan `Hakrawler` melakukan crawling URL publik dari host valid.
-4. `gau` dan `waybackurls` mengumpulkan kandidat URL dari arsip publik.
-5. URL arsip tidak diindeks langsung. Sistem mengubahnya menjadi kandidat URL live resmi dan hanya mengindeks jika halaman live valid.
-6. `ffuf` dan `dirsearch` opsional, nonaktif default, hanya memakai `data/wordlists/safe_public_paths.txt`.
-7. URL login, admin, private, token, password, `.env`, `.git`, phpMyAdmin, webmail, dan path sensitif lain ditolak.
-
-Semua discovery eksternal wajib memakai flag:
-
-```bash
-python -m app.discovery.discovery_pipeline discover-subdomains --domain mercubuana.ac.id --confirm-authorized
-python -m app.discovery.discovery_pipeline discover-urls --domain mercubuana.ac.id --max-depth 3 --confirm-authorized
-python -m app.discovery.discovery_pipeline merge-filter
-```
-
-Tujuan pipeline ini adalah indexing informasi publik, bukan penetration testing, vulnerability scanning, exploitation, brute force, atau bypass autentikasi.
-
-## Multimodal Ingestion
-
-Jenis sumber publik yang didukung:
-
-- HTML
-- PDF
-- DOCX
-- PPTX
-- XLSX/CSV
-- Gambar dengan OCR
-- Transcript/caption
-- Audio/video metadata dan transcript
-
-OCR, ASR, dan video download nonaktif default:
-
-```env
-ENABLE_OCR=false
-ENABLE_ASR=false
-ENABLE_VIDEO_DOWNLOAD=false
-```
-
-Metadata yang dipertahankan:
-
-- PDF: nomor halaman
-- PPTX: nomor slide
-- Spreadsheet: sheet name dan row range
-- Audio/video transcript: timestamp
-- OCR/ASR: extraction method dan confidence
-
-Command:
-
-```bash
-python -m app.multimodal.multimodal_pipeline classify-discovered
-python -m app.multimodal.multimodal_pipeline download-assets --max-files 200
-python -m app.multimodal.multimodal_pipeline extract-assets
-python -m app.multimodal.multimodal_pipeline index-assets
-python -m app.multimodal.multimodal_pipeline run-all --max-files 200
-```
-
-Sumber multimodal tetap dibatasi ke `mercubuana.ac.id` dan `*.mercubuana.ac.id`. File privat, authenticated, atau protected tidak diproses.
-
-## Menjalankan Backend
-
-Lihat **Quick Start** di atas untuk setup lengkap. Ringkasnya:
-
-```bash
-cd backend
-python3.12 -m venv .venv
-source .venv/bin/activate            # Windows: .venv\Scripts\activate
-pip install -r requirements.txt -r requirements-local.txt
-.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-`requirements-local.txt` wajib untuk embedding E5 + Qwen3 reranker (torch, sentence-transformers, transformers). Health check:
-
-```bash
-curl http://localhost:8000/health
-```
-
-## Menjalankan Frontend
-
-```bash
-cd frontend
-npm install
-npm run dev
-```
-
-Buka `http://localhost:3000`.
-
-## Docker Compose
-
-Salin `.env.example` menjadi `.env`, isi Supabase dan provider key, lalu:
-
-```bash
-docker compose up --build
-```
-
-Compose hanya menjalankan backend dan frontend. Database default adalah Supabase PostgreSQL eksternal. Service PostgreSQL lokal tersedia sebagai komentar untuk development lokal.
-
-## Ingestion HTML
-
-Setelah discovery:
-
-```bash
-python -m app.ingestion.pipeline crawl-discovered --max-pages 500 --rate-limit 2
-```
-
-Atau crawl domain secara langsung dengan konfirmasi:
-
-```bash
-python -m app.ingestion.pipeline crawl --domain mercubuana.ac.id --max-pages 500 --max-depth 3 --confirm-authorized
-```
-
-## Firecrawl to Supabase KB
-
-Firecrawl self-hosted dipakai untuk Search, Map, Crawl, Scrape, dan parser
-HTML/PDF ke Supabase. Base URL tanpa suffix otomatis diarahkan ke API v2:
-
-```env
-FIRECRAWL_API_KEY=
-FIRECRAWL_BASE_URL=http://localhost:3002
-FIRECRAWL_SELF_HOSTED=true
-FIRECRAWL_DEFAULT_LIMIT=500
-FIRECRAWL_ZERO_DATA_RETENTION=false
-```
-
-Import seed JSON resmi:
-
-```bash
-cd backend
-.venv/bin/python -m app.ingestion.umb_crawl import-seeds \
-  --seed-json /path/to/mercubuana.ac.id.json \
-  --source official_umb --confirm-authorized
-```
-
-Full refresh:
-
-```bash
-.venv/bin/python -m app.ingestion.umb_crawl full-refresh \
-  --confirm-authorized --seed-json /path/to/mercubuana.ac.id.json \
-  --domains mercubuana.ac.id --include-subdomains --include-sitemap \
-  --use-firecrawl-search --use-firecrawl-map --use-firecrawl-crawl \
-  --use-firecrawl-scrape --use-firecrawl-parse --use-tavily-gap-fill \
-  --include-multimodal --parse-pdf \
-  --index-images-metadata --index-video-metadata \
-  --store-supabase --update-graph --max-depth 4 --limit 10000
-```
-
-Pipeline menolak auth/admin dan domain eksternal, melewati URL yang sudah
-mempunyai chunk, membersihkan CTA/navbar berulang, dan menghasilkan laporan di
-`reports/`. `intfloat/multilingual-e5-small` tetap embedding retrieval produksi.
-Jina v4 dan Qwen2.5-VL tersedia sebagai configuration hooks dan nonaktif default.
-
-## Complete Public Indexing
-
-Untuk menuntaskan knowledge base publik UMB, gunakan workflow lengkap:
-
-```bash
-cd backend
-.venv/bin/python -m app.ingestion.complete_index audit --domain mercubuana.ac.id
-.venv/bin/python -m app.ingestion.complete_index run --domain mercubuana.ac.id --confirm-authorized
-.venv/bin/python -m app.ingestion.complete_index verify --domain mercubuana.ac.id
-```
-
-Definisi selesai: setiap URL publik yang dapat ditemukan di `mercubuana.ac.id/*` dan `*.mercubuana.ac.id/*` sudah masuk index RAG, atau ditandai terminal non-indexable dengan alasan jelas seperti `http_404`, `http_403`, `robots_disallowed`, `empty_content`, `unsupported_content_type`, `file_too_large`, `download_failed`, atau `extraction_failed`.
-
-Full run membutuhkan tool discovery eksternal (`sublist3r`, `katana`, `gau`, `waybackurls`). Install ke repo-local `.tools`:
-
-```bash
-./scripts/install_discovery_tools.sh
-```
-
-Jika tool belum tersedia dan hanya ingin menghabiskan backlog URL yang sudah ada di database:
-
-```bash
-cd backend
-.venv/bin/python -m app.ingestion.complete_index run --domain mercubuana.ac.id --confirm-authorized --offline-current-db-only
-```
-
-`verify` gagal jika masih ada URL allowed nonterminal yang belum diproses, source unsafe, atau source berstatus `indexed` tanpa chunk. Report ditulis ke `data/reports/index_completeness.json`. Runbook lengkap ada di `docs/complete_indexing.md`.
-
-## Chat Session dan History
-
-Frontend menyimpan `anonymous_session_id`, `last_active_session_id`, `selected_provider`, dan preferensi memori di localStorage. Backend menyimpan:
-
-- `chat_sessions`
-- `chat_messages`
-- sources, confidence, provider/model, visible steps, timestamps
-
-Fitur tersedia:
-
-- New Chat
-- Riwayat chat
-- Load pesan lama
-- Rename session
-- Soft delete session
-
-## Chat Memory
-
-Memory bersifat opsional dan aman. Memory hanya dipakai untuk kontinuitas, bukan sebagai sumber resmi. Sistem meredaksi password, OTP, API key, bearer token, dan database URL sebelum menyimpan pesan/memory.
-
-Official RAG context selalu mengalahkan memory untuk klaim institusional.
-
-## Evaluasi
-
-File pertanyaan:
-
-```text
-backend/app/evaluation/eval_questions.json
-```
-
-Jalankan:
-
-```bash
-cd backend
-python -m app.evaluation.evaluate_rag --top-k 5 --out data/evaluation_report.json
-```
-
-Bandingkan mode retrieval sebelum mengaktifkan dense secara default:
-
-```bash
-PYTHONPATH=. .venv/bin/python -m app.evaluation.evaluate_rag \
-  --strategies keyword,dense,hybrid --top-k 5 \
-  --out data/evaluation_comparison.json
-```
-
-Report mencakup retrieval hit rate, labelled source-target hit rate, abstention,
-host yang ditemukan, dan fixture grounding/citation offline.
-
-## Testing
-
-```bash
-cd backend
-pytest
-```
-
-Test mencakup scope validation, private path rejection, URL normalization, provider factory, redaction, chat sessions, memory, citation validation, discovery safety, classifier, extraction scaffold, dan retrieval metadata.
-
-## Security Notes
-
-- Jangan commit `.env`.
-- Jangan expose API key ke frontend.
-- Discovery wajib `--confirm-authorized`.
-- ffuf dan dirsearch disabled default.
-- OCR, ASR, video download disabled default.
-- Tidak mengambil data mahasiswa privat, SIA account, dashboard, admin panel, login behind auth, atau personal data.
-- Archive URL hanya kandidat, bukan sumber resmi current.
-- Low-confidence OCR/ASR tidak boleh menghasilkan high-confidence answer.
-
-## Limitasi MVP
-
-- Dense retrieval bersifat opt-in. PostgreSQL memakai HNSW pgvector untuk profile E5 384 dimensi; SQLite test/dev memakai cosine scan.
-- Legacy cloud vectors tanpa provenance tetap disimpan di `chunks.embedding` dan tidak dicampur dengan profile lokal.
-- Multimodal DB indexing penuh disiapkan melalui model dan metadata, sementara CLI MVP menghasilkan extraction report dan chunk-ready output.
-- ASR/OCR/yt-dlp metadata membutuhkan dependency sistem tambahan jika diaktifkan.
-- Belum ada authentication user account atau admin dashboard.
-
-## Roadmap
-
-- GraphRAG dengan knowledge graph.
-- Admin dashboard.
-- Scheduled recrawling.
-- RAGAS evaluation.
-- Authenticated student assistant dengan integrasi SSO, hanya dengan izin resmi.
-- WhatsApp/Telegram integration.
-- Multilingual support.
-- Role-based access control.
-- User account memory.
-- Incremental crawling dan recrawling scheduler.
-- Better multimodal vision understanding jika aman dan berizin.
+## Reports & docs
+`docs/knowledge_layers.md` (entity/FAQ/graph) · `docs/local_postgres.md` ·
+`EGRESS_REDUCTION_REPORT.md` · `V2_REBUILD_REPORT.md` · `PHASE5_VALIDATION_REPORT.md`.

@@ -6,6 +6,8 @@ import pytest
 
 from app.rag.intent_router import (
     INCIDENTAL_SCORE,
+    FOLLOWUP_CONFIDENCE_THRESHOLD,
+    analyze_followup,
     apply_entity_intent_compatibility,
     apply_intent_host_filter,
     detect_followup,
@@ -92,6 +94,44 @@ def test_different_specific_intent_is_new_topic():
 def test_short_generic_continuation_is_followup():
     hist = _hist("Apa saja fasilitas kampus Meruya?")
     assert detect_followup("yang lainnya?", hist) is True
+
+
+# --- P3 conversation-state isolation -----------------------------------------
+def test_analyze_followup_structured_fields():
+    hist = _hist("Siapa dekan Fakultas Ilmu Komputer?")
+    d = analyze_followup("Bagaimana cara login SIA?", hist)
+    assert d.is_followup is False
+    assert d.confidence < FOLLOWUP_CONFIDENCE_THRESHOLD
+    assert d.intent_changed is True  # lecturer -> sia
+    assert d.cur_intent == "sia" and d.prev_intent == "lecturer"
+    # is_followup must always agree with the confidence threshold
+    assert d.is_followup == (d.confidence >= FOLLOWUP_CONFIDENCE_THRESHOLD)
+
+
+def test_uts_question_is_academic_calendar_new_topic():
+    # regression: "semester ini" determiner must not make a calendar question a
+    # follow-up of an unrelated faculty turn (the 12.5%-leakage bug the benchmark caught).
+    assert detect_intent("Kapan jadwal UTS semester ini?") == "academic_calendar"
+    hist = _hist("Siapa dekan Fakultas Ilmu Komputer?")
+    d = analyze_followup("Kapan jadwal UTS semester ini?", hist)
+    assert d.is_followup is False
+    assert d.reason == "different_specific_intent"
+
+
+def test_determiner_ini_itu_not_anaphora_in_new_specific_topic():
+    hist = _hist("Apa saja program studi di Fakultas Teknik?")
+    # a self-contained new specific intent ending in a determiner stays NEW_TOPIC
+    assert analyze_followup("Berapa biaya semester ini?", hist).is_followup is False
+
+
+def test_followup_context_isolation_benchmark_meets_targets():
+    """The 348-conversation isolation benchmark must hit leakage<1% + followup_acc>95%."""
+    from app.evaluation.followup_eval import evaluate
+
+    report = evaluate()
+    assert report["n_conversations"] >= 300
+    assert report["context_leakage_rate"] < 0.01
+    assert report["followup_accuracy"] > 0.95
 
 
 # --- intent detection --------------------------------------------------------
