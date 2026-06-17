@@ -58,8 +58,8 @@ def _ensure_postgres(db: Session) -> None:
     dialect_name = getattr(getattr(bind, "dialect", None), "name", "")
     if dialect_name != "postgresql":
         raise SystemExit(
-            "Firecrawl indexing must target Supabase/PostgreSQL. Configure SUPABASE_POOLER_DATABASE_URL or DATABASE_URL "
-            "and keep LOCAL_SQLITE_FALLBACK_ENABLED=false."
+            "Firecrawl indexing must target PostgreSQL + pgvector. Set LOCAL_POSTGRES_MODE=true with "
+            "LOCAL_POSTGRES_URL (or DATABASE_URL) and keep LOCAL_SQLITE_FALLBACK_ENABLED=false."
         )
 
 

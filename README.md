@@ -5,8 +5,8 @@ information (`mercubuana.ac.id` + subdomains). Answers are synthesized **only**
 from official sources that were crawled, indexed, and returned as cited context —
 never from model prior knowledge. If nothing official is found, it abstains.
 
-**Stack:** FastAPI · Supabase/Postgres + pgvector · local E5 embeddings · Ollama
-(`qwen2.5:7b-instruct`) · Tavily (live fallback) · Next.js.
+**Stack:** FastAPI · **PostgreSQL + pgvector** (single source of truth) · local E5 embeddings · Ollama
+(`qwen2.5:7b-instruct`) · Tavily (live fallback) · Next.js. No hosted-DB dependency — runs fully local.
 
 ```
                      ┌─────────────────────────── FastAPI backend ───────────────────────────┐
@@ -15,7 +15,13 @@ never from model prior knowledge. If nothing official is found, it abstains.
                      │            ▼ (low confidence)                 ▼            ▼            │
                      │         Tavily (UMB-only) ─▶ async KB acquire │   CGCV + citation guard │
                      └───────────────┬───────────────────────────────┬─────────────┬─────────┘
-                          Supabase/pgvector + GraphRAG          Ollama LLM      canonical URLs
+                       PostgreSQL + pgvector + GraphRAG         Ollama LLM      canonical URLs
+```
+
+**Deployment architecture (fully local):**
+```
+Next.js frontend (:3000)  ──▶  FastAPI backend (:8000)  ──▶  PostgreSQL + pgvector (:5432)
+                                        └──▶ Ollama (qwen2.5:7b) / optional cloud LLM
 ```
 
 ---
@@ -31,7 +37,11 @@ pip install -r requirements.txt && pip install -r requirements-local.txt && cd .
 
 # LLM + config
 ollama pull qwen2.5:7b-instruct
-cp .env.example .env        # set DATABASE_URL (Supabase) and TAVILY_API_KEY
+cp .env.example .env        # local-first defaults (LOCAL_POSTGRES_MODE=true) + set TAVILY_API_KEY
+
+# Local database (PostgreSQL + pgvector)
+docker compose -f docker-compose.local.yml up -d postgres
+cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m app.db.bootstrap_local   # schema + extensions
 
 # Run (two terminals)
 cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
@@ -41,28 +51,34 @@ cd frontend && npm install && npm run dev
 curl http://localhost:8000/health     # {"status":"ok"}   →  open http://localhost:3000
 ```
 
-Prefer no Supabase? See **§4 Local PostgreSQL**.
-
 ## 2. Local Setup
 - **Python 3.12+**, **Node 20+**, **Ollama**, ~3–4 GB disk (E5 + torch). GPU (CUDA/MPS) auto-used, CPU works.
 - `requirements-local.txt` installs the local E5 embedder (+ optional reranker). Without it the app falls back to keyword-only retrieval.
 - `.env` lives at the **project root** (not `backend/`).
 
-## 3. Supabase Setup
-1. Create a Postgres project (pgvector available).
-2. Put the pooler connection string in `.env` as `SUPABASE_POOLER_DATABASE_URL` (or `DATABASE_URL`).
-3. Apply migrations (Supabase SQL editor or `psql`), in order:
-   `backend/app/db/migrations/setup_pgvector.sql`, then `002_umb_entities.sql` … `006_canonical_urls.sql`.
-   (`007_prune_chunk_metadata.sql` is an optional one-time egress cleanup — see `EGRESS_REDUCTION_REPORT.md`.)
+## 3. Database — PostgreSQL + pgvector (default, no hosted dependency)
+PostgreSQL + pgvector is the **single source of truth**. The app boots with no `SUPABASE_*`
+variable (it is not a Supabase-SDK app — "Supabase" was only ever hosted Postgres).
 
-## 4. Local PostgreSQL Setup (no Supabase)
 ```bash
-docker compose up -d postgres redis
-# .env:  LOCAL_POSTGRES_MODE=true   REDIS_URL=redis://localhost:6379/0
-cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m app.db.bootstrap_local      # schema
-PYTHONPATH=. .venv/Scripts/python.exe -m app.db.supabase_to_local                  # (optional) copy data
+# 1) install Docker Desktop, then bring up the local stack
+docker compose -f docker-compose.local.yml up -d        # postgres + pgadmin (+ backend/frontend)
+# 2) .env (already the default): LOCAL_POSTGRES_MODE=true
+#    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/umb   VECTOR_DB=pgvector
+# 3) schema + extensions
+cd backend && PYTHONPATH=. python -m app.db.bootstrap_local
+# 4) load data — seed entities/FAQs, then crawl/ingest official sources
+PYTHONPATH=. python -m app.ingestion.entity_extractor --seed
+# 5) backend   6) frontend  (see Quick Start)
 ```
-Full guide: **[docs/local_postgres.md](docs/local_postgres.md)**.
+- pgAdmin: `http://localhost:5050` (`admin@local.dev` / `admin`).
+- **Backup / restore:** `scripts/backup_local_db.sh` (daily, 30-day retention) · `scripts/restore_local_db.sh <dump>`.
+- Full guide + persistence (named volume): **[docs/local_postgres.md](docs/local_postgres.md)**.
+
+## 4. Optional — migrate from a hosted Postgres
+Only if you have existing data in a hosted Postgres (e.g. Supabase): set
+`SUPABASE_POOLER_DATABASE_URL` and run `python -m app.db.supabase_to_local` once to copy it
+into local PostgreSQL. Not used at runtime; the application never requires it.
 
 ## 5. Ollama Setup
 ```bash
@@ -124,7 +140,7 @@ failures, intent-routing & follow-up accuracy, layer hit rates, latency.
 | Hybrid retrieval ~10 s | apply `004_pg_trgm.sql` (trigram index) |
 | Stale answer after a change | clear `rag_answer_cache`; restart uvicorn (no auto-reload) |
 | Pytest crashes mid-run | stop the backend first (E5 in two processes exhausts memory) |
-| High Supabase egress | enable caching (default) + run the metadata prune — `EGRESS_REDUCTION_REPORT.md` |
+| High egress (only if using a hosted Postgres) | enable caching (default) + run the metadata prune — `EGRESS_REDUCTION_REPORT.md` |
 | `.env` ignored | it must be at the **project root** |
 
 ---

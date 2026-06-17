@@ -12,8 +12,8 @@
 
 services:
   postgres:
-    image: pgvector/pgvector:pg16
-    container_name: umb-postgres-local
+    image: pgvector/pgvector:pg17
+    container_name: umb-postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
@@ -56,11 +56,14 @@ services:
   backend:
     build:
       context: ./backend
+    container_name: umb-backend
     env_file:
       - .env
     environment:
       LOCAL_POSTGRES_MODE: "true"
       LOCAL_POSTGRES_URL: postgresql://postgres:postgres@postgres:5432/umb
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/umb
+      VECTOR_DB: pgvector
       LOCAL_SQLITE_FALLBACK_ENABLED: "false"
       REDIS_URL: redis://redis:6379/0
     ports:
@@ -77,6 +80,7 @@ services:
   frontend:
     build:
       context: ./frontend
+    container_name: umb-frontend
     environment:
       NEXT_PUBLIC_API_URL: ${FRONTEND_API_URL:-http://localhost:8000}
     ports:

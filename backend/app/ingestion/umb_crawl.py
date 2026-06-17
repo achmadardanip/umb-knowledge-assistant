@@ -87,8 +87,8 @@ def _ensure_postgres(db: Session) -> None:
     dialect = getattr(getattr(db.get_bind(), "dialect", None), "name", "")
     if dialect != "postgresql":
         raise SystemExit(
-            "UMB full refresh must target Supabase/PostgreSQL. Configure SUPABASE_POOLER_DATABASE_URL "
-            "and set LOCAL_SQLITE_FALLBACK_ENABLED=false."
+            "UMB full refresh must target PostgreSQL + pgvector. Set LOCAL_POSTGRES_MODE=true with "
+            "LOCAL_POSTGRES_URL (or DATABASE_URL) and set LOCAL_SQLITE_FALLBACK_ENABLED=false."
         )
 
 
