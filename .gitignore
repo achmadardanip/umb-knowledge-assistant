@@ -50,16 +50,49 @@ data/downloads/
 data/multimodal/
 data/graph/
 backend/data/
-# Generated reports / benchmark / audit outputs (Phase-8: not tracked)
+# Generated reports / benchmark / audit outputs (not tracked)
 *_REPORT.md
 *_report.md
+PHASE*.md
+PHASE*.MD
+VALIDATION*.md
+VALIDATION*.MD
+AUDIT*.md
+AUDIT*.MD
+SUMMARY*.md
+SUMMARY*.MD
 benchmark*.json
 evaluation*.json
 metrics*.json
+audit*.json
+validation*.json
+coverage*.json
+distribution*.json
+inventory*.json
+runtime*.json
+status*.json
+readiness*.json
+summary*.json
 generated_datasets/
 tmp_datasets/
 exports/
 backups/
+
+# Claude / AI agent artifacts
+.claude/
+.claude-cache/
+.claude-code/
+.agents/
+.agent/
+.memory/
+.cursor/
+.cursor-cache/
+.cursor-tasks/
+
+# Temporary files
+tmp/
+temp/
+logs/
 
 # ── Crawled / downloaded binary assets ────────────────────────────────────
 *.pdf
