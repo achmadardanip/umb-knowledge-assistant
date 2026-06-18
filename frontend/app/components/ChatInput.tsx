@@ -1,6 +1,6 @@
 "use client";
 
-import { Database, Globe2, Layers3, SendHorizontal, Loader2, Mic, Paperclip, X } from "lucide-react";
+import { Database, Globe2, Layers3, SendHorizontal, Square, Mic, Paperclip, X } from "lucide-react";
 import { KeyboardEvent, useState } from "react";
 import type { RetrievalMode } from "../lib/types";
 import { Button } from "./ui/button";
@@ -15,11 +15,15 @@ const MODES: Array<{ id: RetrievalMode; label: string; icon: typeof Database; ti
 
 export function ChatInput({
   disabled,
+  sending,
+  onStop,
   onSend,
   retrievalMode,
   onRetrievalModeChange,
 }: {
   disabled?: boolean;
+  sending?: boolean;
+  onStop?: () => void;
   onSend: (value: string) => void;
   retrievalMode: RetrievalMode;
   onRetrievalModeChange: (mode: RetrievalMode) => void;
@@ -101,9 +105,15 @@ export function ChatInput({
               </TooltipTrigger>
               <TooltipContent>Attachments — coming soon</TooltipContent>
             </Tooltip>
-            <Button size="icon" onClick={submit} disabled={disabled || !value.trim()} aria-label={disabled ? "Generating…" : "Send message"}>
-              {disabled ? <Loader2 className="h-5 w-5 animate-spin" /> : <SendHorizontal className="h-5 w-5" aria-hidden />}
-            </Button>
+            {sending ? (
+              <Button size="icon" variant="destructive" onClick={onStop} aria-label="Stop generating">
+                <Square className="h-4 w-4 fill-current" aria-hidden />
+              </Button>
+            ) : (
+              <Button size="icon" onClick={submit} disabled={disabled || !value.trim()} aria-label="Send message">
+                <SendHorizontal className="h-5 w-5" aria-hidden />
+              </Button>
+            )}
           </div>
         </div>
       </div>

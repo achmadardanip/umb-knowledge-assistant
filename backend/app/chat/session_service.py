@@ -76,25 +76,11 @@ def maybe_contextualize_session_title(
     session = get_session(db, session_id)
     if not session:
         return "New Chat"
-    if (session.meta or {}).get("manual_title"):
-        return session.title
-    message_count = db.query(ChatMessage).filter(ChatMessage.session_id == session_id, ChatMessage.role == "user").count()
-    if message_count < 2 or message_count > 6:
-        return session.title
-    text = " ".join(
-        [
-            session.title or "",
-            question or "",
-            *[(message.get("content") or "") for message in (recent_messages or []) if message.get("role") == "user"],
-        ]
-    ).lower()
-    if ("fasilkom" in text or "fakultas ilmu komputer" in text) and any(
-        term in text for term in ("dosen", "dekan", "program studi", "prodi", "fakultas ini", "struktural")
-    ):
-        session.title = "Informasi Fasilkom UMB"
-        session.meta = {**(session.meta or {}), "auto_title": True, "title_context": "fasilkom"}
-        session.updated_at = utcnow()
-        db.flush()
+    # The session title is derived from the FIRST user message (see
+    # maybe_autotitle_session / maybe_refine_title_with_llm) and left stable. We must NOT
+    # relabel it from later-turn / retrieval context — the previous hardcoded
+    # "Informasi Fasilkom UMB" override caused every FASILKOM-touching conversation to be
+    # mislabeled and leaked context. Titles stay topic-accurate to the opening question.
     return session.title
 
 

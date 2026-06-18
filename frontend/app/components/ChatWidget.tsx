@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { api } from "../lib/api";
 import {
   getAnonymousSessionId,
@@ -95,6 +95,10 @@ export function ChatWidget() {
   const [renameTarget, setRenameTarget] = useState<ChatSession | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatSession | null>(null);
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
+  const scrollRef = useRef<HTMLDivElement | null>(null);
+  const nearBottomRef = useRef(true);
+  const lastQuestionRef = useRef<string>("");
 
   const { sessions, refresh: refreshSessions } = useChatSessions(anonymousId);
   const { messages, setMessages, refresh: refreshMessages } = useChatMessages(activeSessionId);
@@ -133,6 +137,23 @@ export function ChatWidget() {
   }, [refreshMessages]);
 
   const activeTitle = useMemo(() => sessions.find((session) => session.session_id === activeSessionId)?.title || "UMB Knowledge Assistant", [sessions, activeSessionId]);
+
+  function onMessagesScroll() {
+    const el = scrollRef.current;
+    if (!el) return;
+    nearBottomRef.current = el.scrollHeight - el.scrollTop - el.clientHeight < 140;
+  }
+  useEffect(() => {
+    // Auto-scroll only when the user is already near the bottom (no scroll-jumping).
+    const el = scrollRef.current;
+    if (el && nearBottomRef.current) {
+      el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages, steps, sending]);
+
+  function stopGeneration() {
+    abortRef.current?.abort();
+  }
 
   function chooseProvider(provider: ProviderId) {
     setSelectedProviderState(provider);
@@ -182,10 +203,14 @@ export function ChatWidget() {
   }
 
   async function send(question: string, regenerateFromMessageId?: string | null) {
-    if (!anonymousId) return;
+    if (!anonymousId || sending) return; // prevent double-submit while a request is in flight
     setError(null);
     setSending(true);
     setSteps([]);
+    nearBottomRef.current = true;
+    lastQuestionRef.current = question;
+    const controller = new AbortController();
+    abortRef.current = controller;
     const startedAt = Date.now();
     const optimisticUser: ChatMessage = { id: `user-${Date.now()}`, role: "user", content: question };
     setMessages((current) => [...current, optimisticUser]);
@@ -213,7 +238,8 @@ export function ChatWidget() {
             onStep: (step) => {
               setSteps((current) => mergeStep(current, step));
             },
-            onError: (message) => setError(message)
+            onError: (message) => setError(message),
+            signal: controller.signal
           });
         } catch (providerError) {
           const canUsePuterFallback =
@@ -263,8 +289,16 @@ export function ChatWidget() {
       setMessages((current) => [...current.filter((message) => message.id !== optimisticUser.id), optimisticUser, assistant]);
       await refreshSessions();
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Gagal mengirim pesan.");
+      const aborted = controller.signal.aborted || (err instanceof DOMException && err.name === "AbortError");
+      if (aborted) {
+        // User stopped generation: keep their question, drop the in-flight assistant turn,
+        // surface no error. They can continue chatting normally.
+        setError(null);
+      } else {
+        setError(err instanceof Error ? err.message : "Gagal mengirim pesan.");
+      }
     } finally {
+      abortRef.current = null;
       setSteps([]);
       setSending(false);
     }
@@ -354,7 +388,7 @@ export function ChatWidget() {
             <ThemeToggle />
           </div>
         </header>
-        <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28 md:pb-5">
+        <div ref={scrollRef} onScroll={onMessagesScroll} className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28 md:pb-5">
           <div className="mx-auto flex max-w-4xl flex-col gap-4">
             {!messages.length ? (
               <div className="mt-6 md:mt-16">
@@ -403,10 +437,17 @@ export function ChatWidget() {
               </div>
             ) : null}
             {sending ? <ThinkingSteps steps={steps} /> : null}
-            {error ? <div className="rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">{error}</div> : null}
+            {error ? (
+              <div className="flex flex-wrap items-center justify-between gap-2 rounded-md border border-destructive/30 bg-destructive/10 p-3 text-sm text-destructive">
+                <span>{error}</span>
+                {lastQuestionRef.current && !sending ? (
+                  <Button size="sm" variant="outline" onClick={() => send(lastQuestionRef.current)}>Coba lagi</Button>
+                ) : null}
+              </div>
+            ) : null}
           </div>
         </div>
-        <ChatInput disabled={sending} onSend={send} retrievalMode={retrievalModeState} onRetrievalModeChange={chooseRetrievalMode} />
+        <ChatInput disabled={sending} sending={sending} onStop={stopGeneration} onSend={send} retrievalMode={retrievalModeState} onRetrievalModeChange={chooseRetrievalMode} />
       </section>
       {renameTarget ? <RenameChatDialog currentTitle={renameTarget.title} onCancel={() => setRenameTarget(null)} onConfirm={(title) => renameSession(renameTarget, title)} /> : null}
       {deleteTarget ? <DeleteChatDialog title={deleteTarget.title} onCancel={() => setDeleteTarget(null)} onConfirm={() => deleteSession(deleteTarget)} /> : null}

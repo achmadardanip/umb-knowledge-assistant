@@ -103,12 +103,14 @@ export const api = {
       onSources?: (sources: Source[]) => void;
       onFinal?: (result: ChatResponse) => void;
       onError?: (message: string) => void;
+      signal?: AbortSignal;
     } = {}
   ): Promise<ChatResponse> => {
     const response = await fetchWithFallback("/chat/stream", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      body: JSON.stringify(payload),
+      signal: handlers.signal
     });
     if (!response.ok) {
       const errorPayload = await response.json().catch(() => ({}));
