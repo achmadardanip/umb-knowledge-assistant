@@ -2,33 +2,70 @@
 @tailwind components;
 @tailwind utilities;
 
-:root {
-  color-scheme: light;
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    /* UMB blue #1E3A8A */
+    --primary: 224 64% 33%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 213 94% 95%;
+    --accent-foreground: 224 64% 33%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 217 91% 60%;
+    --radius: 0.65rem;
+    color-scheme: light;
+  }
+
+  .dark {
+    --background: 222 47% 7%;
+    --foreground: 210 40% 96%;
+    --card: 222 44% 10%;
+    --card-foreground: 210 40% 96%;
+    --popover: 222 44% 10%;
+    --popover-foreground: 210 40% 96%;
+    --primary: 217 91% 60%;
+    --primary-foreground: 222 47% 11%;
+    --secondary: 217 33% 17%;
+    --secondary-foreground: 210 40% 96%;
+    --muted: 217 33% 17%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 217 33% 20%;
+    --accent-foreground: 210 40% 96%;
+    --destructive: 0 63% 45%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 20%;
+    --input: 217 33% 22%;
+    --ring: 217 91% 60%;
+    color-scheme: dark;
+  }
+
+  * {
+    box-sizing: border-box;
+    border-color: hsl(var(--border));
+  }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    background: hsl(var(--background));
+    color: hsl(var(--foreground));
+  }
+  button, textarea, select, input { font: inherit; }
 }
 
-* {
-  box-sizing: border-box;
-}
+.scrollbar-thin { scrollbar-width: thin; }
 
-html,
-body {
-  height: 100%;
-}
-
-body {
-  margin: 0;
-  background: #f7f5f0;
-  color: #1f2933;
-}
-
-button,
-textarea,
-select,
-input {
-  font: inherit;
-}
-
-.scrollbar-thin {
-  scrollbar-width: thin;
-}
-
+/* streaming caret */
+@keyframes umb-blink { 0%, 100% { opacity: 1; } 50% { opacity: 0; } }
+.umb-caret::after { content: "▍"; margin-left: 1px; animation: umb-blink 1s step-end infinite; color: hsl(var(--primary)); }

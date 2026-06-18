@@ -19,10 +19,13 @@ import { useChatSessions } from "../hooks/useChatSessions";
 import { ChatInput } from "./ChatInput";
 import { ChatSidebar } from "./ChatSidebar";
 import { DeleteChatDialog } from "./DeleteChatDialog";
-import { ExamplePrompts } from "./ExamplePrompts";
 import { MessageBubble } from "./MessageBubble";
 import { RenameChatDialog } from "./RenameChatDialog";
 import { ThinkingSteps } from "./ThinkingSteps";
+import { ThemeToggle } from "./ThemeToggle";
+import { SuggestedQuestions } from "./SuggestedQuestions";
+import { Badge } from "./ui/badge";
+import { ShieldCheck } from "lucide-react";
 
 declare global {
   interface Window {
@@ -305,7 +308,7 @@ export function ChatWidget() {
         />
       </div>
       <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="max-h-48 shrink-0 overflow-y-auto border-b border-line md:hidden">
+        <div className="max-h-48 shrink-0 overflow-y-auto border-b border-border md:hidden">
           <ChatSidebar
             sessions={sessions}
             activeSessionId={activeSessionId}
@@ -320,21 +323,34 @@ export function ChatWidget() {
             onDeleteSession={setDeleteTarget}
           />
         </div>
-        <header className="shrink-0 border-b border-line bg-white px-4 py-4">
-          <div className="mx-auto max-w-4xl">
-            <h1 className="text-xl font-semibold">{activeTitle}</h1>
-            <p className="text-sm text-neutral-600">Asisten informasi publik berbasis sumber resmi Universitas Mercu Buana</p>
+        <header className="shrink-0 border-b border-border bg-card px-4 py-3">
+          <div className="mx-auto flex max-w-4xl items-center gap-3">
+            <div className="min-w-0 flex-1">
+              <h1 className="truncate text-lg font-semibold text-foreground">{activeTitle}</h1>
+              <p className="truncate text-xs text-muted-foreground">Grounded by Official Sources · Universitas Mercu Buana</p>
+            </div>
+            <div className="hidden items-center gap-1.5 sm:flex">
+              <Badge variant="info"><ShieldCheck className="h-3 w-3" /> Local PostgreSQL</Badge>
+              <Badge variant="outline">pgvector</Badge>
+              <Badge variant="outline">Official Sources Only</Badge>
+            </div>
+            <ThemeToggle />
           </div>
         </header>
         <div className="scrollbar-thin min-h-0 flex-1 overflow-y-auto px-4 py-5 pb-28 md:pb-5">
           <div className="mx-auto flex max-w-4xl flex-col gap-4">
             {!messages.length ? (
-              <div className="mt-4 md:mt-10">
-                <h2 className="mb-2 text-lg font-semibold">UMB Knowledge Assistant</h2>
-                <p className="mb-5 max-w-2xl text-sm leading-6 text-neutral-700">
-                  Tanyakan informasi publik UMB. Sistem akan menjawab hanya dari sumber resmi yang sudah diindeks dan menampilkan sitasi.
-                </p>
-                <ExamplePrompts onPick={send} />
+              <div className="mt-6 md:mt-16">
+                <div className="mb-6 text-center">
+                  <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                    <ShieldCheck className="h-6 w-6" />
+                  </div>
+                  <h2 className="text-xl font-semibold text-foreground">UMB Knowledge Assistant</h2>
+                  <p className="mx-auto mt-1.5 max-w-xl text-sm leading-6 text-muted-foreground">
+                    Ask about public UMB information — answered only from official indexed sources, with citations.
+                  </p>
+                </div>
+                <SuggestedQuestions onSelect={send} />
               </div>
             ) : (
               messages.map((message, index) => {
@@ -347,13 +363,13 @@ export function ChatWidget() {
             messages[messages.length - 1].role === "assistant" &&
             (messages[messages.length - 1].follow_up_questions?.length ?? 0) > 0 ? (
               <div className="flex flex-wrap gap-2">
-                <span className="w-full text-xs font-medium text-neutral-500">Pertanyaan lanjutan</span>
+                <span className="w-full text-xs font-medium text-muted-foreground">Pertanyaan lanjutan</span>
                 {messages[messages.length - 1].follow_up_questions!.map((q) => (
                   <button
                     key={q}
                     type="button"
                     onClick={() => send(q)}
-                    className="rounded-full border border-line bg-white px-3 py-1.5 text-sm transition hover:border-brand"
+                    className="rounded-full border border-border bg-card px-3 py-1.5 text-sm text-foreground transition hover:border-primary hover:bg-accent"
                   >
                     {q}
                   </button>

@@ -7,15 +7,9 @@ import rehypeSanitize from "rehype-sanitize";
 import remarkGfm from "remark-gfm";
 import { api } from "../lib/api";
 import type { ChatMessage } from "../lib/types";
-import { SourceCard } from "./SourceCard";
-
-const MAX_VISIBLE_SOURCES = 3;
-
-function confidenceClass(confidence?: string | null) {
-  if (confidence === "high") return "bg-emerald-100 text-emerald-800";
-  if (confidence === "medium") return "bg-amber-100 text-amber-800";
-  return "bg-neutral-200 text-neutral-800";
-}
+import { SourcesPanel } from "./SourcesPanel";
+import { ConfidenceBadge } from "./ConfidenceBadge";
+import { DebugPanel } from "./DebugPanel";
 
 function StepIcon({ status }: { status?: string }) {
   if (status === "running") return <Loader2 className="h-4 w-4 animate-spin text-brand" />;
@@ -172,11 +166,8 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
   const [stepsOpen, setStepsOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [feedback, setFeedback] = useState<"helpful" | "not_helpful" | null>(null);
-  const [highlightedCitationId, setHighlightedCitationId] = useState<number | null>(null);
-  const [showAllSources, setShowAllSources] = useState(false);
   const answerText = displayText(message.content);
   const sources = message.sources || [];
-  const visibleSources = showAllSources ? sources : sources.slice(0, MAX_VISIBLE_SOURCES);
 
   async function sendFeedback(rating: "helpful" | "not_helpful") {
     setFeedback(rating);
@@ -194,14 +185,16 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
   }
 
   function selectCitation(id: number) {
-    setHighlightedCitationId(id);
-    if (id > MAX_VISIBLE_SOURCES) setShowAllSources(true);
-    window.setTimeout(() => document.getElementById(`citation-${id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }), 0);
+    // Scroll to the source panel for this message; SourcesPanel chips open the detail drawer.
+    window.setTimeout(
+      () => document.getElementById(`sources-${message.id}`)?.scrollIntoView({ behavior: "smooth", block: "nearest" }),
+      0,
+    );
   }
 
   return (
     <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
-      <div className={`max-w-[880px] rounded px-4 py-3 ${isUser ? "bg-brand text-white" : "bg-white text-ink border border-line"}`}>
+      <div className={`max-w-[880px] rounded-lg px-4 py-3 ${isUser ? "bg-primary text-primary-foreground" : "border border-border bg-card text-card-foreground"}`}>
         {isUser ? <div className="whitespace-pre-wrap text-sm leading-6">{answerText}</div> : <MarkdownAnswer content={answerText} onCitationClick={selectCitation} />}
         {!isUser && message.not_found ? (
           <div className="mt-3 rounded border border-amber-200 bg-amber-50 p-3 text-xs leading-5 text-amber-900">
@@ -213,9 +206,9 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
         ) : null}
         {!isUser ? (
           <div className="mt-3 flex flex-wrap items-center gap-2 text-xs">
-            {message.confidence ? <span className={`rounded px-2 py-1 ${confidenceClass(message.confidence)}`}>{message.confidence}</span> : null}
-            {message.provider_used ? <span className="rounded bg-panel px-2 py-1 text-neutral-700">{message.provider_used}</span> : null}
-            {message.model_used ? <span className="rounded bg-panel px-2 py-1 text-neutral-700">{message.model_used}</span> : null}
+            <ConfidenceBadge level={message.confidence} withBar />
+            {message.provider_used ? <span className="rounded bg-muted px-2 py-1 text-muted-foreground">{message.provider_used}</span> : null}
+            {message.model_used ? <span className="rounded bg-muted px-2 py-1 text-muted-foreground">{message.model_used}</span> : null}
           </div>
         ) : null}
         {!isUser ? (
@@ -251,25 +244,10 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
             ) : null}
           </div>
         ) : null}
-        {!isUser && sources.length ? (
-          <div className="mt-3 grid gap-2 md:grid-cols-2">
-            {visibleSources.map((source, index) => {
-              const citationId = source.citation_id ?? index + 1;
-              return (
-                <div key={`${source.url}-${source.page_number ?? ""}-${source.slide_number ?? ""}-${source.sheet_name ?? ""}-${index}`} id={`citation-${citationId}`}>
-                  <SourceCard source={{ ...source, citation_id: citationId }} highlighted={highlightedCitationId === citationId} />
-                </div>
-              );
-            })}
-            {sources.length > MAX_VISIBLE_SOURCES ? (
-              <button
-                type="button"
-                className="rounded border border-line bg-white px-3 py-2 text-left text-sm text-neutral-700 transition hover:border-brand md:col-span-2"
-                onClick={() => setShowAllSources((value) => !value)}
-              >
-                {showAllSources ? "Sembunyikan sumber tambahan" : `Tampilkan ${sources.length - MAX_VISIBLE_SOURCES} sumber lainnya`}
-              </button>
-            ) : null}
+        {!isUser ? (
+          <div id={`sources-${message.id}`}>
+            <SourcesPanel sources={sources} />
+            <DebugPanel message={message} />
           </div>
         ) : null}
       </div>
