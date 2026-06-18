@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { memo, useState } from "react";
 import { AlertCircle, Check, CheckCircle2, Copy, Loader2, MoreHorizontal, RefreshCcw, ThumbsDown, ThumbsUp, X } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import rehypeSanitize from "rehype-sanitize";
@@ -160,7 +160,7 @@ function MarkdownAnswer({ content, onCitationClick }: { content: unknown; onCita
   );
 }
 
-export function MessageBubble({ message, onRegenerate }: { message: ChatMessage; onRegenerate?: () => void }) {
+function MessageBubbleBase({ message, onRegenerate }: { message: ChatMessage; onRegenerate?: () => void }) {
   const isUser = message.role === "user";
   const [menuOpen, setMenuOpen] = useState(false);
   const [stepsOpen, setStepsOpen] = useState(false);
@@ -255,3 +255,9 @@ export function MessageBubble({ message, onRegenerate }: { message: ChatMessage;
     </div>
   );
 }
+
+/** Memoized: skip re-render of settled messages while a new one streams. */
+export const MessageBubble = memo(
+  MessageBubbleBase,
+  (a, b) => a.message === b.message && !!a.onRegenerate === !!b.onRegenerate,
+);

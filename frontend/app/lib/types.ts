@@ -75,6 +75,15 @@ export type ChatMessage = {
   };
 };
 
+export type KbStats = {
+  chunks: number;
+  sources: number;
+  entities: number;
+  faculties: number;
+  programs: number;
+  last_updated: string | null;
+};
+
 export type ChatSession = {
   session_id: string;
   title: string;

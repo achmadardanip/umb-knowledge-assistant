@@ -63,6 +63,7 @@ export const api = {
       providers: ProviderOption[];
       web_search?: { enabled: boolean; provider: string; configured: boolean; strict_domain: string };
     }>("/settings/providers"),
+  stats: () => apiJson<import("./types").KbStats>("/stats"),
   createSession: (anonymousSessionId: string) =>
     apiJson("/sessions", {
       method: "POST",

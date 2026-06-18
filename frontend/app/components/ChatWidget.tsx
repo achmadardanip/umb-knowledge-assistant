@@ -25,7 +25,10 @@ import { ThinkingSteps } from "./ThinkingSteps";
 import { ThemeToggle } from "./ThemeToggle";
 import { SuggestedQuestions } from "./SuggestedQuestions";
 import { Badge } from "./ui/badge";
-import { ShieldCheck } from "lucide-react";
+import { Button } from "./ui/button";
+import { Sheet, SheetContent, SheetTitle } from "./ui/sheet";
+import { ShieldCheck, Menu, Network } from "lucide-react";
+import { motion } from "framer-motion";
 
 declare global {
   interface Window {
@@ -91,6 +94,7 @@ export function ChatWidget() {
   const [error, setError] = useState<string | null>(null);
   const [renameTarget, setRenameTarget] = useState<ChatSession | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ChatSession | null>(null);
+  const [mobileNavOpen, setMobileNavOpen] = useState(false);
 
   const { sessions, refresh: refreshSessions } = useChatSessions(anonymousId);
   const { messages, setMessages, refresh: refreshMessages } = useChatMessages(activeSessionId);
@@ -307,8 +311,9 @@ export function ChatWidget() {
           onDeleteSession={setDeleteTarget}
         />
       </div>
-      <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
-        <div className="max-h-48 shrink-0 overflow-y-auto border-b border-border md:hidden">
+      <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
+        <SheetContent side="left" className="w-[88%] max-w-sm p-0">
+          <SheetTitle className="sr-only">Navigation</SheetTitle>
           <ChatSidebar
             sessions={sessions}
             activeSessionId={activeSessionId}
@@ -317,21 +322,33 @@ export function ChatWidget() {
             memoryEnabled={memoryEnabledState}
             onProviderChange={chooseProvider}
             onMemoryChange={toggleMemory}
-            onNewChat={newChat}
-            onSelectSession={selectSession}
+            onNewChat={() => { newChat(); setMobileNavOpen(false); }}
+            onSelectSession={(id) => { selectSession(id); setMobileNavOpen(false); }}
             onRenameSession={setRenameTarget}
             onDeleteSession={setDeleteTarget}
           />
-        </div>
+        </SheetContent>
+      </Sheet>
+      <section className="flex min-h-0 flex-1 flex-col overflow-hidden">
         <header className="shrink-0 border-b border-border bg-card px-4 py-3">
-          <div className="mx-auto flex max-w-4xl items-center gap-3">
+          <div className="mx-auto flex max-w-4xl items-center gap-2">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="md:hidden"
+              aria-label="Open navigation"
+              onClick={() => setMobileNavOpen(true)}
+            >
+              <Menu className="h-5 w-5" />
+            </Button>
             <div className="min-w-0 flex-1">
               <h1 className="truncate text-lg font-semibold text-foreground">{activeTitle}</h1>
-              <p className="truncate text-xs text-muted-foreground">Grounded by Official Sources · Universitas Mercu Buana</p>
+              <p className="truncate text-xs text-muted-foreground">UMB Knowledge Assistant · Grounded by Official Sources</p>
             </div>
-            <div className="hidden items-center gap-1.5 sm:flex">
+            <div className="hidden items-center gap-1.5 lg:flex">
               <Badge variant="info"><ShieldCheck className="h-3 w-3" /> Local PostgreSQL</Badge>
               <Badge variant="outline">pgvector</Badge>
+              <Badge variant="outline"><Network className="h-3 w-3" /> GraphRAG</Badge>
               <Badge variant="outline">Official Sources Only</Badge>
             </div>
             <ThemeToggle />
@@ -355,7 +372,16 @@ export function ChatWidget() {
             ) : (
               messages.map((message, index) => {
                 const previousUser = [...messages.slice(0, index)].reverse().find((item) => item.role === "user");
-                return <MessageBubble key={message.id} message={message} onRegenerate={message.role === "assistant" && previousUser ? () => send(previousUser.content, message.id) : undefined} />;
+                return (
+                  <motion.div
+                    key={message.id}
+                    initial={{ opacity: 0, y: 8 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
+                  >
+                    <MessageBubble message={message} onRegenerate={message.role === "assistant" && previousUser ? () => send(previousUser.content, message.id) : undefined} />
+                  </motion.div>
+                );
               })
             )}
             {!sending &&
