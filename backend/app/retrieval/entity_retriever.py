@@ -83,6 +83,46 @@ def _entity_score(confidence: float | None) -> float:
     return _ENTITY_SCORE_HIGH if conf >= 0.8 else _ENTITY_SCORE_LOW
 
 
+# Specific study-program keywords → canonical program name. A token here means
+# the query is program-level (e.g. "akreditasi sistem informasi"), so program
+# entities must outrank faculty entities on a score tie. (Phase 14 P2.)
+# NB: bare "informasi" is intentionally NOT a key — it is a very common word
+# ("information") and used to mis-trigger the Sistem Informasi program. The
+# "Sistem Informasi" program is matched by the phrase lookup in _lookup_programs.
+_PROGRAM_NAME_MAP = {
+    "informatika": "Teknik Informatika",
+    "manajemen": "Manajemen",
+    "akuntansi": "Akuntansi",
+    "elektro": "Teknik Elektro",
+    "mesin": "Teknik Mesin",
+    "sipil": "Teknik Sipil",
+    "industri": "Teknik Industri",
+    "arsitektur": "Arsitektur",
+    "penyiaran": "Penyiaran",
+    "periklanan": "Periklanan",
+    "humas": "Hubungan Masyarakat",
+    "dkv": "Desain Komunikasi Visual",
+    "psikologi": "Psikologi",
+}
+
+# Deterministic tie-break priority (lower = higher priority) used when several
+# entity contexts share the same score. Program-level queries should resolve to
+# the program, not an incidentally-matched faculty. (Phase 14 P2.)
+_TYPE_PRIORITY = {
+    "study_program": 0,
+    "faculty": 1,
+    "person": 2,
+    "campus": 3,
+    "scholarship": 3,
+    "contact": 3,
+    "service": 3,
+}
+
+
+def _program_specific(tokens: list[str]) -> bool:
+    return any(t in _PROGRAM_NAME_MAP for t in tokens)
+
+
 # ---------------------------------------------------------------------------
 # Per-entity-type formatters → context dicts
 # ---------------------------------------------------------------------------
@@ -266,7 +306,7 @@ def _service_context(s) -> dict:
 # ---------------------------------------------------------------------------
 
 
-def _lookup_faculties(db: Session, tokens: list[str]) -> list[dict]:
+def _lookup_faculties(db: Session, tokens: list[str], suppress_generic: bool = False) -> list[dict]:
     from app.db.models import UMBFaculty
 
     # If a specific faculty name or abbreviation is mentioned, target it
@@ -296,6 +336,11 @@ def _lookup_faculties(db: Session, tokens: list[str]) -> list[dict]:
             row = db.query(UMBFaculty).filter(UMBFaculty.name.ilike(f"%{name.split()[-1]}%")).first()
             if row:
                 results.append(row)
+    elif suppress_generic:
+        # Program-level query (a specific program keyword is present): a dump of
+        # every faculty is pure noise and used to tie at score 10.0 with the real
+        # program entity, letting an unrelated faculty win the tie-break. Skip it.
+        results = []
     else:
         # General faculty query — return all faculties
         results = db.query(UMBFaculty).order_by(UMBFaculty.name).limit(8).all()
@@ -303,45 +348,34 @@ def _lookup_faculties(db: Session, tokens: list[str]) -> list[dict]:
     return [_faculty_context(f) for f in results if f]
 
 
-def _lookup_programs(db: Session, tokens: list[str]) -> list[dict]:
+def _lookup_programs(db: Session, tokens: list[str], query_lc: str = "") -> list[dict]:
     from app.db.models import UMBStudyProgram
 
-    PROGRAM_KEYWORDS = {
-        "informatika": "Teknik Informatika",
-        "informasi": "Sistem Informasi",
-        "manajemen": "Manajemen",
-        "akuntansi": "Akuntansi",
-        "elektro": "Teknik Elektro",
-        "mesin": "Teknik Mesin",
-        "sipil": "Teknik Sipil",
-        "industri": "Teknik Industri",
-        "arsitektur": "Arsitektur",
-        "penyiaran": "Penyiaran",
-        "periklanan": "Periklanan",
-        "humas": "Hubungan Masyarakat",
-        "dkv": "Desain Komunikasi Visual",
-        "psikologi": "Psikologi",
-    }
-    targeted = {PROGRAM_KEYWORDS[t] for t in tokens if t in PROGRAM_KEYWORDS}
-
-    # Only do DIRECT program lookups. A generic "list all programs" dump would
-    # crowd out the more precise typed-graph relation (a faculty's program list)
-    # and the canonical FAQ — those layers answer the generic case better.
-    if not targeted:
-        return []
+    # (a) Single-word keyword triggers (e.g. "informatika", "manajemen").
+    targeted = {_PROGRAM_NAME_MAP[t] for t in tokens if t in _PROGRAM_NAME_MAP}
 
     rows: list = []
-    for name in targeted:
-        found = db.query(UMBStudyProgram).filter(UMBStudyProgram.program_name.ilike(f"%{name}%")).all()
-        rows.extend(found)
-
     seen: set[str] = set()
-    results = []
-    for p in rows:
-        if p.id not in seen:
-            seen.add(p.id)
-            results.append(_program_context(p))
-    return results
+
+    # (b) Direct phrase match against the real program names so multi-word
+    # programs resolve too — "Desain Komunikasi Visual", "Hubungan Masyarakat",
+    # "Ilmu Komunikasi", "Sistem Informasi", "Teknik Elektro", …. This is the
+    # precise signal; a generic browse ("program apa saja") matches no single
+    # name and so still yields [] (the typed-graph / FAQ layers answer that).
+    if query_lc:
+        for p in db.query(UMBStudyProgram).all():
+            nm = (p.program_name or "").lower().strip()
+            if len(nm) >= 4 and nm in query_lc and p.id not in seen:
+                seen.add(p.id)
+                rows.append(p)
+
+    for name in targeted:
+        for p in db.query(UMBStudyProgram).filter(UMBStudyProgram.program_name.ilike(f"%{name}%")).all():
+            if p.id not in seen:
+                seen.add(p.id)
+                rows.append(p)
+
+    return [_program_context(p) for p in rows]
 
 
 def _lookup_campuses(db: Session, tokens: list[str]) -> list[dict]:
@@ -489,16 +523,19 @@ def query_entities(db: Session, query: str, root_domain: str = "mercubuana.ac.id
 
         tokens = _tokenize(query)
         results: list[dict] = []
+        query_lc = " ".join(tokens)
+
+        # Resolve programs first (keyword + phrase match). A non-empty hit means
+        # the query names a specific program, so the generic all-faculties dump
+        # is suppressed and the program outranks an incidentally-matched faculty.
+        program_hits = _lookup_programs(db, tokens, query_lc)
+        program_specific = bool(program_hits) or _program_specific(tokens)
 
         if _has_any(tokens, _FACULTY_TERMS):
-            results.extend(_lookup_faculties(db, tokens))
+            results.extend(_lookup_faculties(db, tokens, suppress_generic=program_specific))
 
-        if _has_any(tokens, _PROGRAM_TERMS) and not _has_any(tokens, _FACULTY_TERMS):
-            results.extend(_lookup_programs(db, tokens))
-        elif _has_any(tokens, _PROGRAM_TERMS):
-            # Both faculty + program terms — add program results too
-            prog = _lookup_programs(db, tokens)
-            results.extend(prog)
+        if program_hits and (_has_any(tokens, _PROGRAM_TERMS) or _has_any(tokens, _FACULTY_TERMS)):
+            results.extend(program_hits)
 
         if _has_any(tokens, _CAMPUS_TERMS):
             results.extend(_lookup_campuses(db, tokens))
@@ -528,6 +565,35 @@ def query_entities(db: Session, query: str, root_domain: str = "mercubuana.ac.id
         from app.rag.intent_router import apply_entity_intent_compatibility
 
         apply_entity_intent_compatibility(query, deduped)
+
+        # Query-aware tie-break. On an exact score tie the right entity type
+        # depends on the question: "dekan/wakil dekan X" is a *faculty* attribute,
+        # "kaprodi/ketua program studi X" is a *program* attribute, and a bare
+        # named program ("akreditasi sistem informasi") resolves to the program.
+        # Otherwise fall back to the default order. (Phase 14 P2/P3.)
+        dekan_q = ("dekan" in tokens) or ("dean" in tokens) or ("wakil dekan" in query_lc)
+        kaprodi_q = (
+            ("kaprodi" in tokens)
+            or ("ketua program studi" in query_lc)
+            or ("kepala program studi" in query_lc)
+            or ("ketua prodi" in query_lc)
+        )
+        explicit_faculty = ("fakultas" in tokens) or dekan_q
+        explicit_program = (
+            kaprodi_q or ("prodi" in tokens) or ("jurusan" in tokens)
+            or ("program" in tokens and "studi" in tokens)
+        )
+        if explicit_program or (program_specific and not explicit_faculty):
+            prio = {"study_program": 0, "faculty": 1, "person": 2}
+        else:
+            prio = {"faculty": 0, "study_program": 1, "person": 2}
+
+        deduped.sort(
+            key=lambda c: (
+                -float(c.get("score") or 0.0),
+                prio.get(c.get("entity_type"), _TYPE_PRIORITY.get(c.get("entity_type"), 4) + 3),
+            )
+        )
 
         # Cap at 6 entity contexts to avoid crowding out chunk evidence
         final = deduped[:6]

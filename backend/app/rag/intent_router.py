@@ -51,7 +51,11 @@ INTENT_COMPATIBLE_ENTITY_TYPES: dict[str, set[str] | None] = {
     INTENT_CAMPUS: {"campus", "graph_relation"},
     INTENT_FACULTY: {"faculty", "graph_relation"},
     INTENT_STUDY_PROGRAM: {"study_program", "faculty", "graph_relation"},
-    INTENT_LECTURER: {"faculty", "graph_relation"},
+    # "kaprodi" / "ketua program studi" is a study-program attribute
+    # (head_of_program), while "dekan" is a faculty attribute — both are valid
+    # primaries for this intent. The entity tie-break (program > faculty) then
+    # resolves "kaprodi X" to the program and "dekan Y" to the faculty. (Phase 14 P2.)
+    INTENT_LECTURER: {"study_program", "faculty", "graph_relation"},
     INTENT_ADMISSIONS: {"contact"},
     INTENT_STUDENT_SERVICES: {"contact", "service"},
     INTENT_SIA: {"service", "contact"},

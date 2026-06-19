@@ -19,7 +19,8 @@ def test_auto_generate_title_from_first_message(db):
     title = maybe_autotitle_session(db, session.id, "Bagaimana cara daftar mahasiswa baru?")
     db.commit()
     assert title == "Daftar Mahasiswa Baru"
-    assert generate_title_from_question("Apa itu SSO Universitas Mercu Buana?") == "Sso Universitas Mercu Buana"
+    # Acronyms are preserved (Phase 13): "SSO" stays uppercase, not "Sso".
+    assert generate_title_from_question("Apa itu SSO Universitas Mercu Buana?") == "SSO Universitas Mercu Buana"
 
 
 def test_save_user_and_assistant_messages_under_correct_session(db):

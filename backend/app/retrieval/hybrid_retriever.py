@@ -397,6 +397,18 @@ def _has_topic(terms: list[str], topic_terms: set[str]) -> bool:
     return any(term in topic_terms for term in terms)
 
 
+# EPrints repository *browse-index* pages — "Browse by Subject/Author", "Items
+# where Year is …", division/type listings. These are navigation pages with no
+# answer content; they were bulk-ingested during the coverage crawl and, lacking
+# any FAQ/Tier-1 match, used to win the vector layer for topical questions and
+# drag official_top down. Drop them from the candidate pool. (Phase 14 P1.)
+_BROWSE_INDEX_RE = re.compile(r"/view/(subjects|creators|year|divisions|types|login)(\b|/|\.)", re.I)
+
+
+def _is_browse_index_url(url: str | None) -> bool:
+    return bool(url) and bool(_BROWSE_INDEX_RE.search(url))
+
+
 def _score_topic_priority(combined_text: str, hostname: str | None, terms: list[str]) -> float:
     lowered = combined_text.lower()
     host = (hostname or "").lower()
@@ -668,7 +680,7 @@ class HybridRetriever:
                 if getattr(embedder, "storage", "legacy") == "sidecar"
                 else None
             )
-            return dense_search(
+            results = dense_search(
                 self.db,
                 query_embedding,
                 top_k=max(top_k * 4, 20),
@@ -676,6 +688,8 @@ class HybridRetriever:
                 source_types=source_types,
                 embedding_profile=embedding_profile,
             )
+            # Drop repository browse-index navigation pages (Phase 14 P1).
+            return [c for c in results if not _is_browse_index_url(c.get("url"))]
         except Exception:
             return []  # dense is best-effort; the keyword path still answers
 
@@ -805,6 +819,8 @@ class HybridRetriever:
             url = meta.get("url") or (source.url if source else None)
             hostname = meta.get("hostname") or (source.hostname if source else None)
             if not url or not is_allowed_host(hostname, self.root_domain) or not validate_url_scope(url, self.root_domain).is_allowed:
+                continue
+            if _is_browse_index_url(url):  # repository browse-index navigation page (Phase 14 P1)
                 continue
             metadata_text = " ".join(
                 str(value)
