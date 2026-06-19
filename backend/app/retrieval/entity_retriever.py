@@ -583,6 +583,15 @@ def query_entities(db: Session, query: str, root_domain: str = "mercubuana.ac.id
             kaprodi_q or ("prodi" in tokens) or ("jurusan" in tokens)
             or ("program" in tokens and "studi" in tokens)
         )
+
+        # Faculty-leakage guard (Phase 15 P1): a program-level question (e.g.
+        # "Kaprodi Desain Komunikasi Visual") must not surface a standalone
+        # faculty card that only matched a shared word ("komunikasi" -> FIKOM).
+        # The matched program card already names its owning faculty, so drop
+        # standalone faculty contexts unless the user asked about a faculty/dekan.
+        if program_hits and not explicit_faculty:
+            deduped = [c for c in deduped if c.get("entity_type") != "faculty"]
+
         if explicit_program or (program_specific and not explicit_faculty):
             prio = {"study_program": 0, "faculty": 1, "person": 2}
         else:

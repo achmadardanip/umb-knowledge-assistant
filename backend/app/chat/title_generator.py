@@ -13,17 +13,39 @@ STOPWORDS = {
     # "Siapa dekan FEB?" -> "Dekan FEB", "Berapa biaya kuliah?" -> "Biaya Kuliah".
     "siapa", "kapan", "berapa", "dimana", "mengapa", "kenapa", "adalah", "tolong",
     "mohon", "saya", "ingin", "tahu", "who", "when", "where", "why", "which", "a", "an",
+    # temporal/qualifier fillers — "Dekan FEB saat ini" -> "Dekan FEB".
+    "saat", "ini", "sekarang", "terkini", "terbaru", "tahun", "tolong", "please",
+    # the subject is always UMB; drop the university name so it doesn't bloat the
+    # title ("...Universitas Mercu Buana" -> dropped; the short "UMB" is kept).
+    "universitas", "mercu", "buana", "of", "at", "in",
 }
+
+# Title length cap (Phase 15 P2): chat-history entries stay ≤ 40 chars.
+_MAX_TITLE_CHARS = 40
 
 
 def generate_title_from_question(question: str, max_words: int = 6) -> str:
     words = [word for word in re.findall(r"[\w\-]+", question or "", re.UNICODE) if word.lower() not in STOPWORDS]
     if not words:
+        # No content words survived (e.g. "Apa itu ini?") — fall back to the raw
+        # leading words rather than a generic "New Chat".
+        words = re.findall(r"[\w\-]+", question or "", re.UNICODE)
+    if not words:
         return "New Chat"
+
     # Title-case ordinary words but preserve acronyms (FEB, SIA, KRS, UTS, PMB, SSO).
     def _case(w: str) -> str:
         return w if (w.isupper() and len(w) <= 5) else w.capitalize()
-    return " ".join(_case(w) for w in words[:max_words]).strip()
+
+    out: list[str] = []
+    length = 0
+    for w in (_case(w) for w in words[:max_words]):
+        add = (1 if out else 0) + len(w)
+        if out and length + add > _MAX_TITLE_CHARS:
+            break
+        out.append(w)
+        length += add
+    return " ".join(out).strip()[:_MAX_TITLE_CHARS]
 
 
 def generate_title_with_llm(question: str, provider_override: str | None = None, max_words: int = 6) -> str | None:

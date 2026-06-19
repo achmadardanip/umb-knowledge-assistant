@@ -1,6 +1,6 @@
 "use client";
 import * as React from "react";
-import { ExternalLink, FileText, Globe, Database } from "lucide-react";
+import { ExternalLink, FileText, Globe, Database, Copy, Check } from "lucide-react";
 import type { Source } from "../lib/types";
 import { Badge } from "./ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
@@ -24,7 +24,19 @@ function typeIcon(t?: string) {
 
 export function SourcesPanel({ sources }: { sources?: Source[] }) {
   const [active, setActive] = React.useState<Source | null>(null);
+  const [copied, setCopied] = React.useState(false);
   if (!sources?.length) return null;
+
+  async function copyCitation(s: Source) {
+    const ref = `[${s.citation_id ?? "•"}] ${s.title || hostLabel(s)} — ${s.url}`;
+    try {
+      await navigator.clipboard.writeText(ref);
+      setCopied(true);
+      window.setTimeout(() => setCopied(false), 1200);
+    } catch {
+      /* clipboard unavailable */
+    }
+  }
 
   return (
     <div className="mt-3">
@@ -55,9 +67,19 @@ export function SourcesPanel({ sources }: { sources?: Source[] }) {
           {active && (
             <>
               <SheetHeader>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Badge variant="info">Source {active.citation_id ?? "•"}</Badge>
+                  <Badge variant="outline">{hostLabel(active)}</Badge>
                   {active.source_type && <Badge variant="outline">{active.source_type}</Badge>}
+                  <button
+                    type="button"
+                    onClick={() => copyCitation(active)}
+                    title="Copy citation"
+                    className="ml-auto inline-flex items-center gap-1 rounded-md border border-border px-2 py-1 text-xs text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
+                  >
+                    {copied ? <Check className="h-3.5 w-3.5 text-emerald-600" /> : <Copy className="h-3.5 w-3.5" />}
+                    {copied ? "Copied" : "Cite"}
+                  </button>
                 </div>
                 <SheetTitle className="pr-6">{active.title || hostLabel(active)}</SheetTitle>
                 <SheetDescription>{hostLabel(active)}</SheetDescription>
