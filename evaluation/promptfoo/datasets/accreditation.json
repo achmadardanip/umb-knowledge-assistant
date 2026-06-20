@@ -1,0 +1,1806 @@
+{
+  "tests": [
+    {
+      "vars": {
+        "query": "Akreditasi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Ilmu Komunikasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Sistem Informasi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi program studi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Status akreditasi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Peringkat akreditasi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi prodi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi jurusan Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Akreditasi fakultas Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    }
+  ]
+}

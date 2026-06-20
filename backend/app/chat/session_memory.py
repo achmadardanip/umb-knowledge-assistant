@@ -134,6 +134,11 @@ class SessionMemory:
             fac = _match_faculty(query)
             prog = _match_program(query)
             svc = _match_service(query)
+            # A turn that explicitly names a faculty but no program switches the
+            # subject to faculty level -> drop the stale program from a prior thread.
+            if fac and not prog:
+                ctx.program = None
+                ctx.accreditation_subject = None
 
             # entities from the resolved top contexts
             top = (contexts or [{}])[0] if contexts else {}

@@ -128,3 +128,5 @@ data/ingestion_tmp/
 .claude/
 .docs/
 .report/
+# Phase 21 promptfoo generated reports
+evaluation/promptfoo/reports/*.json

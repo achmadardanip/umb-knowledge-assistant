@@ -1,0 +1,5034 @@
+{
+  "tests": [
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        },
+        {
+          "type": "no-hallucination"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FEB"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FEB"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FEB"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FEB"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FEB"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FT"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FT"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FT"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FT"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FT"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FIKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FIKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FIKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FIKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FIKOM"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FDSK"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FDSK"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FDSK"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FDSK"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FDSK"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi FPSI"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FPSI"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FPSI"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FPSI"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FPSI"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Manajemen"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Manajemen"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Manajemen"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Manajemen"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Periklanan"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Periklanan"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Periklanan"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Periklanan"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Psikologi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Sistem Informasi"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Informasi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa aturan cuti akademik di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Panduan akademik UMB di mana?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara daftar mahasiswa baru di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Berapa biaya kuliah kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Kapan jadwal PMB 2026?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Bagaimana cara login SIA?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Apa itu SSO UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Beasiswa apa saja yang tersedia di UMB?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Mohon info Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Saya ingin tahu Di mana kampus UMB Meruya?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tolong jelaskan: Bagaimana prosedur pengurusan transkrip nilai?"
+      },
+      "assert": [
+        {
+          "type": "official-source"
+        }
+      ]
+    }
+  ]
+}

@@ -9,6 +9,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api import (
+    routes_analytics,
     routes_chat,
     routes_crawl,
     routes_discovery,
@@ -132,6 +133,7 @@ app.include_router(routes_health.router)
 app.include_router(routes_stats.router)
 app.include_router(routes_crawl.router)
 app.include_router(routes_system.router)
+app.include_router(routes_analytics.router)
 app.include_router(routes_settings.router)
 app.include_router(routes_sessions.router)
 app.include_router(routes_memory.router)

@@ -1,0 +1,1534 @@
+{
+  "tests": [
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ekonomi dan Bisnis",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Teknik",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komputer",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Ilmu Komunikasi",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Desain dan Seni Kreatif",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Fakultas Psikologi",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Siapa dekannya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Beliau menjabat sejak kapan?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Bagaimana akreditasinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Di mana profilnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Kalau kampusnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Apa visi misinya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Bagaimana sejarahnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Apa saja programnya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Ceritakan tentang Pascasarjana",
+        "query": "Bagaimana kontaknya?"
+      },
+      "assert": [
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Informatika?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Informatika?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Informatika?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Manajemen?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Manajemen?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Manajemen?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Akuntansi?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Akuntansi?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Akuntansi?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Elektro?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Elektro?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Elektro?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Mesin?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Mesin?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Mesin?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Sipil?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Sipil?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Sipil?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Industri?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Industri?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Teknik Industri?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Arsitektur?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Arsitektur?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Arsitektur?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Penyiaran?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Penyiaran?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Penyiaran?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Periklanan?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Periklanan?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Periklanan?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Hubungan Masyarakat?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Hubungan Masyarakat?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Hubungan Masyarakat?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Desain Komunikasi Visual?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Desain Komunikasi Visual?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Desain Komunikasi Visual?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Psikologi?",
+        "query": "Siapa kaprodinya?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Psikologi?",
+        "query": "Akreditasinya bagaimana?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "establish": "Bagaimana dengan program studi Psikologi?",
+        "query": "Kalau yang kelas karyawan?"
+      },
+      "assert": [
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    }
+  ]
+}

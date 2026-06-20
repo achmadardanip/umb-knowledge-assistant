@@ -70,6 +70,7 @@ export const api = {
   systemFreshness: () => apiJson<Record<string, unknown>>("/system/freshness"),
   systemGraph: () => apiJson<Record<string, unknown>>("/system/graph"),
   systemDatabase: () => apiJson<Record<string, unknown>>("/system/database"),
+  analytics: () => apiJson<Record<string, unknown>>("/analytics"),
   createSession: (anonymousSessionId: string) =>
     apiJson("/sessions", {
       method: "POST",

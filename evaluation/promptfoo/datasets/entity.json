@@ -1,0 +1,3748 @@
+{
+  "tests": [
+    {
+      "vars": {
+        "query": "Siapa dekan FEB?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FEB?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FEB siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FEB"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Ekonomi dan Bisnis?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Ekonomi dan Bisnis?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ekonomi dan Bisnis siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ekonomi dan Bisnis"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FEB"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan FT?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FT?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FT siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FT"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Teknik?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Teknik?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Teknik siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Teknik"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FT"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan FASILKOM?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FASILKOM?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FASILKOM siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FASILKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Ilmu Komputer?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Ilmu Komputer?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ilmu Komputer siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ilmu Komputer"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FASILKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan FIKOM?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FIKOM?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FIKOM siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FIKOM"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Ilmu Komunikasi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Ilmu Komunikasi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Ilmu Komunikasi siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Ilmu Komunikasi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FIKOM"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan FDSK?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FDSK?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FDSK siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FDSK"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Desain dan Seni Kreatif?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Desain dan Seni Kreatif?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Desain dan Seni Kreatif siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Desain dan Seni Kreatif"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FDSK"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan FPSI?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan FPSI?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan FPSI siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail FPSI"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Fakultas Psikologi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Fakultas Psikologi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Fakultas Psikologi siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Fakultas Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "FPSI"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa dekan Pascasarjana?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Nama dekan Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Pimpinan Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa pimpinan Pascasarjana?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Dekan Pascasarjana siapa?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Tentang Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jelaskan Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Detail Pascasarjana"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "faculty"
+        },
+        {
+          "type": "faculty",
+          "value": "PASCA"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Teknik Informatika?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Teknik Informatika"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Informatika"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Manajemen?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Manajemen"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Manajemen"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Akuntansi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Akuntansi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Akuntansi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Teknik Elektro?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Teknik Elektro"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Elektro"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Teknik Mesin?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Teknik Mesin"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Mesin"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Teknik Sipil?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Teknik Sipil"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Sipil"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Teknik Industri?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Teknik Industri"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Teknik Industri"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Arsitektur?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Arsitektur"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Arsitektur"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Penyiaran?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Penyiaran"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Penyiaran"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Periklanan?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Periklanan"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Periklanan"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Hubungan Masyarakat?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Hubungan Masyarakat"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Hubungan Masyarakat"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Desain Komunikasi Visual?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Desain Komunikasi Visual"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Desain Komunikasi Visual"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Siapa kaprodi Psikologi?"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Ketua program studi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Program studi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Profil prodi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Kaprodi Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    },
+    {
+      "vars": {
+        "query": "Jurusan Psikologi"
+      },
+      "assert": [
+        {
+          "type": "entity_type",
+          "value": "study_program"
+        },
+        {
+          "type": "contains",
+          "value": "Psikologi"
+        },
+        {
+          "type": "official-source"
+        }
+      ]
+    }
+  ]
+}

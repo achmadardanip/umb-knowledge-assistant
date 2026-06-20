@@ -50,10 +50,14 @@ def _has_marker(low: str, markers) -> bool:
 
 def is_elliptical(query: str) -> bool:
     """True when the query omits its subject and leans on an anaphor/attribute, AND
-    does not itself name a faculty/program/service (which would be self-contained)."""
+    does not itself name a faculty/program/service (which would be self-contained).
+    The Indonesian definite/possessive suffix "-nya" (dekannya, akreditasinya,
+    sejarahnya, visi misinya) is a strong elliptical signal."""
     low = (query or "").lower()
     if _match_faculty(low) or _match_program(low) or _match_service(low):
         return False
+    if re.search(r"\w{3,}nya\b", low):  # generic "-nya" suffix -> refers to the prior subject
+        return True
     return _has_marker(low, _ANAPHORA) or _has_marker(low, _ELLIPTICAL_ATTR)
 
 
@@ -69,19 +73,17 @@ def resolve_followup(query: str, ctx: SessionContext | None) -> ResolvedFollowup
     # Pick the most specific remembered subject for this follow-up.
     # A person anaphor ("beliau") or a faculty-level attribute -> faculty;
     # a program-level attribute or a remembered program -> program.
-    wants_program = (
-        ("kaprodi" in low) or ("prodi" in low) or ("jurusan" in low) or ("program" in low)
-        or ("kelas karyawan" in low)
-    )
+    wants_faculty = ("dekan" in low or "fakultas" in low or "beliau" in low)
     subject = None
-    if wants_program and ctx.program:
-        subject = ctx.program
-    elif ("dekan" in low or "beliau" in low) and ctx.faculty:
+    if wants_faculty and ctx.faculty:
+        # dean / "beliau" is a faculty-level reference.
         subject = ctx.faculty
-    elif ctx.program and not ctx.faculty:
+    elif ctx.program:
+        # a program is the more specific active subject (its own kaprodi /
+        # accreditation / kelas karyawan); prefer it within a program thread.
         subject = ctx.program
     else:
-        subject = ctx.faculty or ctx.program
+        subject = ctx.faculty
 
     if not subject:
         return ResolvedFollowup(True, None, None, "memory_empty_for_subject")

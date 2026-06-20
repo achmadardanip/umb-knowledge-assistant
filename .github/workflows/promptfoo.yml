@@ -1,0 +1,65 @@
+name: promptfoo-eval
+
+# Phase 21 P21.5 — continuous automated evaluation on PR and push to main.
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  evaluate:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: pgvector/pgvector:pg16
+        env:
+          POSTGRES_USER: umb
+          POSTGRES_PASSWORD: umb
+          POSTGRES_DB: umb
+        ports: ["5433:5432"]
+        options: >-
+          --health-cmd "pg_isready -U umb -d umb"
+          --health-interval 5s --health-timeout 5s --health-retries 20
+    env:
+      LOCAL_POSTGRES_MODE: "true"
+      LOCAL_POSTGRES_URL: postgresql://umb:umb@localhost:5433/umb
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install backend deps
+        run: pip install -r backend/requirements.txt
+
+      - name: Restore KB snapshot
+        # Loads the committed/published KB dump so retrieval has data. Skipped with
+        # a clear message when no dump is present (deterministic suite still runs on
+        # the entity tables seeded by bootstrap).
+        run: |
+          python -m app.db.bootstrap_local || true
+        working-directory: backend
+
+      - name: Deterministic evaluation gate (no LLM, required)
+        run: python -m app.evaluation.promptfoo_runner --out ../evaluation/promptfoo/reports/promptfoo_report.json
+        working-directory: backend
+
+      - name: No-regression retrieval benchmark
+        run: python -m app.evaluation.benchmark --strategy agent_hybrid --top-k 5 --out ../reports/ci_benchmark.json
+        working-directory: backend
+        continue-on-error: true
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+      - name: Promptfoo eval (LLM-judge view)
+        run: npx --yes promptfoo@latest eval -c evaluation/promptfoo/promptfooconfig.yaml --no-progress-bar || true
+
+      - name: Upload reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: promptfoo-reports
+          path: |
+            evaluation/promptfoo/reports/
+            reports/ci_benchmark.json
