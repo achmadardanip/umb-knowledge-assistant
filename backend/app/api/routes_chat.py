@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from collections import Counter
 from queue import Queue
 from threading import Thread
@@ -177,6 +178,36 @@ def _agent_step(step_id: str, label: str, status: StepStatus, detail: str | None
     }
 
 
+# Canonical faculty / program phrases for the sticky-entity carry (Phase 19 P19.2).
+# Ordered longest-first per faculty so the full name wins over the bare acronym.
+_STICKY_FACULTY = [
+    ("fakultas ekonomi dan bisnis", "Fakultas Ekonomi dan Bisnis"),
+    ("fakultas ilmu komputer", "Fakultas Ilmu Komputer"),
+    ("fakultas ilmu komunikasi", "Fakultas Ilmu Komunikasi"),
+    ("fakultas desain dan seni kreatif", "Fakultas Desain dan Seni Kreatif"),
+    ("fakultas psikologi", "Fakultas Psikologi"),
+    ("fakultas teknik", "Fakultas Teknik"),
+    ("pascasarjana", "Pascasarjana"),
+    ("fasilkom", "Fakultas Ilmu Komputer"),
+    ("fikom", "Fakultas Ilmu Komunikasi"),
+    ("fdsk", "Fakultas Desain dan Seni Kreatif"),
+    ("fpsi", "Fakultas Psikologi"),
+    ("feb", "Fakultas Ekonomi dan Bisnis"),
+]
+def _sticky_entity_hint(prior_messages: list[dict]) -> str | None:
+    """Most recent explicitly-named FACULTY in the user's prior turns (scans the
+    full history, newest first). Faculties only — program names are ambiguous
+    ("psikologi"/"manajemen" are both faculty and program tokens) and over-match,
+    so carrying them hurt resolution. Returns the canonical faculty name or None."""
+    user_turns = [m.get("content", "") or "" for m in prior_messages if m.get("role") == "user"]
+    for text_turn in reversed(user_turns):
+        low = text_turn.lower()
+        for needle, canonical in _STICKY_FACULTY:
+            if re.search(rf"(?<!\w){re.escape(needle)}(?!\w)", low):
+                return canonical
+    return None
+
+
 def _build_retrieval_query(question: str, history: list[dict], chat_title: str | None = None, *, is_followup: bool = True, intent: str | None = None) -> str:
     # NEW_TOPIC: retrieve on the question alone. Carrying prior turns / source
     # hints / entity hints would leak the previous topic's context into an
@@ -204,6 +235,13 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
             prior_messages.pop(index)
             break
 
+    # Sticky entity (Phase 19 P19.2): on a long follow-up chain the establishing
+    # faculty scrolls out of the recent-turns window, leaving an elliptical query
+    # ("siapa dekannya?") with no entity to resolve. Carry the most recent
+    # explicitly-named faculty from the FULL history (faculties only — programs are
+    # ambiguous and over-match) so deep PRIMARY follow-ups keep their subject.
+    # Follow-up path only — single-shot retrieval (the 0.998 benchmark) is unaffected.
+    sticky = _sticky_entity_hint(prior_messages)
     recent_user_turns = [message.get("content", "") for message in prior_messages if message.get("role") == "user"][-3:]
     source_hints: list[str] = []
     for message in prior_messages[-4:]:
@@ -219,6 +257,8 @@ def _build_retrieval_query(question: str, history: list[dict], chat_title: str |
                 source_hints.append(hint)
 
     parts = [question, *_contextual_query_hints(question, prior_messages, chat_title)]
+    if sticky and sticky.lower() not in question.lower():
+        parts.append(f"Konteks entitas: {sticky}")
     if chat_title and chat_title != "New Chat":
         parts.append(f"Judul chat: {chat_title}")
     if recent_user_turns:

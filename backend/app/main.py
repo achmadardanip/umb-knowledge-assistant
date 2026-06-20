@@ -21,6 +21,7 @@ from app.api import (
     routes_settings,
     routes_sources,
     routes_stats,
+    routes_system,
 )
 from app.core.config import get_settings
 from app.core.logging import configure_logging
@@ -130,6 +131,7 @@ app.add_middleware(
 app.include_router(routes_health.router)
 app.include_router(routes_stats.router)
 app.include_router(routes_crawl.router)
+app.include_router(routes_system.router)
 app.include_router(routes_settings.router)
 app.include_router(routes_sessions.router)
 app.include_router(routes_memory.router)

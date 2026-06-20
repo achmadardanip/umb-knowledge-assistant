@@ -64,6 +64,12 @@ export const api = {
       web_search?: { enabled: boolean; provider: string; configured: boolean; strict_domain: string };
     }>("/settings/providers"),
   stats: () => apiJson<import("./types").KbStats>("/stats"),
+  systemHealth: () => apiJson<Record<string, unknown>>("/system/health"),
+  systemStats: () => apiJson<Record<string, number>>("/system/stats"),
+  systemCrawl: () => apiJson<Record<string, unknown>>("/system/crawl"),
+  systemFreshness: () => apiJson<Record<string, unknown>>("/system/freshness"),
+  systemGraph: () => apiJson<Record<string, unknown>>("/system/graph"),
+  systemDatabase: () => apiJson<Record<string, unknown>>("/system/database"),
   createSession: (anonymousSessionId: string) =>
     apiJson("/sessions", {
       method: "POST",

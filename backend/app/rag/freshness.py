@@ -96,4 +96,10 @@ def enrich_sources_with_freshness(db: Session, sources: list[dict], root_domain:
         s["freshness_tier"] = freshness_tier(days)
         s["freshness_label"] = freshness_label(days)
         s["authority_tier"] = authority_tier(s.get("hostname"), root_domain)
+
+    # Phase 19 P19.4 — freshness enforcement: confidence penalty + stale warning
+    # (does not reorder or drop sources). No-op while every source is fresh.
+    from app.rag.freshness_scoring import apply_freshness_confidence
+
+    apply_freshness_confidence(sources)
     return sources
