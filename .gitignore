@@ -130,3 +130,31 @@ data/ingestion_tmp/
 .report/
 # Phase 21 promptfoo generated reports
 evaluation/promptfoo/reports/*.json
+
+# ── Phase 27 gitignore audit — additional generated/agent artifacts ───────────
+tmp/
+*.dump
+*.bak
+backups/
+# AI/editor agent artifacts
+.claude/
+.agents/
+.cursor/
+.memory/
+# Generated JSON outputs (datasets under evaluation/promptfoo/datasets are tracked)
+*validation*.json
+*audit*.json
+*benchmark*.json
+*summary*.json
+data/reports/
+# Generated documentation reports (committed docs live in docs/ and README.md)
+*_VALIDATION.md
+*_SUMMARY.md
+*_AUDIT.md
+SUMMARY*.md
+
+# Phase 27 deliverable documentation is permanent — re-include it (overrides the
+# generated-report patterns above, which target ephemeral root-level outputs).
+!docs/
+!docs/**
+!GAP_ANALYSIS.md

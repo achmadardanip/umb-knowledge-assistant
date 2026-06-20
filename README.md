@@ -1,175 +1,256 @@
 # UMB Knowledge Assistant
 
-A grounded, multimodal **RAG** assistant for public Universitas Mercu Buana
-information (`mercubuana.ac.id` + subdomains). Answers are synthesized **only**
-from official sources that were crawled, indexed, and returned as cited context —
-never from model prior knowledge. If nothing official is found, it abstains.
+A production-grade, **fully-local** Retrieval-Augmented Generation (RAG) assistant for
+**Universitas Mercu Buana (UMB)**. It answers questions about faculties, study programs,
+deans, kaprodi, accreditation, admissions (PMB), tuition, scholarships, campuses and
+academic services **strictly from official UMB sources**, with citations on every answer.
 
-**Stack:** FastAPI · **PostgreSQL + pgvector** (single source of truth) · local E5 embeddings · Ollama
-(`qwen2.5:7b-instruct`) · Tavily (live fallback) · Next.js. No hosted-DB dependency — runs fully local.
-
-```
-                     ┌─────────────────────────── FastAPI backend ───────────────────────────┐
-  Next.js  ──/chat──▶│ intent → FAQ → entity → typed-graph → hybrid vector → reranker         │
-  :3000             │            │                                  │            │            │
-                     │            ▼ (low confidence)                 ▼            ▼            │
-                     │         Tavily (UMB-only) ─▶ async KB acquire │   CGCV + citation guard │
-                     └───────────────┬───────────────────────────────┬─────────────┬─────────┘
-                       PostgreSQL + pgvector + GraphRAG         Ollama LLM      canonical URLs
-```
-
-**Deployment architecture (fully local):**
-```
-Next.js frontend (:3000)  ──▶  FastAPI backend (:8000)  ──▶  PostgreSQL + pgvector (:5432)
-                                        └──▶ Ollama (qwen2.5:7b) / optional cloud LLM
-```
+> Status: **PRODUCTION_CERTIFIED_V1** — official_top 0.998 · citation_failure 0.0 ·
+> follow_up 1.0 · entity_accuracy 1.0 · faculty_leakage 0 · context_retention 1.0.
 
 ---
 
-## 1. Quick Start (5 minutes)
+## Project Overview
 
-```bash
-git clone <repo-url> umb-knowledge-assistant && cd umb-knowledge-assistant
+**What it is.** A grounded question-answering system over a curated corpus of official
+`*.mercubuana.ac.id` pages and PDFs. It combines a typed **GraphRAG** + structured
+**entity layer** + **pgvector** semantic search, behind a FastAPI API and a Next.js chat UI.
 
-# Backend
-cd backend && python3.12 -m venv .venv && . .venv/Scripts/activate   # macOS/Linux: source .venv/bin/activate
-pip install -r requirements.txt && pip install -r requirements-local.txt && cd ..
+**Goals.**
+- Answer only from official UMB sources, always with citations (no hallucination).
+- Resolve named entities (faculty / program / dean / kaprodi / accreditation) deterministically.
+- Maintain conversation context across follow-up turns (session memory).
+- Stay fully local — **PostgreSQL + pgvector is the single source of truth** (no Supabase).
+- Be observable, evaluable, and self-maintaining (monitoring, Promptfoo, incremental crawler).
 
-# LLM + config
-ollama pull qwen2.5:7b-instruct
-cp .env.example .env        # local-first defaults (LOCAL_POSTGRES_MODE=true) + set TAVILY_API_KEY
+**Core capabilities.**
+- Hybrid retrieval: FAQ → Entity → typed GraphRAG → vector (pgvector) → reranker.
+- Deterministic entity resolution with program/faculty disambiguation (0 faculty leakage).
+- Session entity memory + elliptical follow-up resolution (“beliau…”, “akreditasinya…”).
+- Content freshness tracking + stale-source penalty; incremental change-detecting crawler.
+- Streaming chat (SSE) with stop-generation; source drawer with citations + freshness badges.
+- Monitoring dashboard, feedback analytics, Promptfoo continuous evaluation, load tests.
 
-# Local database (PostgreSQL + pgvector)
-docker compose -f docker-compose.local.yml up -d postgres
-cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m app.db.bootstrap_local   # schema + extensions
+**Technology stack.**
 
-# Run (two terminals)
-cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m uvicorn app.main:app --port 8000
-cd frontend && npm install && npm run dev
-
-# Verify
-curl http://localhost:8000/health     # {"status":"ok"}   →  open http://localhost:3000
-```
-
-## 2. Local Setup
-- **Python 3.12+**, **Node 20+**, **Ollama**, ~3–4 GB disk (E5 + torch). GPU (CUDA/MPS) auto-used, CPU works.
-- `requirements-local.txt` installs the local E5 embedder (+ optional reranker). Without it the app falls back to keyword-only retrieval.
-- `.env` lives at the **project root** (not `backend/`).
-
-## 3. Database — PostgreSQL + pgvector (default, no hosted dependency)
-PostgreSQL + pgvector is the **single source of truth**. The app boots with no `SUPABASE_*`
-variable (it is not a Supabase-SDK app — "Supabase" was only ever hosted Postgres).
-
-```bash
-# 1) install Docker Desktop, then bring up the local stack
-docker compose -f docker-compose.local.yml up -d        # postgres + pgadmin (+ backend/frontend)
-# 2) .env (already the default): LOCAL_POSTGRES_MODE=true
-#    DATABASE_URL=postgresql://postgres:postgres@localhost:5432/umb   VECTOR_DB=pgvector
-# 3) schema + extensions
-cd backend && PYTHONPATH=. python -m app.db.bootstrap_local
-# 4) load data — seed entities/FAQs, then crawl/ingest official sources
-PYTHONPATH=. python -m app.ingestion.entity_extractor --seed
-# 5) backend   6) frontend  (see Quick Start)
-```
-- pgAdmin: `http://localhost:5050` (`admin@local.dev` / `admin`).
-- **Backup / restore:** `scripts/backup_local_db.sh` (daily, 30-day retention) · `scripts/restore_local_db.sh <dump>`.
-- Full guide + persistence (named volume): **[docs/local_postgres.md](docs/local_postgres.md)**.
-
-## 4. Optional — migrate from a hosted Postgres
-Only if you have existing data in a hosted Postgres (e.g. Supabase): set
-`SUPABASE_POOLER_DATABASE_URL` and run `python -m app.db.supabase_to_local` once to copy it
-into local PostgreSQL. Not used at runtime; the application never requires it.
-
-## 5. Ollama Setup
-```bash
-ollama pull qwen2.5:7b-instruct      # default answer model (CPU ok; ~30–100s/answer on CPU)
-ollama list                          # confirm
-```
-Snappier demos: a smaller model (`qwen2.5:3b`), lower `LOCAL_LLM_MAX_TOKENS`, or a GPU.
-
-## 6. Tavily Setup
-Free key at https://tavily.com → `.env`: `TAVILY_API_KEY=...`. Used only as a
-**confidence-gated, UMB-domain-only** live fallback; discoveries are acquired
-into the KB so repeat questions are answered locally (no repeat Tavily calls).
-
-## 7. Running the Frontend
-```bash
-cd frontend && npm install && npm run dev      # http://localhost:3000  (NEXT_PUBLIC_API_URL → :8000)
-```
-
-## 8. Running the Backend
-```bash
-cd backend && PYTHONPATH=. .venv/Scripts/python.exe -m uvicorn app.main:app --host 127.0.0.1 --port 8000
-```
-
-## 9. Running the Full Stack
-```bash
-docker compose up -d        # postgres + redis + backend + frontend
-```
-
-## 10. Crawling UMB
-```bash
-cd backend
-PYTHONPATH=. .venv/Scripts/python.exe -m app.ingestion.tavily_ingest      # Tavily map→extract→chunk→embed→index
-# or the discovery + crawl pipeline (authorized, public pages only)
-```
-Then seed structured layers: `-m app.ingestion.entity_extractor --seed --mine`,
-`-m app.ingestion.faq_seed`, `-m app.rag.canonical_urls`.
-
-## 11. Building GraphRAG
-```bash
-cd backend
-PYTHONPATH=. .venv/Scripts/python.exe -m app.graph.build_graph          # co-occurrence graph
-PYTHONPATH=. .venv/Scripts/python.exe -m app.graph.build_typed_graph    # typed entity graph
-```
-
-## 12. Running Evaluation
-```bash
-cd backend
-PYTHONPATH=. .venv/Scripts/python.exe -m pytest -q                                  # tests
-PYTHONPATH=. .venv/Scripts/python.exe -m app.evaluation.benchmark --strategy agent  # 501-Q benchmark (all layers)
-```
-Reports → `data/reports/`. Metrics: answerability, official-source@1, citation
-failures, intent-routing & follow-up accuracy, layer hit rates, latency.
-
-## 13. Troubleshooting
-| Symptom | Fix |
+| Layer | Technology |
 |---|---|
-| Keyword-only retrieval / no dense | install `requirements-local.txt` (E5 needs torch) |
-| `gin_trgm_ops does not exist` | `CREATE EXTENSION pg_trgm;` in its **own** committed tx, then the index |
-| Hybrid retrieval ~10 s | apply `004_pg_trgm.sql` (trigram index) |
-| Stale answer after a change | clear `rag_answer_cache`; restart uvicorn (no auto-reload) |
-| Pytest crashes mid-run | stop the backend first (E5 in two processes exhausts memory) |
-| High egress (only if using a hosted Postgres) | enable caching (default) + run the metadata prune — `EGRESS_REDUCTION_REPORT.md` |
-| `.env` ignored | it must be at the **project root** |
+| Frontend | Next.js 16 (App Router), React 19, TypeScript, Tailwind, shadcn/ui, @tanstack/react-query |
+| Backend | FastAPI (Python 3.12), SQLAlchemy, Uvicorn |
+| Vector DB | PostgreSQL 16/17 + **pgvector** (HNSW) + pg_trgm |
+| Embeddings | `intfloat/multilingual-e5-small` (local, CPU) |
+| Graph | In-memory typed property graph built from the `umb_*` entity tables |
+| Eval | Promptfoo + custom deterministic benchmark suite |
+| Infra | Docker Compose (local), named volume `umb_local_pgdata` |
 
 ---
 
-## Retrieval flow
-```
-query ─▶ detect_intent ─▶ FAQ (canonical, 12–14) ─▶ Entity (7–10) ─▶ Typed Graph (9)
-        ─▶ Hybrid Vector (keyword+dense) ─▶ intent-host filter (+boost / −penalty)
-        ─▶ confidence check ─▶ (low?) Tavily UMB-only ─▶ rerank ─▶ CGCV + citation/URL guard ─▶ answer
-```
-Structured layers are pinned above vector unless intent-demoted; the reranker only reorders vector passages.
+## Architecture
 
-## Intent routing
 ```
-detect_intent(q) ∈ {admissions, tuition, scholarship, sia, sso, library, faculty,
-                    study_program, lecturer, campus, academic_calendar/regulations,
-                    student_services, general}
-  → entity-intent compatibility (demote off-intent structured contexts)
-  → INTENT_HOSTS allowlist (boost on-intent host, penalise off-intent vector chunk)
+            User
+             │
+             ▼
+   ┌───────────────────┐
+   │  Next.js Frontend │  chat UI · /dashboard · /analytics · source drawer
+   └─────────┬─────────┘
+             │ HTTP / SSE
+             ▼
+   ┌───────────────────┐
+   │  FastAPI Backend  │  /chat /chat/stream /sessions /system/* /analytics ...
+   └─────────┬─────────┘
+             │
+             ▼
+   ┌───────────────────┐   intent → FAQ → Entity → GraphRAG → Vector → Reranker
+   │  Retrieval Agent  │
+   └───┬─────────┬─────┘
+       │         │
+       ▼         ▼
+ ┌──────────┐ ┌───────────────┐
+ │ GraphRAG │ │ Entity Layer  │  faculty/program/dean/kaprodi/accreditation
+ │  (typed) │ └──────┬────────┘
+ └────┬─────┘        │
+      │     ┌────────▼────────┐
+      │     │ Session Memory  │  per-session entities; elliptical follow-up resolution
+      │     └────────┬────────┘
+      ▼              ▼
+   ┌────────────────────────────┐
+   │  PostgreSQL + pgvector      │  chunks · chunk_embeddings · sources · umb_* · sessions
+   └────────────────────────────┘
 ```
 
-## KB acquisition flow (Tavily fallback)
-```
-KB miss / low confidence ─▶ Tavily search (site:mercubuana.ac.id) ─▶ UMB filter
-  ─▶ fetch/extract ─▶ answer user FIRST
-  ─▶ [background thread] clean → chunk → embed → save KB → record discovery cache
-  ─▶ future identical question → served from KB (no Tavily)
+### Pipelines
+
+- **Retrieval pipeline** — `intent_gate` classifies the query; the agent pins non-demoted
+  structured contexts (FAQ + entity + typed-graph relations) above the pgvector results,
+  fuses keyword+dense (`HybridRetriever`), applies a host-authority/topic prior, and filters
+  non-content browse pages. See [docs/architecture/retrieval.md](docs/architecture/retrieval.md).
+- **Entity resolution pipeline** — `entity_retriever.query_entities` does deterministic
+  lookups over the `umb_*` tables with program>faculty priority and a query-aware tie-break
+  (dekan→faculty, kaprodi→program). See [docs/architecture/entity_resolution.md](docs/architecture/entity_resolution.md).
+- **Session memory pipeline** — `session_memory` remembers the established subject; on a
+  follow-up `followup_resolution` injects it. See [docs/architecture/session_memory.md](docs/architecture/session_memory.md).
+- **Citation pipeline** — every answer's claims are tied to retrieved official sources;
+  unverified answers are refused (no source cards on a non-answer). See `app/rag/answer_generator.py`, `app/verification/`.
+- **Freshness pipeline** — sources carry crawl/verify dates; the payload exposes
+  freshness + a stale penalty. See [docs/architecture/freshness.md](docs/architecture/freshness.md).
+- **Crawl pipeline** — `crawl_registry` + `detect_changed_content` re-ingest only changed
+  pages. See [docs/architecture/crawler.md](docs/architecture/crawler.md).
+
+---
+
+## Database Schema
+
+PostgreSQL (24 tables). Key tables:
+
+| Table | Purpose |
+|---|---|
+| `sources` | Crawled official pages/PDFs + provenance + freshness (`fetched_at`, `content_hash`, `first_seen_date`, `last_verified_date`, …) |
+| `documents` | Per-source extracted documents |
+| `chunks` | Retrievable text chunks (`chunk_text`, `source_id`, `metadata`, `embedding`) |
+| `chunk_embeddings` | Sidecar pgvector embeddings (HNSW index); 1 per chunk |
+| `umb_faculties` | 7 faculties (name, dean, accreditation, campus, contacts) |
+| `umb_study_programs` | 20 programs (head_of_program/kaprodi, accreditation, faculty) |
+| `umb_campuses` / `umb_contacts` / `umb_services` / `umb_scholarships` / `umb_faqs` | Structured entity tables |
+| `crawl_registry` | Incremental-crawl ledger (url, hash, content_type, cadence, status) |
+| `chat_sessions` | Conversations (title, memory toggle) |
+| `chat_messages` | Turns (`role`, `content`, `sources`, `not_found`, `confidence_score`) |
+| `chat_memories` | Persisted per-session memory items |
+| `feedback` | 👍/👎 ratings keyed by `message_id` |
+| `discovered_hosts` / `discovered_urls` / `canonical_urls` | Crawl discovery + scope |
+
+> GraphRAG uses an **in-memory typed graph** built from the `umb_*` tables at runtime
+> (no separate graph tables) — 69 nodes / 73 edges (faculty/program/person/campus/…).
+
+---
+
+## Local Development Setup
+
+**Requirements**
+- Python **3.12**
+- Node **20+** (tested on 25)
+- Docker **24+** (Docker Compose v2)
+- PostgreSQL **16/17** with **pgvector** (provided by the `pgvector/pgvector` image)
+
+**Steps**
+
+```bash
+# 1. Clone
+git clone https://github.com/achmadardanip/umb-knowledge-assistant.git
+cd umb-knowledge-assistant
+
+# 2. Python env
+cd backend && python -m venv .venv && .venv/Scripts/activate    # (Windows) or source .venv/bin/activate
+pip install -r requirements.txt && cd ..
+
+# 3. Configure env (copy and edit)
+cp .env.example .env        # set LOCAL_POSTGRES_MODE=true and LOCAL_POSTGRES_URL
+
+# 4. Start PostgreSQL + pgvector
+docker compose -f docker-compose.local.yml up -d postgres pgadmin
+
+# 5. Bootstrap + restore KB
+cd backend
+LOCAL_POSTGRES_MODE=true python -m app.db.bootstrap_local       # extensions, tables, HNSW/trgm indexes
+LOCAL_POSTGRES_MODE=true python -m app.db.migrate_freshness     # freshness columns + crawl_registry
+#   then restore the KB dump:  pg_restore -d umb backups/umb_*.dump   (or run the ingestion pipeline)
+
+# 6. Run backend  (use a free port; 8000/8001 may be occupied on some hosts)
+LOCAL_POSTGRES_MODE=true LOCAL_POSTGRES_URL=postgresql://umb:umb@localhost:5433/umb \
+  uvicorn app.main:app --host 0.0.0.0 --port 8000
+
+# 7. Run frontend
+cd ../frontend && npm install && npm run dev      # http://localhost:3000
+
+# 8. Validate endpoints
+python scripts/validate_local.py --base http://localhost:8000
+
+# 9. Run benchmarks
+cd backend
+python -m app.evaluation.benchmark --strategy agent_hybrid --top-k 5 --out ../reports/bench.json
+python -m app.evaluation.production_certification
 ```
 
-## Reports & docs
-`docs/knowledge_layers.md` (entity/FAQ/graph) · `docs/local_postgres.md` ·
-`EGRESS_REDUCTION_REPORT.md` · `V2_REBUILD_REPORT.md` · `PHASE5_VALIDATION_REPORT.md`.
+---
+
+## Docker Deployment
+
+`docker-compose.local.yml` defines four services, all with healthchecks + `restart: unless-stopped`:
+
+| Service | Image | Port | Notes |
+|---|---|---|---|
+| `postgres` | pgvector/pgvector:pg17 | 5432 | volume `umb_local_pgdata` |
+| `pgadmin` | dpage/pgadmin4 | 5050 | admin@local.dev / admin |
+| `backend` | build ./backend | 8000 | depends_on postgres+redis healthy |
+| `frontend` | build ./frontend | 3000 | waits for backend health |
+
+```bash
+docker compose -f docker-compose.local.yml up -d        # full stack
+```
+
+---
+
+## Backup & Restore
+
+```bash
+scripts/backup_local_db.sh         # pg_dump -Fc -> backups/
+scripts/restore_local_db.sh        # pg_restore from a chosen dump
+```
+A pre-prune backup (`backups/umb_pre_prune_*.dump`) is retained for rollback. Backups are gitignored.
+
+---
+
+## Monitoring
+
+- **Dashboard** `/dashboard` — KB / Retrieval / Crawl / Freshness / Graph / Database panels (30s refresh).
+- **Analytics** `/analytics` — feedback rates + top failure categories.
+- **Stats endpoints** — `/stats`, `/system/{health,stats,crawl,freshness,graph,database}`, `/crawl/status`.
+
+---
+
+## Promptfoo Evaluation
+
+```bash
+cd backend
+# Retrieval benchmark (production path)
+python -m app.evaluation.benchmark --strategy agent_hybrid --top-k 5 --out ../reports/bench.json
+# Entity + faculty + conversation benchmarks
+python -m app.evaluation.entity_benchmark
+python -m app.evaluation.faculty_disambiguation_benchmark
+python -m app.evaluation.followup_benchmark_v2
+# Promptfoo suite (913 tests) — deterministic gate
+python -m app.evaluation.promptfoo_datasets        # (re)generate datasets
+python -m app.evaluation.promptfoo_runner          # deterministic, no LLM
+npx promptfoo eval -c evaluation/promptfoo/promptfooconfig.yaml   # LLM-judge view (CI)
+```
+CI: `.github/workflows/promptfoo.yml` runs the gate + benchmark + Promptfoo on every PR/push.
+
+---
+
+## Troubleshooting
+
+| Symptom | Cause / Fix |
+|---|---|
+| `could not send SSL negotiation packet: Socket is not connected` | Docker Desktop crashed — restart it, then `docker start umb-postgres`. Data persists on `umb_local_pgdata`. |
+| `/health` returns 404 / Prometheus metrics on :8000/:8001 | Another container holds the port — run uvicorn on a free port (e.g. `--port 8010`). |
+| `role "umb" does not exist` | Container mounted an empty/compose volume — recreate it on `umb_local_pgdata`. |
+| Slow chat answers (30–105 s) | Hardware-bound: local CPU embedder + local LLM. Retrieval itself is ~p50 8 ms. |
+| Empty retrieval for topical queries via `--strategy agent` | That strategy is a dense-only lower bound; production uses `--strategy agent_hybrid`. |
+
+---
+
+## Production Notes
+
+**Known limitations**
+- Session memory is **in-process per worker** — single-worker safe; multi-worker needs the
+  `chat_memories`-backed variant or sticky LB sessions.
+- Full NLI groundedness certification is **pending a ≥4 GB GPU** (lexical CPU gate active).
+- The incremental crawler scheduler must be wired to **cron/systemd-timer** for autonomy.
+
+**Operational guidance**
+- Restore the KB from a dump before serving; verify `/system/stats`.
+- Schedule daily backups; keep at least the latest pre-change dump.
+- Watch `/dashboard` (stale sources, missing embeddings, dangling edges) and `/analytics` (top failures).
+- Gate releases on the benchmark + certification + load test (see `DEPLOYMENT_CHECKLIST.md`).
+
+See [docs/architecture/](docs/architecture/) for deep dives and [GAP_ANALYSIS.md](GAP_ANALYSIS.md) for the roadmap.
