@@ -22,6 +22,14 @@ function typeIcon(t?: string) {
   return Globe;
 }
 
+// Phase 16 P16.3 — freshness colour by tier (fresh=green, aging=amber, stale=red).
+function freshnessClasses(tier?: string | null): string {
+  if (tier === "fresh") return "border-emerald-300 bg-emerald-50 text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300";
+  if (tier === "aging") return "border-amber-300 bg-amber-50 text-amber-700 dark:border-amber-900 dark:bg-amber-950 dark:text-amber-300";
+  if (tier === "stale") return "border-red-300 bg-red-50 text-red-700 dark:border-red-900 dark:bg-red-950 dark:text-red-300";
+  return "border-border bg-muted text-muted-foreground";
+}
+
 export function SourcesPanel({ sources }: { sources?: Source[] }) {
   const [active, setActive] = React.useState<Source | null>(null);
   const [copied, setCopied] = React.useState(false);
@@ -83,6 +91,17 @@ export function SourcesPanel({ sources }: { sources?: Source[] }) {
                 </div>
                 <SheetTitle className="pr-6">{active.title || hostLabel(active)}</SheetTitle>
                 <SheetDescription>{hostLabel(active)}</SheetDescription>
+                {active.freshness_label && (
+                  <span
+                    className={cn(
+                      "mt-1 inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
+                      freshnessClasses(active.freshness_tier),
+                    )}
+                    title={active.crawl_date ? `Crawled ${new Date(active.crawl_date).toLocaleDateString()}` : undefined}
+                  >
+                    {active.freshness_label}
+                  </span>
+                )}
               </SheetHeader>
               <div className="flex-1 space-y-4 overflow-y-auto p-4 text-sm">
                 <a
@@ -105,6 +124,8 @@ export function SourcesPanel({ sources }: { sources?: Source[] }) {
                 <dl className="grid grid-cols-2 gap-x-4 gap-y-2 text-xs">
                   {([
                     ["Retrieved from", hostLabel(active)],
+                    ["Authority", active.authority_tier?.replace(/_/g, " ")],
+                    ["Last crawl", active.crawl_date ? new Date(active.crawl_date).toLocaleDateString() : null],
                     ["Type", active.source_type],
                     ["Page", active.page_number],
                     ["Extraction", active.extraction_method],

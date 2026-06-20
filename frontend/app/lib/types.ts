@@ -46,6 +46,13 @@ export type Source = {
   extraction_method?: string | null;
   extraction_confidence?: number | null;
   discovery_source?: string | null;
+  // Phase 16 freshness metadata
+  crawl_date?: string | null;
+  last_verified_date?: string | null;
+  freshness_days?: number | null;
+  freshness_tier?: "fresh" | "aging" | "stale" | null;
+  freshness_label?: string | null;
+  authority_tier?: string | null;
 };
 
 export type ChatMessage = {

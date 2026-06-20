@@ -808,11 +808,16 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     emit("save_answer", "Menyimpan jawaban dan metadata", "done", f"Message {assistant.id}")
     assistant.visible_steps = visible_steps
     db.commit()
+    # Phase 16 P16.2 — enrich the returned sources with freshness metadata
+    # (additive; does not affect ranking or which sources were chosen).
+    from app.rag.freshness import enrich_sources_with_freshness
+
+    enriched_sources = enrich_sources_with_freshness(db, answer_payload.get("sources") or [])
     return {
         "session_id": session.id,
         "message_id": assistant.id,
         "answer": answer_payload["answer"],
-        "sources": answer_payload.get("sources") or [],
+        "sources": enriched_sources,
         "confidence": answer_payload.get("confidence"),
         "not_found": bool(answer_payload.get("not_found")),
         "provider_used": answer_payload.get("provider_used"),

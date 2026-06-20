@@ -116,9 +116,40 @@ class Source(Base):
     status = Column(Text, default="pending")
     discovery_source = Column(Text)
     http_status = Column(Integer)
+    # Phase 16 — content-freshness metadata (all nullable / backward compatible;
+    # fetched_at remains the canonical crawl_date). Backfilled for the existing
+    # 11k sources from fetched_at so no provenance is lost.
+    extraction_date = Column(DateTime(timezone=True))
+    source_last_modified = Column(DateTime(timezone=True))
+    pdf_modified_date = Column(DateTime(timezone=True))
+    first_seen_date = Column(DateTime(timezone=True))
+    last_verified_date = Column(DateTime(timezone=True))
 
     documents = relationship("Document", back_populates="source", cascade="all, delete-orphan")
     chunks = relationship("Chunk", back_populates="source")
+
+
+class CrawlRegistry(Base):
+    """Phase 17 — incremental-crawl ledger. One row per crawlable URL tracking the
+    last crawl, the last observed change, the content hash and the crawl status so
+    ``detect_changed_content`` can skip unchanged pages (no full re-crawls)."""
+
+    __tablename__ = "crawl_registry"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    url = Column(Text, unique=True, nullable=False)
+    hostname = Column(Text, index=True)
+    content_hash = Column(Text)
+    content_type = Column(Text)           # html | pdf | …
+    last_crawl = Column(DateTime(timezone=True))
+    last_modified = Column(DateTime(timezone=True))   # server Last-Modified / pdf mtime
+    last_changed = Column(DateTime(timezone=True))     # when our hash last changed
+    crawl_status = Column(Text, default="pending", index=True)  # crawled|skipped|failed|pending
+    http_status = Column(Integer)
+    crawl_frequency = Column(Text, default="weekly")   # daily|weekly|manual
+    failure_count = Column(Integer, default=0)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+    updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
 class DiscoveredURL(Base):
