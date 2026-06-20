@@ -41,6 +41,10 @@ export function ChatInput({
     if (event.key === "Enter" && !event.shiftKey) {
       event.preventDefault();
       submit();
+    } else if (event.key === "Escape" && sending) {
+      // Esc stops an in-flight generation (Phase 20 P20.2 keyboard shortcut).
+      event.preventDefault();
+      onStop?.();
     }
   }
 

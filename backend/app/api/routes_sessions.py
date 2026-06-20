@@ -63,6 +63,19 @@ def messages(session_id: str, db: Session = Depends(get_db)) -> dict:
     return {"messages": [serialize_message(message) for message in load_messages(db, session_id)]}
 
 
+@router.get("/{session_id}/context")
+def session_context(session_id: str) -> dict:
+    """Phase 20 P20.3 — the conversation's remembered entity context (faculty,
+    program, dean, kaprodi, topic, session age) for the read-only Session
+    Knowledge Card. Returns {available:false} when nothing is remembered yet."""
+    from app.chat.session_memory import get_session_memory
+
+    ctx = get_session_memory().recall(session_id)
+    if ctx is None:
+        return {"available": False}
+    return {"available": True, **ctx.to_public()}
+
+
 @router.patch("/{session_id}")
 def rename(session_id: str, payload: RenameSessionRequest, db: Session = Depends(get_db)) -> dict:
     session = rename_session(db, session_id, payload.title)

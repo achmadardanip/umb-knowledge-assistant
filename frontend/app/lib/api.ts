@@ -77,6 +77,7 @@ export const api = {
     }),
   sessions: (anonymousSessionId: string) => apiJson(`/sessions?anonymous_session_id=${encodeURIComponent(anonymousSessionId)}`),
   messages: (sessionId: string) => apiJson(`/sessions/${sessionId}/messages`),
+  sessionContext: (sessionId: string) => apiJson<Record<string, unknown>>(`/sessions/${sessionId}/context`),
   renameSession: (sessionId: string, title: string) =>
     apiJson(`/sessions/${sessionId}`, {
       method: "PATCH",

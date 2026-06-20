@@ -7,6 +7,7 @@ import { MemoryIndicator } from "./MemoryIndicator";
 import { NewChatButton } from "./NewChatButton";
 import { ProviderSelector } from "./ProviderSelector";
 import { KbStats } from "./KbStats";
+import { SessionKnowledgeCard } from "./SessionKnowledgeCard";
 import { Separator } from "./ui/separator";
 
 export function ChatSidebar({
@@ -52,6 +53,7 @@ export function ChatSidebar({
       <NewChatButton onClick={onNewChat} />
       <ProviderSelector value={selectedProvider} options={providerOptions} onChange={onProviderChange} />
       <MemoryIndicator enabled={memoryEnabled} onChange={onMemoryChange} />
+      <SessionKnowledgeCard sessionId={activeSessionId} />
       <KbStats />
       <Separator />
       <div className="flex min-h-0 flex-1 flex-col">

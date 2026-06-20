@@ -607,6 +607,26 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     )
     if intent_result.topic != "general":
         retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"
+
+    # Phase 20 P20.1/P20.2 — session entity memory: resolve elliptical follow-ups
+    # ("beliau menjabat sejak kapan?", "akreditasinya bagaimana?") against the
+    # subject established earlier in THIS session. Only enriches a genuine elliptical
+    # follow-up; never overrides a self-contained question. Per-session + auto-
+    # expiring, so the (session-less) retrieval benchmark is unaffected.
+    from app.chat.session_memory import get_session_memory
+    from app.rag.followup_resolution import resolve_followup
+
+    _session_memory = get_session_memory()
+    _session_ctx = _session_memory.recall(session.id)
+    if is_followup and _session_ctx is not None:
+        _resolved = resolve_followup(payload.question, _session_ctx)
+        if _resolved.enrichment_hint and _resolved.resolved_reference and \
+                _resolved.resolved_reference.lower() not in retrieval_query.lower():
+            retrieval_query = f"{retrieval_query}\n{_resolved.enrichment_hint}"
+            emit("session_memory", "Memori entitas sesi", "done",
+                 f"Referensi lanjutan diselesaikan: {_resolved.resolved_reference}",
+                 {"resolved_reference": _resolved.resolved_reference})
+
     top_k = max(1, min(payload.top_k or settings.rag_top_k_default, settings.rag_top_k_max))
 
     emit("memory", "Memeriksa memori chat yang relevan", "running")
@@ -656,6 +676,13 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
             contexts = filtered_contexts
     summary_detail, summary_metadata = _context_summary(contexts)
     emit("retrieval", "Mencari sumber resmi UMB", "done" if contexts else "skipped", summary_detail, summary_metadata)
+
+    # Phase 20 P20.1 — update session entity memory from this turn's resolved
+    # entities so the NEXT elliptical follow-up can be resolved.
+    try:
+        _session_memory.remember(session.id, query=payload.question, contexts=contexts, intent=retrieval_intent)
+    except Exception:
+        pass
 
     emit("provider", "Memilih provider AI", "running")
     provider_used, model_used = _provider_meta(payload.provider_override)
