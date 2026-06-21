@@ -4,6 +4,7 @@ import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Activity, Database, Globe, Network, Clock, BarChart3 } from "lucide-react";
 import { api } from "../lib/api";
+import { formatDate } from "../lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 
 // Phase 19 P19.3 — operations dashboard. Five live panels so an admin can spot
@@ -84,7 +85,7 @@ export function SystemDashboard() {
           <Row label="Verified today" value={num(f.verified_today)} />
           <Row label="Aging sources" value={num(f.aging_sources)} />
           <Row label="Stale sources" value={num(f.stale_sources)} warn={Number(f.stale_sources) > 0} />
-          <Row label="Oldest source" value={f.oldest_source ? new Date(String(f.oldest_source)).toLocaleDateString() : "—"} />
+          <Row label="Oldest source" value={f.oldest_source ? formatDate(String(f.oldest_source)) : "—"} />
         </Panel>
 
         <Panel title="Graph" icon={Network}>

@@ -14,7 +14,7 @@ import { DebugPanel } from "./DebugPanel";
 function StepIcon({ status }: { status?: string }) {
   if (status === "running") return <Loader2 className="h-4 w-4 animate-spin text-brand" />;
   if (status === "error") return <AlertCircle className="h-4 w-4 text-red-600" />;
-  if (status === "skipped") return <Check className="h-4 w-4 text-neutral-400" />;
+  if (status === "skipped") return <Check className="h-4 w-4 text-muted-foreground" />;
   return <CheckCircle2 className="h-4 w-4 text-emerald-700" />;
 }
 
@@ -40,14 +40,14 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">Detail proses</h2>
-            <p className="mt-1 text-xs leading-5 text-neutral-600">Panel ini hanya menampilkan progres operasional sistem, bukan penalaran privat model.</p>
+            <p className="mt-1 text-xs leading-5 text-muted-foreground">Panel ini hanya menampilkan progres operasional sistem, bukan penalaran privat model.</p>
           </div>
-          <button className="rounded p-2 text-neutral-600 hover:bg-panel" type="button" title="Tutup" onClick={onClose}>
+          <button className="rounded p-2 text-muted-foreground hover:bg-panel" type="button" title="Tutup" onClick={onClose}>
             <X className="h-5 w-5" />
           </button>
         </div>
         {message.metadata ? (
-          <div className="mb-4 rounded border border-line bg-panel p-3 text-xs text-neutral-700">
+          <div className="mb-4 rounded border border-line bg-panel p-3 text-xs text-foreground">
             {message.metadata.intent ? <div>Intent: {String(message.metadata.intent)}</div> : null}
             {message.metadata.retrieval_mode ? <div>Mode retrieval: {String(message.metadata.retrieval_mode)}</div> : null}
             {message.metadata.language_detected ? <div>Bahasa: {String(message.metadata.language_detected)}</div> : null}
@@ -72,15 +72,15 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
                   <StepIcon status={normalized.status} />
                   <div className="min-w-0">
                     <div className="text-sm font-medium text-ink">{normalized.label}</div>
-                    {normalized.detail ? <div className="mt-1 text-xs leading-5 text-neutral-600">{normalized.detail}</div> : null}
-                    {metadata ? <div className="mt-1 text-xs text-neutral-500">{metadata}</div> : null}
+                    {normalized.detail ? <div className="mt-1 text-xs leading-5 text-muted-foreground">{normalized.detail}</div> : null}
+                    {metadata ? <div className="mt-1 text-xs text-muted-foreground">{metadata}</div> : null}
                   </div>
                 </li>
               );
             })}
           </ol>
         ) : (
-          <div className="rounded border border-line bg-panel p-3 text-sm text-neutral-600">Belum ada langkah operasional tersimpan untuk pesan ini.</div>
+          <div className="rounded border border-line bg-panel p-3 text-sm text-muted-foreground">Belum ada langkah operasional tersimpan untuk pesan ini.</div>
         )}
       </aside>
     </div>
@@ -124,7 +124,7 @@ function MarkdownAnswer({ content, onCitationClick }: { content: unknown; onCita
           table: ({ children }) => <table className="my-2 w-full border-collapse text-left text-xs">{children}</table>,
           th: ({ children }) => <th className="border border-line bg-panel px-2 py-1 font-semibold">{children}</th>,
           td: ({ children }) => <td className="border border-line px-2 py-1 align-top">{children}</td>,
-          blockquote: ({ children }) => <blockquote className="my-2 border-l-2 border-brand pl-3 text-neutral-700">{children}</blockquote>,
+          blockquote: ({ children }) => <blockquote className="my-2 border-l-2 border-brand pl-3 text-foreground">{children}</blockquote>,
           code: ({ children, className }) => {
             const block = Boolean(className);
             return block ? (
@@ -212,7 +212,7 @@ function MessageBubbleBase({ message, onRegenerate }: { message: ChatMessage; on
           </div>
         ) : null}
         {!isUser ? (
-          <div className="relative mt-3 flex items-center gap-1 text-neutral-600">
+          <div className="relative mt-3 flex items-center gap-1 text-muted-foreground">
             <button className={`rounded p-2 hover:bg-panel ${feedback === "helpful" ? "text-brand" : ""}`} type="button" title="Jawaban membantu" onClick={() => sendFeedback("helpful")}>
               <ThumbsUp className="h-4 w-4" />
             </button>

@@ -4,15 +4,14 @@ import { Database, FileText, Boxes, Building2, GraduationCap, Clock } from "luci
 import { api } from "../lib/api";
 import type { KbStats as KbStatsT } from "../lib/types";
 import { Skeleton } from "./ui/skeleton";
+import { formatDate } from "../lib/utils";
 
 function fmt(n?: number) {
   return typeof n === "number" ? n.toLocaleString("en-US") : "—";
 }
-function fmtDate(s?: string | null) {
-  if (!s) return "—";
-  const d = new Date(s);
-  return isNaN(d.getTime()) ? "—" : d.toLocaleDateString("id-ID", { day: "2-digit", month: "short", year: "numeric" });
-}
+// Deterministic (locale-independent) so SSR and client output match — avoids
+// the React hydration mismatch that `toLocaleDateString` caused.
+const fmtDate = (s?: string | null) => formatDate(s);
 
 const ITEMS: { key: keyof KbStatsT; label: string; Icon: typeof Database }[] = [
   { key: "chunks", label: "Chunks", Icon: Database },

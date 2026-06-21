@@ -15,7 +15,7 @@ function StepIcon({ status }: { status: AgentStep["status"] }) {
   if (status === "running") return <Loader2 className="mt-0.5 h-4 w-4 animate-spin text-brand" aria-hidden />;
   if (status === "done") return <CheckCircle2 className="mt-0.5 h-4 w-4 text-emerald-600" aria-hidden />;
   if (status === "error") return <XCircle className="mt-0.5 h-4 w-4 text-red-600" aria-hidden />;
-  return <Circle className="mt-0.5 h-4 w-4 text-neutral-400" aria-hidden />;
+  return <Circle className="mt-0.5 h-4 w-4 text-muted-foreground" aria-hidden />;
 }
 
 function statusText(step?: AgentStep) {
@@ -48,7 +48,7 @@ export function ThinkingSteps({ steps }: { steps: Array<string | AgentStep> }) {
           <span className="truncate">{statusText(activeStep)}</span>
         </div>
         <button
-          className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-neutral-600 hover:bg-panel"
+          className="inline-flex shrink-0 items-center gap-1 rounded px-2 py-1 text-xs text-muted-foreground hover:bg-panel"
           type="button"
           aria-expanded={open}
           onClick={() => setOpen((current) => !current)}
@@ -58,19 +58,19 @@ export function ThinkingSteps({ steps }: { steps: Array<string | AgentStep> }) {
         </button>
       </div>
       {open ? (
-        <ol className="mt-3 space-y-2 text-neutral-700">
+        <ol className="mt-3 space-y-2 text-foreground">
           {normalized.length ? (
             normalized.map((step) => (
               <li key={`${step.id}-${step.status}`} className="flex gap-2">
                 <StepIcon status={step.status} />
                 <span>
                   <span className="block leading-5">{step.label}</span>
-                  {step.detail ? <span className="block text-xs text-neutral-500">{step.detail}</span> : null}
+                  {step.detail ? <span className="block text-xs text-muted-foreground">{step.detail}</span> : null}
                 </span>
               </li>
             ))
           ) : (
-            <li className="text-xs text-neutral-500">Menunggu progres dari server...</li>
+            <li className="text-xs text-muted-foreground">Menunggu progres dari server...</li>
           )}
         </ol>
       ) : null}

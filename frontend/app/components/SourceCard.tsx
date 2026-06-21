@@ -50,11 +50,11 @@ export function SourceCard({ source, highlighted = false }: { source: Source; hi
             {source.citation_id ? <span className="mr-1 text-brand">[{source.citation_id}]</span> : null}
             {source.title || source.url}
           </div>
-          <div className="truncate text-xs text-neutral-600">{hostname}</div>
+          <div className="truncate text-xs text-muted-foreground">{hostname}</div>
         </div>
-        <ExternalLink className="h-4 w-4 shrink-0 text-neutral-500" aria-hidden />
+        <ExternalLink className="h-4 w-4 shrink-0 text-muted-foreground" aria-hidden />
       </div>
-      <div className="flex flex-wrap gap-2 text-xs text-neutral-700">
+      <div className="flex flex-wrap gap-2 text-xs text-foreground">
         <span className="rounded bg-brand/10 px-2 py-1 text-brand">{knowledgeBaseLabel(source)}</span>
         <span className="rounded bg-panel px-2 py-1">{source.source_type || "source"}</span>
         {source.page_type ? <span className="rounded bg-panel px-2 py-1">{source.page_type}</span> : null}
@@ -63,7 +63,7 @@ export function SourceCard({ source, highlighted = false }: { source: Source; hi
         <span className="rounded bg-panel px-2 py-1">score {source.relevance_score ?? source.score ?? 0}</span>
         {source.discovery_source ? <span className="rounded bg-panel px-2 py-1">{source.discovery_source}</span> : null}
       </div>
-      {meta(source) ? <div className="mt-2 text-xs text-neutral-600">{meta(source)}</div> : null}
+      {meta(source) ? <div className="mt-2 text-xs text-muted-foreground">{meta(source)}</div> : null}
     </a>
   );
 }

@@ -25,8 +25,13 @@ const config: Config = {
           600: "#3B82F6", 700: "#2563EB", 800: "#1E3A8A", 900: "#172554",
         },
         success: "#16A34A", warning: "#F59E0B", error: "#DC2626", info: "#0284C7",
-        // legacy tokens (kept so existing components don't break mid-migration)
-        ink: "#1f2933", panel: "#f7f5f0", line: "#d8d1c2", brand: "#0f766e", mango: "#d97706", skysoft: "#e0f2fe",
+        // legacy tokens — remapped to theme CSS vars so they adapt to dark mode
+        // (previously hardcoded light hex, which made text-ink/bg-panel/border-line
+        // unreadable in dark mode). brand stays the UMB accent.
+        ink: "hsl(var(--foreground))",
+        panel: "hsl(var(--muted))",
+        line: "hsl(var(--border))",
+        brand: "hsl(var(--primary))", mango: "#d97706", skysoft: "#e0f2fe",
       },
       borderRadius: { lg: "var(--radius)", md: "calc(var(--radius) - 2px)", sm: "calc(var(--radius) - 4px)" },
       keyframes: {

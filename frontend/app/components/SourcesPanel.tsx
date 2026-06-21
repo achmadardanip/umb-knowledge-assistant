@@ -6,7 +6,7 @@ import { Badge } from "./ui/badge";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "./ui/sheet";
 import { Progress } from "./ui/progress";
 import { Separator } from "./ui/separator";
-import { cn } from "../lib/utils";
+import { cn, formatDate } from "../lib/utils";
 
 function hostLabel(s: Source): string {
   return s.hostname || (() => { try { return new URL(s.url).hostname; } catch { return s.url; } })();
@@ -97,7 +97,7 @@ export function SourcesPanel({ sources }: { sources?: Source[] }) {
                       "mt-1 inline-flex w-fit items-center gap-1 rounded-full border px-2 py-0.5 text-xs font-medium",
                       freshnessClasses(active.freshness_tier),
                     )}
-                    title={active.crawl_date ? `Crawled ${new Date(active.crawl_date).toLocaleDateString()}` : undefined}
+                    title={active.crawl_date ? `Crawled ${formatDate(active.crawl_date)}` : undefined}
                   >
                     {active.freshness_label}
                   </span>
@@ -125,7 +125,7 @@ export function SourcesPanel({ sources }: { sources?: Source[] }) {
                   {([
                     ["Retrieved from", hostLabel(active)],
                     ["Authority", active.authority_tier?.replace(/_/g, " ")],
-                    ["Last crawl", active.crawl_date ? new Date(active.crawl_date).toLocaleDateString() : null],
+                    ["Last crawl", active.crawl_date ? formatDate(active.crawl_date) : null],
                     ["Type", active.source_type],
                     ["Page", active.page_number],
                     ["Extraction", active.extraction_method],
