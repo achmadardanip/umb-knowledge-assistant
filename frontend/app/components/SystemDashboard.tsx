@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Activity, Database, Globe, Network, Clock, BarChart3 } from "lucide-react";
+import { Activity, Database, Globe, Network, Clock, BarChart3, AlertTriangle, ShieldCheck } from "lucide-react";
 import { api } from "../lib/api";
 import { formatDate } from "../lib/utils";
 import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
@@ -42,6 +42,7 @@ export function SystemDashboard() {
   const fresh = useQuery({ queryKey: ["sys", "freshness"], queryFn: api.systemFreshness, ...opts });
   const graph = useQuery({ queryKey: ["sys", "graph"], queryFn: api.systemGraph, ...opts });
   const dbq = useQuery({ queryKey: ["sys", "database"], queryFn: api.systemDatabase, ...opts });
+  const alertsQ = useQuery({ queryKey: ["sys", "alerts"], queryFn: api.systemAlerts, ...opts });
 
   const num = (v: unknown) => (typeof v === "number" ? v.toLocaleString() : (v as React.ReactNode) ?? "—");
   const s = stats.data || {};
@@ -59,6 +60,32 @@ export function SystemDashboard() {
           <Activity className="h-3.5 w-3.5" /> {healthStatus}
         </span>
       </div>
+
+      {(() => {
+        const a = (alertsQ.data || {}) as Record<string, unknown>;
+        const list = (a.active_alerts || []) as Array<{ severity: string; category: string; message: string }>;
+        if (list.length === 0) {
+          return (
+            <div className="flex items-center gap-2 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-sm text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950 dark:text-emerald-300">
+              <ShieldCheck className="h-4 w-4" /> No active alerts — all monitored conditions healthy.
+            </div>
+          );
+        }
+        return (
+          <div className="space-y-1.5 rounded-lg border border-red-300 bg-red-50 p-3 dark:border-red-900 dark:bg-red-950">
+            <div className="flex items-center gap-2 text-sm font-semibold text-red-700 dark:text-red-300">
+              <AlertTriangle className="h-4 w-4" /> {list.length} active alert{list.length > 1 ? "s" : ""}
+            </div>
+            {list.map((al, i) => (
+              <div key={i} className="flex items-center gap-2 text-xs text-red-700 dark:text-red-300">
+                <span className="rounded bg-red-200 px-1.5 py-0.5 font-medium uppercase dark:bg-red-900">{al.severity}</span>
+                <span className="text-muted-foreground">[{al.category}]</span> {al.message}
+              </div>
+            ))}
+          </div>
+        );
+      })()}
+
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <Panel title="Knowledge Base" icon={Database}>
           <Row label="Chunks" value={num(s.chunks)} />

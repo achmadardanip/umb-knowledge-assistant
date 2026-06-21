@@ -1,0 +1,11 @@
+# Phase 25 P25.1 — UMB incremental crawler schedule (cron).
+# Install:  crontab ops/crontab.example   (adjust paths/venv)
+# Each tick is idempotent: due_urls() only returns URLs whose cadence elapsed.
+ENV=LOCAL_POSTGRES_MODE=true
+LOCAL_POSTGRES_URL=postgresql://umb:umb@localhost:5433/umb
+# daily critical sources @ 02:00
+0 2 * * *  cd /opt/umb/backend && $ENV python -m app.crawl.crawler_scheduler --tick >> /var/log/umb/crawl.log 2>&1
+# weekly general sources @ Sun 03:00 (the tick also covers weekly when due)
+0 3 * * 0  cd /opt/umb/backend && $ENV python -m app.crawl.crawler_scheduler --tick >> /var/log/umb/crawl.log 2>&1
+# nightly backup verification @ 04:00
+0 4 * * *  /opt/umb/scripts/verify_backup.sh >> /var/log/umb/backup_verify.log 2>&1

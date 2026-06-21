@@ -1,0 +1,8 @@
+# Phase 25 P25.1 — systemd timer: run the crawler tick hourly (idempotent).
+[Unit]
+Description=Run UMB crawler tick hourly
+[Timer]
+OnCalendar=hourly
+Persistent=true
+[Install]
+WantedBy=timers.target

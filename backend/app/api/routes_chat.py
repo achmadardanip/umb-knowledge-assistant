@@ -613,11 +613,12 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     # subject established earlier in THIS session. Only enriches a genuine elliptical
     # follow-up; never overrides a self-contained question. Per-session + auto-
     # expiring, so the (session-less) retrieval benchmark is unaffected.
-    from app.chat.session_memory import get_session_memory
+    from app.chat.memory_provider import get_memory_provider
     from app.rag.followup_resolution import resolve_followup
 
-    _session_memory = get_session_memory()
-    _session_ctx = _session_memory.recall(session.id)
+    # Phase 24: pluggable memory backend (in-process or Postgres for multi-worker).
+    _session_memory = get_memory_provider()
+    _session_ctx = _session_memory.recall(session.id, db)
     if is_followup and _session_ctx is not None:
         _resolved = resolve_followup(payload.question, _session_ctx)
         if _resolved.enrichment_hint and _resolved.resolved_reference and \
@@ -680,7 +681,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     # Phase 20 P20.1 — update session entity memory from this turn's resolved
     # entities so the NEXT elliptical follow-up can be resolved.
     try:
-        _session_memory.remember(session.id, query=payload.question, contexts=contexts, intent=retrieval_intent)
+        _session_memory.remember(session.id, query=payload.question, contexts=contexts, intent=retrieval_intent, db=db)
     except Exception:
         pass
 

@@ -91,6 +91,57 @@ def _match_service(text: str) -> str | None:
     return None
 
 
+def apply_turn(ctx: SessionContext, *, query: str = "", contexts: list[dict] | None = None,
+               intent: str | None = None) -> SessionContext:
+    """Pure update of a SessionContext from one turn's query + resolved entity
+    contexts. Shared by both the in-process and Postgres memory providers so the
+    entity-extraction logic (and the multi-turn behaviour it produces) is identical."""
+    fac = _match_faculty(query)
+    prog = _match_program(query)
+    svc = _match_service(query)
+    # A turn that explicitly names a faculty but no program switches the subject to
+    # faculty level -> drop the stale program from a prior thread.
+    if fac and not prog:
+        ctx.program = None
+        ctx.accreditation_subject = None
+
+    top = (contexts or [{}])[0] if contexts else {}
+    ttl_title = str(top.get("title") or "")
+    et = top.get("entity_type")
+    if et == "faculty":
+        fmatch = _match_faculty(ttl_title)
+        if fmatch:
+            fac = fmatch
+    elif et == "study_program":
+        pmatch = _match_program(ttl_title)
+        if pmatch:
+            prog = pmatch
+        fmatch = _match_faculty(ttl_title)
+        if fmatch:
+            fac = fac or fmatch
+    chunk = str(top.get("chunk_text") or "")
+    m = re.search(r"Dekan:\s*([^\.]+)", chunk)
+    if m:
+        ctx.dean = m.group(1).strip()
+    m = re.search(r"Ketua Program Studi:\s*([^\.]+)", chunk)
+    if m:
+        ctx.kaprodi = m.group(1).strip()
+
+    if fac:
+        ctx.faculty_short, ctx.faculty = fac
+    if prog:
+        ctx.program = prog
+        ctx.accreditation_subject = prog
+    elif fac and "akreditasi" in query.lower():
+        ctx.accreditation_subject = fac[1]
+    if svc:
+        ctx.service = svc
+    if intent:
+        ctx.topic = intent
+    ctx.updated_at = time.time()
+    return ctx
+
+
 class SessionMemory:
     def __init__(self, ttl: int = _TTL_SECONDS, max_sessions: int = _MAX_SESSIONS) -> None:
         self._ttl = ttl
@@ -129,53 +180,7 @@ class SessionMemory:
         with self._lock:
             self._evict()
             ctx = self._store.get(session_id) or SessionContext()
-
-            # explicit mentions in the query
-            fac = _match_faculty(query)
-            prog = _match_program(query)
-            svc = _match_service(query)
-            # A turn that explicitly names a faculty but no program switches the
-            # subject to faculty level -> drop the stale program from a prior thread.
-            if fac and not prog:
-                ctx.program = None
-                ctx.accreditation_subject = None
-
-            # entities from the resolved top contexts
-            top = (contexts or [{}])[0] if contexts else {}
-            ttl_title = str(top.get("title") or "")
-            et = top.get("entity_type")
-            if et == "faculty":
-                fmatch = _match_faculty(ttl_title)
-                if fmatch:
-                    fac = fmatch
-            elif et == "study_program":
-                pmatch = _match_program(ttl_title)
-                if pmatch:
-                    prog = pmatch
-                fmatch = _match_faculty(ttl_title)
-                if fmatch:
-                    fac = fac or fmatch
-            chunk = str(top.get("chunk_text") or "")
-            m = re.search(r"Dekan:\s*([^\.]+)", chunk)
-            if m:
-                ctx.dean = m.group(1).strip()
-            m = re.search(r"Ketua Program Studi:\s*([^\.]+)", chunk)
-            if m:
-                ctx.kaprodi = m.group(1).strip()
-
-            if fac:
-                ctx.faculty_short, ctx.faculty = fac
-            if prog:
-                ctx.program = prog
-                ctx.accreditation_subject = prog
-            elif fac and "akreditasi" in query.lower():
-                ctx.accreditation_subject = fac[1]
-            if svc:
-                ctx.service = svc
-            if intent:
-                ctx.topic = intent
-
-            ctx.updated_at = time.time()
+            apply_turn(ctx, query=query, contexts=contexts, intent=intent)
             self._store[session_id] = ctx
             self._store.move_to_end(session_id)
             return ctx

@@ -1,0 +1,10 @@
+# Phase 25 P25.1 — systemd service for one crawler tick (run by the timer below).
+[Unit]
+Description=UMB incremental crawler tick
+After=network-online.target postgresql.service
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/umb/backend
+Environment=LOCAL_POSTGRES_MODE=true
+Environment=LOCAL_POSTGRES_URL=postgresql://umb:umb@localhost:5433/umb
+ExecStart=/opt/umb/backend/.venv/bin/python -m app.crawl.crawler_scheduler --tick

@@ -108,6 +108,17 @@ def system_graph(db: Session = Depends(get_db)) -> dict:
         return {"available": False}
 
 
+@router.get("/system/alerts")
+def system_alerts(db: Session = Depends(get_db)) -> dict:
+    """Phase 25 P25.3 — active operational alerts (retrieval regression, crawl
+    failures, DB health, embedding failures, stale-source growth)."""
+    try:
+        from app.ops.alerts import alerts_payload
+        return alerts_payload(db)
+    except Exception as exc:
+        return {"status": "unknown", "active_alerts": [], "alert_count": 0, "error": str(exc)[:120]}
+
+
 @router.get("/system/database")
 def system_database(db: Session = Depends(get_db)) -> dict:
     chunks = _scalar(db, "SELECT count(*) FROM chunks") or 0
