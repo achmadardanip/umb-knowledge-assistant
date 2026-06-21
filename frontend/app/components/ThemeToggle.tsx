@@ -12,7 +12,10 @@ export function ThemeToggle() {
   const [mounted, setMounted] = React.useState(false);
   React.useEffect(() => setMounted(true), []);
 
-  const current = (theme as (typeof ORDER)[number]) || "system";
+  // Until mounted, render a STABLE value ("system") on both the server and the
+  // first client render so the aria-label/tooltip match — next-themes only knows
+  // the real theme after hydration, which otherwise caused a hydration mismatch.
+  const current = (mounted ? (theme as (typeof ORDER)[number]) : undefined) || "system";
   const next = ORDER[(ORDER.indexOf(current) + 1) % ORDER.length];
   const Icon = !mounted ? Sun : current === "dark" ? Moon : current === "system" ? Monitor : Sun;
 
