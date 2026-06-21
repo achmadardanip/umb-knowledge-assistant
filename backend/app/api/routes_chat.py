@@ -75,9 +75,11 @@ class ChatRequest(BaseModel):
 def _ensure_session(db: Session, payload: ChatRequest):
     if payload.session_id:
         session = get_session(db, payload.session_id)
-        if not session:
-            raise HTTPException(status_code=404, detail="Session not found")
-        return session
+        if session:
+            return session
+        # The client sent a session id that doesn't exist here (e.g. a stale id
+        # cached in the browser from a previous DB, or after a restore). Don't break
+        # the chat with a 404 — transparently start a fresh session for this client.
     return create_session(db, payload.anonymous_session_id)
 
 
