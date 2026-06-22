@@ -38,7 +38,7 @@ export function SourceCard({ source, highlighted = false }: { source: Source; hi
   const hostname = hostnameForSource(source);
   return (
     <a
-      className={`block rounded border bg-white p-3 text-sm transition hover:border-brand ${highlighted ? "border-brand ring-2 ring-brand/20" : "border-line"}`}
+      className={`block rounded border bg-card p-3 text-sm transition hover:border-brand ${highlighted ? "border-brand ring-2 ring-brand/20" : "border-line"}`}
       href={source.url}
       target="_blank"
       rel="noreferrer"

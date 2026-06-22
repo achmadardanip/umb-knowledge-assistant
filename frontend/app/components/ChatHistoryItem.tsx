@@ -17,7 +17,7 @@ export function ChatHistoryItem({
   onDelete: () => void;
 }) {
   return (
-    <div className={`group flex items-center gap-2 rounded px-2 py-2 text-sm ${active ? "bg-skysoft text-ink" : "hover:bg-white"}`}>
+    <div className={`group flex items-center gap-2 rounded px-2 py-2 text-sm ${active ? "bg-accent text-accent-foreground" : "hover:bg-accent"}`}>
       <button className="flex min-w-0 flex-1 items-center gap-2 text-left" onClick={onSelect} title={session.title}>
         <MessageSquare className="h-4 w-4 shrink-0 text-brand" aria-hidden />
         <span className="truncate">{session.title}</span>

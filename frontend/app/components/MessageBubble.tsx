@@ -36,7 +36,7 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
   const steps = message.visible_steps || [];
   return (
     <div className="fixed inset-0 z-50 flex justify-end bg-black/20" role="dialog" aria-modal="true">
-      <aside className="h-full w-full max-w-md overflow-y-auto border-l border-line bg-white p-5 shadow-xl">
+      <aside className="h-full w-full max-w-md overflow-y-auto border-l border-line bg-card p-5 shadow-xl">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div>
             <h2 className="text-lg font-semibold">Detail proses</h2>
@@ -71,7 +71,7 @@ function StepsDrawer({ message, onClose }: { message: ChatMessage; onClose: () =
                 <li key={`${normalized.id}-${index}`} className="flex gap-3 border-l border-line pl-3">
                   <StepIcon status={normalized.status} />
                   <div className="min-w-0">
-                    <div className="text-sm font-medium text-ink">{normalized.label}</div>
+                    <div className="text-sm font-medium text-foreground">{normalized.label}</div>
                     {normalized.detail ? <div className="mt-1 text-xs leading-5 text-muted-foreground">{normalized.detail}</div> : null}
                     {metadata ? <div className="mt-1 text-xs text-muted-foreground">{metadata}</div> : null}
                   </div>
@@ -229,7 +229,7 @@ function MessageBubbleBase({ message, onRegenerate }: { message: ChatMessage; on
               <MoreHorizontal className="h-4 w-4" />
             </button>
             {menuOpen ? (
-              <div className="absolute left-0 top-10 z-20 w-56 rounded border border-line bg-white p-1 text-sm shadow-lg">
+              <div className="absolute left-0 top-10 z-20 w-56 rounded border border-line bg-popover p-1 text-sm shadow-lg">
                 <button
                   className="w-full rounded px-3 py-2 text-left hover:bg-panel"
                   type="button"

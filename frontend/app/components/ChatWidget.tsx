@@ -286,6 +286,14 @@ export function ChatWidget() {
           retrieval_warnings: result.retrieval_warnings
         }
       };
+      // Adopt the authoritative session id from the response. If the client held a
+      // stale/unknown session id (e.g. cached from a previous DB), the backend starts
+      // a fresh session — sync to it so EVERY later prompt reuses the same session and
+      // the sidebar shows exactly ONE history per conversation (Phase 27.2 fix).
+      if (result.session_id && result.session_id !== activeSessionId) {
+        setActiveSessionId(result.session_id);
+        setLastActiveSession(result.session_id);
+      }
       setMessages((current) => [...current.filter((message) => message.id !== optimisticUser.id), optimisticUser, assistant]);
       await refreshSessions();
     } catch (err) {

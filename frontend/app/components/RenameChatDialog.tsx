@@ -6,7 +6,7 @@ export function RenameChatDialog({ currentTitle, onCancel, onConfirm }: { curren
   const [title, setTitle] = useState(currentTitle);
   return (
     <div className="fixed inset-0 z-30 grid place-items-center bg-black/20 p-4">
-      <div className="w-full max-w-sm rounded border border-line bg-white p-4 shadow-lg">
+      <div className="w-full max-w-sm rounded border border-line bg-card p-4 shadow-lg">
         <h2 className="mb-3 text-base font-semibold">Ganti Nama Chat</h2>
         <input className="mb-4 w-full rounded border border-line px-3 py-2 outline-none focus:border-brand" value={title} onChange={(event) => setTitle(event.target.value)} />
         <div className="flex justify-end gap-2">

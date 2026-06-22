@@ -603,9 +603,15 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
     # Retrieval intent (login/SSO, support, faculty, tuition, …) drives the hard
     # intent gate in the agent and the conversation-context conflict drop. It is
     # distinct from intent_result.intent (smalltalk/capability/out_of_scope/general).
-    retrieval_intent = detect_retrieval_intent(payload.question)
+    # Phase 27.3 — normalize informal/typo'd queries ("brp biaya kuliah ti",
+    # "akreditsi sistem informasi") before retrieval. Idempotent on clean text;
+    # applied only to the live chat query (benchmarks call the retriever directly).
+    from app.rag.query_normalizer import normalize_query
+
+    retrieval_question = normalize_query(payload.question)
+    retrieval_intent = detect_retrieval_intent(retrieval_question)
     retrieval_query = _build_retrieval_query(
-        payload.question, history, title, is_followup=is_followup, intent=retrieval_intent
+        retrieval_question, history, title, is_followup=is_followup, intent=retrieval_intent
     )
     if intent_result.topic != "general":
         retrieval_query = f"{retrieval_query}\nTopik terdeteksi: {intent_result.topic}"

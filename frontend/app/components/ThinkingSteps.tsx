@@ -41,9 +41,9 @@ export function ThinkingSteps({ steps }: { steps: Array<string | AgentStep> }) {
   }, [normalized]);
 
   return (
-    <div className="rounded border border-line bg-white p-3 text-sm">
+    <div className="rounded border border-line bg-card p-3 text-sm">
       <div className="flex items-center justify-between gap-3">
-        <div className="flex min-w-0 items-center gap-2 font-medium text-ink">
+        <div className="flex min-w-0 items-center gap-2 font-medium text-foreground">
           <Loader2 className="h-4 w-4 shrink-0 animate-spin text-brand" aria-hidden />
           <span className="truncate">{statusText(activeStep)}</span>
         </div>

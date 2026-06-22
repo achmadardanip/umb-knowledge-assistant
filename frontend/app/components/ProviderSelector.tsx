@@ -23,7 +23,7 @@ export function ProviderSelector({
 }) {
   const visibleOptions = (options.length ? options : FALLBACK_OPTIONS).filter((option) => option.id !== "hermes" || option.configured);
   return (
-    <label className="flex items-center gap-2 rounded border border-line bg-white px-3 py-2 text-sm">
+    <label className="flex items-center gap-2 rounded border border-line bg-card px-3 py-2 text-sm">
       <Cpu className="h-4 w-4 text-brand" aria-hidden />
       <select className="min-w-0 flex-1 bg-transparent outline-none" value={value} onChange={(event) => onChange(event.target.value as ProviderId)}>
         {visibleOptions.map((option) => (
