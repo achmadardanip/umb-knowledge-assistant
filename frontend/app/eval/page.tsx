@@ -24,7 +24,13 @@ export default function EvalPage() {
       await streamRun(runId, {
         signal: abortRef.current.signal,
         onResult: (r) => {
-          setRows((prev) => [...prev, r]);
+          setRows((prev) => {
+            const idx = prev.findIndex((x) => x.question_id === r.question_id);
+            if (idx === -1) return [...prev, r];
+            const next = prev.slice();
+            next[idx] = r;
+            return next;
+          });
           if (r.n_done != null && r.n_total != null) setProgress({ done: r.n_done, total: r.n_total });
           setAgg({ f: r.agg_faithfulness ?? null, r: r.agg_relevance ?? null });
         },
