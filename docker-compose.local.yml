@@ -120,6 +120,7 @@ services:
       PROMPTFOO_REMOTE_APP_BASE_URL: http://promptfoo-server:3000
       UMB_CHAT_BASE_URL: http://host.docker.internal:8000
       OLLAMA_BASE_URL: http://host.docker.internal:11434
+      PROMPTFOO_PYTHON: python3   # image ships python3 (no `python`); provider needs this
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
