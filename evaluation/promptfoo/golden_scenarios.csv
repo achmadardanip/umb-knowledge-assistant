@@ -1,0 +1,41 @@
+query,intent
+Kapan jadwal perkuliahan untuk mahasiswa Hubungan Masyarakat dimulai?,academic_calendar
+Apa ketentuan kelulusan untuk mahasiswa Fakultas Ekonomi dan Bisnis?,academic_regulations
+Apa saja syarat pendaftaran mahasiswa baru di UMB?,admissions
+Alamat lengkap kampus Mercu Buana Bekasi di mana?,campus
+Siapa dekan Fakultas Psikologi Universitas Mercu Buana?,faculty
+Bagaimana prosedur layanan E-Learning UMB di UMB?,general
+Siapa dekan Fakultas Desain dan Seni Kreatif?,lecturer
+repository umb,library
+Bagaimana cara mendaftar beasiswa KIP Kuliah di UMB?,scholarship
+Bagaimana mahasiswa Fakultas Teknik mengakses SIA UMB?,sia
+Bagaimana mahasiswa Teknik Elektro mengaktifkan akun SSO UMB?,sso
+Apa layanan konseling mahasiswa yang tersedia di UMB?,student_services
+Siapa ketua program studi Hubungan Masyarakat Universitas Mercu Buana?,study_program
+Berapa biaya kuliah program studi Penyiaran di UMB?,tuition
+Kapan jadwal perkuliahan untuk mahasiswa Akuntansi dimulai?,academic_calendar
+Apa peraturan akademik yang berlaku untuk program studi Teknik Mesin?,academic_regulations
+Berapa daya tampung program studi Psikologi di UMB?,admissions
+Di kampus mana program studi Desain Komunikasi Visual diselenggarakan?,campus
+Fakultas Ilmu Komunikasi?,faculty
+kapan pengisian krs umb,general
+Siapa dosen pengampu di program studi Penyiaran UMB?,lecturer
+digilib umb,library
+Beasiswa apa yang bisa diambil mahasiswa baru Teknik Mesin di UMB?,scholarship
+Bagaimana mahasiswa Teknik Sipil mengisi KRS di SIA?,sia
+Bagaimana mahasiswa Fakultas Ilmu Komputer login SSO untuk mengakses layanan UMB?,sso
+Bagaimana cara menghubungi Biro Administrasi Akademik (BAA) UMB?,student_services
+Jurusan Hubungan Masyarakat di Mercu Buana akreditasinya apa?,study_program
+berapa uang kuliah mercu buana,tuition
+Di mana kalender akademik untuk Fakultas Ilmu Komunikasi?,academic_calendar
+Apa ketentuan kelulusan untuk mahasiswa Fakultas Teknik?,academic_regulations
+Apa syarat masuk Fakultas Ekonomi dan Bisnis di Mercu Buana?,admissions
+Di kampus mana program studi Teknik Industri diselenggarakan?,campus
+Siapa dekan Fakultas Ilmu Komunikasi Universitas Mercu Buana?,faculty
+reset password sso mercu buana,general
+Siapa saja dosen di Fakultas Teknik UMB?,lecturer
+Bagaimana prosedur layanan Perpustakaan Digital UMB di UMB?,library
+Beasiswa apa yang bisa diambil mahasiswa baru Teknik Elektro di UMB?,scholarship
+Bagaimana mahasiswa Teknik Industri mengisi KRS di SIA?,sia
+Bagaimana jika lupa password SSO Universitas Mercu Buana?,sso
+Layanan akademik apa yang tersedia untuk mahasiswa Teknik Informatika?,student_services

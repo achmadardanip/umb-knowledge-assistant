@@ -15,10 +15,10 @@ defaultTest:
     provider: ollama:chat:qwen2.5:7b-instruct
   assert:
     - type: context-faithfulness
-      contextTransform: metadata.context
+      contextTransform: context.metadata.context
       threshold: 0.7
     - type: llm-rubric
-      value: "The ANSWER directly and helpfully addresses the QUESTION (ignore factual correctness; judge relevance only). Pass if relevant."
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
     - type: javascript
       value: |
         const m = (context && context.metadata) || {};
@@ -29,7 +29,9 @@ defaultTest:
 
 tests:
   - file://scenarios.csv
-  - file://datasets/rag_golden.json
+  # Broad generated coverage, converted to Promptfoo CSV form (vars.query) from
+  # datasets/rag_golden.json. Regenerate via the snippet in MONITORING.md when the slice changes.
+  - file://golden_scenarios.csv
 
 # Sharing target is set via the PROMPTFOO_REMOTE_API_BASE_URL / PROMPTFOO_REMOTE_APP_BASE_URL
 # environment variables (set by the scheduler container and the smoke command), which
