@@ -17,10 +17,13 @@ _OFFICIAL_SUFFIX = os.getenv("UMB_OFFICIAL_DOMAIN", "mercubuana.ac.id")
 
 def call_api(prompt, options, context):  # promptfoo python provider entrypoint
     query = (context or {}).get("vars", {}).get("query") or prompt
+    # Per-provider config lets us run the SAME endpoint under two retrieval modes
+    # (indexed vs hybrid) as two columns, which Promptfoo needs to render charts.
+    mode = ((options or {}).get("config") or {}).get("retrieval_mode", "hybrid")
     try:
         resp = requests.post(
             f"{_BASE}/chat",
-            json={"question": query, "include_retrieved_context": True},
+            json={"question": query, "include_retrieved_context": True, "retrieval_mode": mode},
             timeout=_TIMEOUT,
         )
         resp.raise_for_status()

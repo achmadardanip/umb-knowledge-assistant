@@ -30,6 +30,31 @@ def test_success_shapes_output_and_metadata(monkeypatch):
     assert out["metadata"]["not_found"] is False
 
 
+def test_retrieval_mode_from_config_is_sent(monkeypatch):
+    captured = {}
+
+    def fake_post(url, json=None, timeout=None):
+        captured["json"] = json
+        return FakeResp({"answer": "Z", "sources": [], "retrieved_context": []})
+
+    monkeypatch.setattr(p.requests, "post", fake_post)
+    p.call_api("q", {"config": {"retrieval_mode": "indexed"}}, {"vars": {"query": "q"}})
+    assert captured["json"]["retrieval_mode"] == "indexed"
+    assert captured["json"]["include_retrieved_context"] is True
+
+
+def test_retrieval_mode_defaults_to_hybrid(monkeypatch):
+    captured = {}
+
+    def fake_post(url, json=None, timeout=None):
+        captured["json"] = json
+        return FakeResp({"answer": "Z", "sources": [], "retrieved_context": []})
+
+    monkeypatch.setattr(p.requests, "post", fake_post)
+    p.call_api("q", {}, {"vars": {"query": "q"}})
+    assert captured["json"]["retrieval_mode"] == "hybrid"
+
+
 def test_non_official_source_flagged(monkeypatch):
     payload = {"answer": "Y", "sources": [{"hostname": "wikipedia.org"}],
                "retrieved_context": ["c"]}

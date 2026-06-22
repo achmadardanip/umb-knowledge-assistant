@@ -12,3 +12,17 @@ def test_config_is_valid_yaml_with_required_keys():
     assert "context-faithfulness" in types
     assert "llm-rubric" in types
     assert "scenarios.csv" in "".join(str(t) for t in cfg["tests"])
+
+
+def test_named_metrics_present():
+    cfg = yaml.safe_load(CFG.read_text())
+    metrics = {a.get("metric") for a in cfg["defaultTest"]["assert"]}
+    assert {"faithfulness", "relevance", "official_source"} <= metrics
+
+
+def test_two_provider_columns_for_charts():
+    # Charts need >=2 comparison columns; we compare retrieval modes on the same endpoint.
+    cfg = yaml.safe_load(CFG.read_text())
+    modes = {p["config"]["retrieval_mode"] for p in cfg["providers"]}
+    assert modes == {"indexed", "hybrid"}
+    assert all(p["id"] == "file://rag_chat_provider.py" for p in cfg["providers"])

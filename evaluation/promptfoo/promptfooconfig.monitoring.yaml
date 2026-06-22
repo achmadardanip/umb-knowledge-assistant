@@ -3,9 +3,18 @@
 # Run by the promptfoo-scheduler container; results pushed to promptfoo-server.
 description: UMB Chatbot — RAG monitoring (faithfulness/relevance) vs real /chat
 
+# Two columns (same /chat endpoint, two retrieval modes) so the web viewer can render
+# charts (it requires >=2 prompts/providers to compare) AND we get an A/B signal:
+# indexed (KB-only) vs hybrid (KB + live web).
 providers:
   - id: file://rag_chat_provider.py
-    label: umb-chat-endpoint
+    label: indexed
+    config:
+      retrieval_mode: indexed
+  - id: file://rag_chat_provider.py
+    label: hybrid
+    config:
+      retrieval_mode: hybrid
 
 prompts:
   - "{{query}}"
@@ -14,12 +23,18 @@ defaultTest:
   options:
     provider: ollama:chat:qwen2.5:7b-instruct
   assert:
+    # Named metrics so the web viewer aggregates numeric per-metric scores
+    # (faithfulness/relevance/official_source) — these vary across tests, giving the
+    # "Show Charts" view a real distribution instead of uniform pass/fail.
     - type: context-faithfulness
       contextTransform: context.metadata.context
       threshold: 0.7
+      metric: faithfulness
     - type: llm-rubric
       value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance
     - type: javascript
+      metric: official_source
       value: |
         const m = (context && context.metadata) || {};
         if (m.not_found) return { pass: true, score: 1, reason: 'refusal: no sources expected' };
