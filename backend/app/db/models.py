@@ -372,6 +372,53 @@ class Feedback(Base):
     __table_args__ = (CheckConstraint("rating IN ('helpful', 'not_helpful')", name="ck_feedback_rating"),)
 
 
+class RagEvalRun(Base):
+    __tablename__ = "rag_eval_runs"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    status = Column(String(20), nullable=False, default="running")
+    started_at = Column(DateTime(timezone=True), default=utcnow)
+    finished_at = Column(DateTime(timezone=True))
+    dataset_version = Column(String(50))
+    grader_model = Column(String(200))
+    n_total = Column(Integer, default=0)
+    n_done = Column(Integer, default=0)
+    agg_faithfulness = Column(Float)
+    agg_relevance = Column(Float)
+    n_not_found = Column(Integer, default=0)
+    n_grader_error = Column(Integer, default=0)
+    error = Column(Text)
+
+    results = relationship("RagEvalResult", back_populates="run", cascade="all, delete-orphan")
+    __table_args__ = (
+        CheckConstraint("status IN ('running','completed','failed')", name="ck_rag_eval_run_status"),
+    )
+
+
+class RagEvalResult(Base):
+    __tablename__ = "rag_eval_results"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    run_id = Column(GUID, ForeignKey("rag_eval_runs.id", ondelete="CASCADE"), nullable=False, index=True)
+    question_id = Column(String(128))
+    question = Column(Text, nullable=False)
+    intent = Column(String(64))
+    answer = Column(Text)
+    context = Column(Text)
+    faithfulness_score = Column(Float)
+    faithfulness_pass = Column(Boolean)
+    faithfulness_reason = Column(Text)
+    relevance_score = Column(Float)
+    relevance_pass = Column(Boolean)
+    relevance_reason = Column(Text)
+    not_found = Column(Boolean, default=False)
+    grader_error = Column(Boolean, default=False)
+    latency_ms = Column(Integer)
+    created_at = Column(DateTime(timezone=True), default=utcnow)
+
+    run = relationship("RagEvalRun", back_populates="results")
+
+
 class ChatLog(Base):
     __tablename__ = "chat_logs"
 
