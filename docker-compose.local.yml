@@ -101,5 +101,31 @@ services:
       backend:
         condition: service_healthy
 
+  promptfoo-server:
+    image: ghcr.io/promptfoo/promptfoo:latest
+    container_name: umb-promptfoo-server
+    ports:
+      - "3000:3000"
+    volumes:
+      - promptfoo_data:/home/promptfoo/.promptfoo
+    restart: unless-stopped
+
+  promptfoo-scheduler:
+    build: ./evaluation/promptfoo/scheduler
+    container_name: umb-promptfoo-scheduler
+    depends_on:
+      - promptfoo-server
+    environment:
+      PROMPTFOO_REMOTE_API_BASE_URL: http://promptfoo-server:3000
+      PROMPTFOO_REMOTE_APP_BASE_URL: http://promptfoo-server:3000
+      UMB_CHAT_BASE_URL: http://host.docker.internal:8000
+      OLLAMA_BASE_URL: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./:/work:ro
+    restart: unless-stopped
+
 volumes:
   umb_local_pgdata:
+  promptfoo_data:
