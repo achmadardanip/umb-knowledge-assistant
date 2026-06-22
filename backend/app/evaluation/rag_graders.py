@@ -37,10 +37,13 @@ class RelevanceVerdict:
 
 def _extract_json(text: str) -> dict:
     cleaned = re.sub(r"^```[a-zA-Z]*\n?|```$", "", text.strip(), flags=re.MULTILINE).strip()
-    match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-    if not match:
+    start = cleaned.find("{")
+    if start == -1:
         raise ValueError("no JSON object found")
-    return json.loads(match.group(0))
+    obj, _ = json.JSONDecoder().raw_decode(cleaned[start:])
+    if not isinstance(obj, dict):
+        raise ValueError("decoded JSON is not an object")
+    return obj
 
 
 def _clamp(x: float) -> float:
@@ -85,11 +88,12 @@ def grade_relevance(question, answer, *, chat_fn: ChatFn,
         return RelevanceVerdict(score=None, passed=None, reason=f"grader_error: {exc}", grader_error=True)
 
 
-def ollama_chat_fn(temperature: float = 0.0) -> ChatFn:
-    """Real chat_fn backed by the project's LocalOllamaProvider."""
+def ollama_chat_fn(temperature: float = 0.0, model: str = GRADER_MODEL) -> ChatFn:
+    """Real chat_fn backed by the project's LocalOllamaProvider, using the grader model."""
     from app.llm.local_ollama_provider import LocalOllamaProvider
 
     provider = LocalOllamaProvider()
+    provider.model = model  # honor RAG_EVAL_GRADER_MODEL even if settings.local_llm_model differs
 
     def _call(messages: list[dict]) -> str:
         return provider.chat(messages, temperature=temperature).content

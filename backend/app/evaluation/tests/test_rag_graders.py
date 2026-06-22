@@ -32,3 +32,21 @@ def test_relevance_threshold_pass():
 def test_relevance_grader_error():
     fn = lambda m: "{bad json"
     assert grade_relevance("q", "a", chat_fn=fn).grader_error is True
+
+
+def test_faithfulness_ignores_trailing_prose():
+    fn = lambda m: '{"score": 0.8, "reason": "ok"}\nNote: I am confident.'
+    v = grade_faithfulness("q", "c", "a", chat_fn=fn, threshold=0.8)
+    assert v.score == 0.8 and v.passed is True and v.grader_error is False
+
+
+def test_faithfulness_clamps_negative():
+    fn = lambda m: '{"score": -0.2, "reason": "x"}'
+    assert grade_faithfulness("q", "c", "a", chat_fn=fn).score == 0.0
+
+
+def test_grader_error_when_chat_fn_raises():
+    def boom(_messages):
+        raise RuntimeError("connection refused")
+    v = grade_relevance("q", "a", chat_fn=boom)
+    assert v.grader_error is True and v.score is None and v.passed is None
