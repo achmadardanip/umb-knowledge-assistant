@@ -18,6 +18,7 @@ from app.api import (
     routes_health,
     routes_memory,
     routes_multimodal,
+    routes_rag_eval,
     routes_sessions,
     routes_settings,
     routes_sources,
@@ -134,6 +135,7 @@ app.include_router(routes_stats.router)
 app.include_router(routes_crawl.router)
 app.include_router(routes_system.router)
 app.include_router(routes_analytics.router)
+app.include_router(routes_rag_eval.router)
 app.include_router(routes_settings.router)
 app.include_router(routes_sessions.router)
 app.include_router(routes_memory.router)
