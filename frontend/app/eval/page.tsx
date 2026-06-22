@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { RagResult, startRun, streamRun } from "../lib/ragEval";
 
 export default function EvalPage() {
@@ -10,8 +10,10 @@ export default function EvalPage() {
   const [agg, setAgg] = useState<{ f: number | null; r: number | null }>({ f: null, r: null });
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const run = useCallback(async () => {
+    abortRef.current?.abort();
     setError(null);
     setRows([]);
     setProgress({ done: 0, total: 0 });
@@ -23,7 +25,7 @@ export default function EvalPage() {
         signal: abortRef.current.signal,
         onResult: (r) => {
           setRows((prev) => [...prev, r]);
-          if (r.n_done && r.n_total) setProgress({ done: r.n_done, total: r.n_total });
+          if (r.n_done != null && r.n_total != null) setProgress({ done: r.n_done, total: r.n_total });
           setAgg({ f: r.agg_faithfulness ?? null, r: r.agg_relevance ?? null });
         },
         onDone: (d) => {
@@ -56,6 +58,7 @@ export default function EvalPage() {
         <button
           onClick={run}
           disabled={status === "running"}
+          aria-busy={status === "running"}
           className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
         >
           {status === "running" ? "Running…" : "Run evaluation"}
@@ -107,7 +110,7 @@ export default function EvalPage() {
                   <span className={`rounded px-2 py-0.5 text-xs ${badge(r.relevance_pass)}`}>{fmt(r.relevance_score)}</span>
                 </td>
                 <td className="p-3 text-xs text-muted-foreground">
-                  {r.not_found ? "not_found " : ""}{r.grader_error ? "grader_error" : ""}
+                  {[r.not_found && "not_found", r.grader_error && "grader_error"].filter(Boolean).join(" ")}
                 </td>
               </tr>
             ))}

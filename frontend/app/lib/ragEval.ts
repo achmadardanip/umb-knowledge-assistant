@@ -63,7 +63,12 @@ export async function streamRun(
     const event = lines.find((l) => l.startsWith("event:"))?.replace(/^event:\s*/, "").trim() || "message";
     const data = lines.filter((l) => l.startsWith("data:")).map((l) => l.replace(/^data:\s*/, "")).join("\n");
     if (!data) return;
-    const parsed = JSON.parse(data);
+    let parsed: any;
+    try {
+      parsed = JSON.parse(data);
+    } catch {
+      return; // skip malformed frame
+    }
     if (event === "result") handlers.onResult?.(parsed);
     if (event === "done") handlers.onDone?.(parsed);
     if (event === "error") handlers.onError?.(parsed.message || "stream error");
