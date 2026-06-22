@@ -26,7 +26,8 @@ _sub_lock = threading.Lock()
 
 
 def is_running() -> bool:
-    return _active_run_id is not None
+    with _run_lock:
+        return _active_run_id is not None
 
 
 def subscribe(run_id: str) -> "queue.Queue":
@@ -41,6 +42,8 @@ def unsubscribe(run_id: str, q: "queue.Queue") -> None:
         subs = _subscribers.get(run_id, [])
         if q in subs:
             subs.remove(q)
+        if not subs:
+            _subscribers.pop(run_id, None)
 
 
 def _publish(run_id: str, event: dict) -> None:
