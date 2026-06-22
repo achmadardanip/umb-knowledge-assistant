@@ -1,0 +1,37 @@
+# evaluation/promptfoo/promptfooconfig.monitoring.yaml
+# Nightly RAG monitoring against the real /chat endpoint. Graded by local Ollama.
+# Run by the promptfoo-scheduler container; results pushed to promptfoo-server.
+description: UMB Chatbot — RAG monitoring (faithfulness/relevance) vs real /chat
+
+providers:
+  - id: file://rag_chat_provider.py
+    label: umb-chat-endpoint
+
+prompts:
+  - "{{query}}"
+
+defaultTest:
+  options:
+    provider: ollama:chat:qwen2.5:7b-instruct
+  assert:
+    - type: context-faithfulness
+      contextTransform: metadata.context
+      threshold: 0.7
+    - type: llm-rubric
+      value: "The ANSWER directly and helpfully addresses the QUESTION (ignore factual correctness; judge relevance only). Pass if relevant."
+    - type: javascript
+      value: |
+        const m = (context && context.metadata) || {};
+        if (m.not_found) return { pass: true, score: 1, reason: 'refusal: no sources expected' };
+        return m.official_source
+          ? { pass: true, score: 1, reason: 'official sources' }
+          : { pass: false, score: 0, reason: 'non-official or empty sources' };
+
+tests:
+  - file://scenarios.csv
+  - file://datasets/rag_golden.json
+
+# Sharing target is set via the PROMPTFOO_REMOTE_API_BASE_URL / PROMPTFOO_REMOTE_APP_BASE_URL
+# environment variables (set by the scheduler container and the smoke command), which
+# `promptfoo eval --share` reads natively. No in-file sharing block (avoids literal ${VAR}).
+outputPath: reports/promptfoo_monitoring_latest.json
