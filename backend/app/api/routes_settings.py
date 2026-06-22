@@ -41,6 +41,12 @@ def providers() -> dict:
                 "model": settings.hermes_model,
             },
             {"id": "groq", "label": "Groq", "configured": bool(settings.groq_api_key), "model": settings.groq_model},
+            {
+                "id": "azure_foundry",
+                "label": "Azure AI Foundry",
+                "configured": bool(settings.azure_foundry_endpoint and settings.azure_foundry_api_key and settings.azure_foundry_deployment),
+                "model": settings.azure_foundry_deployment or "(set AZURE_FOUNDRY_DEPLOYMENT)",
+            },
             {"id": "puter", "label": "Puter (browser fallback)", "configured": True, "model": "browser"},
             {"id": "huggingface", "label": "Hugging Face (gratis)", "configured": bool(settings.huggingface_api_key), "model": settings.huggingface_model},
         ],

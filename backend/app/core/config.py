@@ -29,6 +29,7 @@ ProviderName = Literal[
     "hermes",
     "groq",
     "huggingface",
+    "azure_foundry",
 ]
 
 
@@ -63,7 +64,8 @@ def _resolve_database_url() -> str | None:
 
 def _provider(value: str | None) -> ProviderName:
     normalized = (value or "local_ollama").strip().lower()
-    aliases = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio"}
+    aliases = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio",
+               "azure": "azure_foundry", "foundry": "azure_foundry", "azure_ai_foundry": "azure_foundry"}
     normalized = aliases.get(normalized, normalized)
     if normalized not in {
         "local_ollama",
@@ -75,6 +77,7 @@ def _provider(value: str | None) -> ProviderName:
         "hermes",
         "groq",
         "huggingface",
+        "azure_foundry",
     }:
         return "local_ollama"
     return normalized  # type: ignore[return-value]
@@ -106,6 +109,12 @@ class Settings:
 
     openai_api_key: str | None = os.getenv("OPENAI_API_KEY")
     openai_model: str = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+    # Azure AI Foundry (OpenAI-compatible chat completions). Phase 30.
+    azure_foundry_endpoint: str = os.getenv("AZURE_FOUNDRY_ENDPOINT", "https://ardan.services.ai.azure.com/").strip()
+    azure_foundry_api_key: str | None = os.getenv("AZURE_FOUNDRY_API_KEY")
+    azure_foundry_deployment: str = os.getenv("AZURE_FOUNDRY_DEPLOYMENT", "").strip()
+    azure_foundry_api_version: str = os.getenv("AZURE_FOUNDRY_API_VERSION", "2024-10-21").strip()
     openai_embedding_model: str = os.getenv("OPENAI_EMBEDDING_MODEL", "text-embedding-3-small")
 
     gemini_api_key: str | None = os.getenv("GEMINI_API_KEY")

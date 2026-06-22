@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from app.core.config import ProviderName, get_settings
 from app.llm.anthropic_provider import AnthropicProvider
+from app.llm.azure_foundry_provider import AzureFoundryProvider
 from app.llm.base import BaseLLMProvider, ProviderConfigurationError
 from app.llm.gemini_provider import GeminiProvider
 from app.llm.groq_provider import GroqProvider
@@ -23,12 +24,14 @@ PROVIDERS: dict[str, type[BaseLLMProvider]] = {
     "hermes": HermesProvider,
     "groq": GroqProvider,
     "huggingface": HuggingFaceProvider,
+    "azure_foundry": AzureFoundryProvider,
 }
 
 
 def normalize_provider(provider: str | None) -> ProviderName:
     selected = (provider or get_settings().ai_provider).strip().lower()
-    selected = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio"}.get(
+    selected = {"ollama": "local_ollama", "lmstudio": "local_lmstudio", "lm_studio": "local_lmstudio",
+                "azure": "azure_foundry", "foundry": "azure_foundry", "azure_ai_foundry": "azure_foundry"}.get(
         selected,
         selected,
     )

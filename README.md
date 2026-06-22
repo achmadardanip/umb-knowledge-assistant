@@ -40,8 +40,13 @@ academic services **strictly from official UMB sources**, with citations on ever
 | Vector DB | PostgreSQL 16/17 + **pgvector** (HNSW) + pg_trgm |
 | Embeddings | `intfloat/multilingual-e5-small` (local, CPU) |
 | Graph | In-memory typed property graph built from the `umb_*` entity tables |
+| LLM providers | Local Ollama / LM Studio, OpenAI, Gemini, Claude, Groq, OpenRouter, Hugging Face, **Azure AI Foundry** |
 | Eval | Promptfoo + custom deterministic benchmark suite |
 | Infra | Docker Compose (local), named volume `umb_local_pgdata` |
+
+> **Azure AI Foundry** (Phase 30): set `AZURE_FOUNDRY_ENDPOINT`, `AZURE_FOUNDRY_API_KEY`,
+> `AZURE_FOUNDRY_DEPLOYMENT`, `AZURE_FOUNDRY_API_VERSION` and pick "☁ Azure AI Foundry" in the
+> provider selector (or `ANSWER_PROVIDER=azure_foundry`). Status shows in `/system/health` + `/dashboard`.
 
 ---
 

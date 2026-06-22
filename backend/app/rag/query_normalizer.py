@@ -36,6 +36,7 @@ _SLANG = {
     "dibuk": "dibuka", "gw": "saya", "gue": "saya", "aku": "saya", "lupa": "lupa",
     "info": "informasi", "infonya": "informasi", "thn": "tahun", "smt": "semester",
     "jdwl": "jadwal", "jdl": "jadwal", "bs": "bisa", "klo": "kalau", "kl": "kalau",
+    "dkn": "dekan", "kaprodi": "kaprodi", "akreditas": "akreditasi",
     # campus abbreviations -> canonical entity terms
     "ti": "teknik informatika", "si": "sistem informasi", "tk": "teknik",
     "mnj": "manajemen", "akun": "akuntansi", "dkv": "desain komunikasi visual",

@@ -23,6 +23,24 @@ def _scalar(db: Session, q: str):
         return None
 
 
+def _provider_health() -> dict:
+    """Provider status for /system/health and the dashboard. Azure Foundry exposes a
+    real (cheap) check; others report configured/unconfigured without spending tokens."""
+    out: dict = {}
+    try:
+        from app.core.config import get_settings
+        s = get_settings()
+        out["local_ollama"] = "configured" if getattr(s, "local_llm_base_url", None) else "unconfigured"
+        try:
+            from app.llm.azure_foundry_provider import AzureFoundryProvider
+            out["azure_foundry"] = AzureFoundryProvider().health().get("status", "unknown")
+        except Exception as exc:
+            out["azure_foundry"] = f"error:{str(exc)[:40]}"
+    except Exception:
+        pass
+    return out
+
+
 @router.get("/system/health")
 def system_health(db: Session = Depends(get_db)) -> dict:
     db_ok = _scalar(db, "SELECT 1") == 1
@@ -32,6 +50,7 @@ def system_health(db: Session = Depends(get_db)) -> dict:
         "database": "up" if db_ok else "down",
         "chunks": chunks,
         "service": "UMB Knowledge Assistant",
+        "providers": _provider_health(),
     }
 
 

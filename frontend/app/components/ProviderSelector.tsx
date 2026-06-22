@@ -5,12 +5,20 @@ import type { ProviderId, ProviderOption } from "../lib/types";
 
 const FALLBACK_OPTIONS: ProviderOption[] = [
   { id: "local_ollama", label: "Local Ollama", configured: true, model: "" },
+  { id: "azure_foundry", label: "Azure AI Foundry", configured: true, model: "" },
   { id: "puter", label: "Puter (browser fallback)", configured: true, model: "" },
   { id: "openrouter", label: "OpenRouter", configured: true, model: "" },
   { id: "openai", label: "OpenAI", configured: true, model: "" },
   { id: "gemini", label: "Gemini", configured: true, model: "" },
   { id: "anthropic", label: "Claude", configured: true, model: "" }
 ];
+
+// Phase 30: light visual cue per provider (☁ for Azure) — kept inside the native
+// option text so it renders without breaking the semantic-token styling.
+function optionLabel(o: ProviderOption): string {
+  if (o.id === "azure_foundry") return `☁ ${o.label}`;
+  return o.label;
+}
 
 export function ProviderSelector({
   value,
@@ -28,7 +36,7 @@ export function ProviderSelector({
       <select className="min-w-0 flex-1 bg-transparent outline-none" value={value} onChange={(event) => onChange(event.target.value as ProviderId)}>
         {visibleOptions.map((option) => (
           <option key={option.id} value={option.id}>
-            {option.label}
+            {optionLabel(option)}
           </option>
         ))}
       </select>

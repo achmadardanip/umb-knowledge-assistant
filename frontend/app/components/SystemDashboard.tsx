@@ -62,6 +62,22 @@ export function SystemDashboard() {
       </div>
 
       {(() => {
+        const provs = ((health.data?.providers as Record<string, string>) || {});
+        const entries = Object.entries(provs);
+        if (!entries.length) return null;
+        return (
+          <div className="flex flex-wrap items-center gap-2 text-xs">
+            <span className="text-muted-foreground">Providers:</span>
+            {entries.map(([id, st]) => (
+              <span key={id} className={`rounded-full border px-2 py-0.5 ${st === "healthy" ? "border-emerald-300 text-emerald-700 dark:text-emerald-300" : st === "unconfigured" ? "border-border text-muted-foreground" : "border-amber-300 text-amber-700 dark:text-amber-300"}`}>
+                {id === "azure_foundry" ? "☁ azure_foundry" : id}: {st}
+              </span>
+            ))}
+          </div>
+        );
+      })()}
+
+      {(() => {
         const a = (alertsQ.data || {}) as Record<string, unknown>;
         const list = (a.active_alerts || []) as Array<{ severity: string; category: string; message: string }>;
         if (list.length === 0) {

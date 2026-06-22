@@ -8,7 +8,8 @@ export type ProviderId =
   | "hermes"
   | "groq"
   | "puter"
-  | "huggingface";
+  | "huggingface"
+  | "azure_foundry";
 export type RetrievalMode = "indexed" | "web" | "hybrid";
 
 export type ProviderOption = {

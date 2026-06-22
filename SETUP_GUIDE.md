@@ -76,6 +76,10 @@ npm run dev            # http://localhost:3000
 | `LOCAL_POSTGRES_MODE` | use local PostgreSQL | `true` |
 | `LOCAL_POSTGRES_URL` | DB connection (**:5433**) | `postgresql://umb:umb@localhost:5433/umb` |
 | `SESSION_MEMORY_BACKEND` | `memory` (1 worker) or `postgres` (multi-worker) | `memory` |
+| `AZURE_FOUNDRY_ENDPOINT` | Azure AI Foundry endpoint | `https://ardan.services.ai.azure.com/` |
+| `AZURE_FOUNDRY_API_KEY` | Azure Foundry key (enables the provider) | unset |
+| `AZURE_FOUNDRY_DEPLOYMENT` | Azure Foundry deployment name (= model) | unset |
+| `AZURE_FOUNDRY_API_VERSION` | Azure API version | `2024-10-21` |
 | `TAVILY_API_KEY` | enable web fallback (optional) | unset |
 | `CGCV_ENTAILMENT_MODE` | `lexical` (CPU) or `nli` (GPU) | `lexical` |
 | `NEXT_PUBLIC_API_URL` (frontend) | backend URL | `http://localhost:8000` |

@@ -15,6 +15,7 @@ ProviderName = Literal[
     "hermes",
     "groq",
     "huggingface",
+    "azure_foundry",
 ]
 
 

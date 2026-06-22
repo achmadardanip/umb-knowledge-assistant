@@ -274,6 +274,7 @@ export function ChatWidget() {
         follow_up_questions: result.follow_up_questions || [],
         metadata: {
           memory_used: result.memory_used,
+          latency_ms: elapsed,
           intent: result.intent,
           retrieval_mode: result.retrieval_mode,
           language_detected: result.language_detected,
