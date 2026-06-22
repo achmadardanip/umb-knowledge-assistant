@@ -70,6 +70,7 @@ class ChatRequest(BaseModel):
     retrieval_mode: RetrievalMode = "hybrid"
     audience: Literal["calon_mahasiswa", "mahasiswa", "orang_tua", "alumni", "dosen", "publik"] | None = None
     language: str | None = None
+    include_retrieved_context: bool = False
 
 
 def _ensure_session(db: Session, payload: ChatRequest):
@@ -96,6 +97,17 @@ _AUDIENCE_HINT = {
 def _with_audience(question: str, audience: str | None) -> str:
     hint = _AUDIENCE_HINT.get(audience or "")
     return f"[Konteks pengguna] {hint}\n\nPertanyaan: {question}" if hint else question
+
+
+def _retrieved_context_payload(contexts: list[dict], include: bool) -> dict:
+    """Eval-only: expose retrieved chunk texts so Promptfoo can grade faithfulness."""
+    if not include:
+        return {}
+    chunks = [(c.get("chunk_text") or "") for c in contexts]
+    return {
+        "retrieved_context": chunks,
+        "retrieved_context_joined": "\n\n".join(chunks)[:8000],
+    }
 
 
 _FASILKOM_MARKERS = ("fasilkom", "fakultas ilmu komputer")
@@ -913,6 +925,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
         "agent_tool_calls": agent_result.agent_tool_calls if agent_result else 0,
         "retrieval_fallback_used": agent_result.retrieval_fallback_used if agent_result else False,
         "retrieval_warnings": agent_result.retrieval_warnings if agent_result else [],
+        **_retrieved_context_payload(contexts, payload.include_retrieved_context),
     }
 
 
