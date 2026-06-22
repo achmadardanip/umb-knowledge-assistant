@@ -116,8 +116,8 @@ services:
     depends_on:
       - promptfoo-server
     environment:
-      PROMPTFOO_REMOTE_API_BASE_URL: http://promptfoo-server:3000
-      PROMPTFOO_REMOTE_APP_BASE_URL: http://promptfoo-server:3000
+      PROMPTFOO_REMOTE_API_BASE_URL: http://promptfoo-server:3000   # API POST target (container network)
+      PROMPTFOO_REMOTE_APP_BASE_URL: http://localhost:3001          # display link in logs (host-clickable)
       UMB_CHAT_BASE_URL: http://host.docker.internal:8000
       OLLAMA_BASE_URL: http://host.docker.internal:11434
       PROMPTFOO_PYTHON: python3   # image ships python3 (no `python`); provider needs this
