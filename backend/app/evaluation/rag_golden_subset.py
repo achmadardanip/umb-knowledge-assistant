@@ -60,7 +60,7 @@ def main() -> None:
     ap.add_argument("--out", default=str(_OUT))
     args = ap.parse_args()
     rows = build(args.size)
-    Path(args.out).write_text(json.dumps(rows, ensure_ascii=False, indent=2), encoding="utf-8")
+    Path(args.out).write_text(json.dumps(rows, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"wrote {len(rows)} questions -> {args.out}")
 
 

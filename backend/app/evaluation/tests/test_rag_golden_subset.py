@@ -30,3 +30,7 @@ def test_sample_excludes_synthetic_and_unanswerable():
 def test_sample_spreads_across_intents():
     s = stratified_sample(ROWS, 9)
     assert len({r["intent"] for r in s}) == 3
+
+
+def test_sample_size_exceeds_pool():
+    assert len(stratified_sample(ROWS, 1000)) == 30
