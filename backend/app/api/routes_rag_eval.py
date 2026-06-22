@@ -3,6 +3,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import queue
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.responses import StreamingResponse
@@ -73,15 +74,20 @@ def get_rag_run(run_id: str, db: Session = Depends(get_db)) -> dict:
 
 @router.get("/runs/{run_id}/stream")
 async def stream_rag_run(run_id: str):
+    # Validate existence up front so a missing run returns HTTP 404 (not a 200 SSE).
+    probe = get_session_local()()
+    try:
+        if not probe.get(RagEvalRun, run_id):
+            raise HTTPException(status_code=404, detail="run not found")
+    finally:
+        probe.close()
+
     q = rag_eval_runner.subscribe(run_id)
 
     async def generator():
         session = get_session_local()()
         try:
             run = session.get(RagEvalRun, run_id)
-            if not run:
-                yield _sse("error", {"message": "run not found"})
-                return
             for x in (
                 session.query(RagEvalResult)
                 .filter(RagEvalResult.run_id == run_id)
@@ -98,7 +104,24 @@ async def stream_rag_run(run_id: str):
             session.close()
         try:
             while True:
-                event = await asyncio.to_thread(q.get)
+                try:
+                    event = await asyncio.to_thread(q.get, timeout=30)
+                except queue.Empty:
+                    # No event within the interval. Re-check run status from the DB so we
+                    # never hang if the run ended without publishing (abnormal exit), and
+                    # emit a heartbeat to detect client disconnects promptly.
+                    s = get_session_local()()
+                    try:
+                        run = s.get(RagEvalRun, run_id)
+                        if run and run.status != "running":
+                            yield _sse("done", {"run_id": run_id, "status": run.status,
+                                                "agg_faithfulness": run.agg_faithfulness,
+                                                "agg_relevance": run.agg_relevance})
+                            break
+                    finally:
+                        s.close()
+                    yield _sse("ping", {})
+                    continue
                 yield _sse(event["event"], event["data"])
                 if event["event"] in ("done", "error"):
                     break
