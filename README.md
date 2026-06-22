@@ -239,6 +239,11 @@ start a run from the dashboard or `POST /eval/rag/runs`, inspect via `GET /eval/
 Requires Ollama running and the KB restored. The deterministic 913-test gate
 (`promptfoo_runner`) is unchanged.
 
+### RAG Monitoring (self-hosted, nightly)
+Automated nightly model-graded eval of the real `/chat` (faithfulness + relevance +
+official-source) in a self-hosted Promptfoo UI on port 3001 — see
+[evaluation/promptfoo/MONITORING.md](evaluation/promptfoo/MONITORING.md).
+
 ---
 
 ## Troubleshooting
