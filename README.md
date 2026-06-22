@@ -230,6 +230,15 @@ npx promptfoo eval -c evaluation/promptfoo/promptfooconfig.yaml   # LLM-judge vi
 ```
 CI: `.github/workflows/promptfoo.yml` runs the gate + benchmark + Promptfoo on every PR/push.
 
+### RAG Eval (live, model-graded)
+
+Faithfulness + answer-relevance over a curated ~40-question golden slice, graded by the
+local Ollama model and streamed to an in-app dashboard at **`/eval`**. Report-only (does
+not gate). Regenerate the slice with `python -m app.evaluation.rag_golden_subset --size 40`;
+start a run from the dashboard or `POST /eval/rag/runs`, inspect via `GET /eval/rag/runs/{id}`.
+Requires Ollama running and the KB restored. The deterministic 913-test gate
+(`promptfoo_runner`) is unchanged.
+
 ---
 
 ## Troubleshooting
