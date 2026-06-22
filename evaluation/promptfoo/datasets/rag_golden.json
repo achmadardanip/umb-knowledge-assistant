@@ -1,0 +1,202 @@
+[
+  {
+    "id": "bench_00324",
+    "question": "Kapan jadwal perkuliahan untuk mahasiswa Hubungan Masyarakat dimulai?",
+    "intent": "academic_calendar"
+  },
+  {
+    "id": "bench_00364",
+    "question": "Apa ketentuan kelulusan untuk mahasiswa Fakultas Ekonomi dan Bisnis?",
+    "intent": "academic_regulations"
+  },
+  {
+    "id": "faq_002",
+    "question": "Apa saja syarat pendaftaran mahasiswa baru di UMB?",
+    "intent": "admissions"
+  },
+  {
+    "id": "bench_00409",
+    "question": "Alamat lengkap kampus Mercu Buana Bekasi di mana?",
+    "intent": "campus"
+  },
+  {
+    "id": "bench_00143",
+    "question": "Siapa dekan Fakultas Psikologi Universitas Mercu Buana?",
+    "intent": "faculty"
+  },
+  {
+    "id": "ent_0073",
+    "question": "Bagaimana prosedur layanan E-Learning UMB di UMB?",
+    "intent": "general"
+  },
+  {
+    "id": "ent_0009",
+    "question": "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+    "intent": "lecturer"
+  },
+  {
+    "id": "faq_013_alias_03",
+    "question": "repository umb",
+    "intent": "library"
+  },
+  {
+    "id": "faq_006",
+    "question": "Bagaimana cara mendaftar beasiswa KIP Kuliah di UMB?",
+    "intent": "scholarship"
+  },
+  {
+    "id": "bench_00461",
+    "question": "Bagaimana mahasiswa Fakultas Teknik mengakses SIA UMB?",
+    "intent": "sia"
+  },
+  {
+    "id": "bench_00487",
+    "question": "Bagaimana mahasiswa Teknik Elektro mengaktifkan akun SSO UMB?",
+    "intent": "sso"
+  },
+  {
+    "id": "bench_00374",
+    "question": "Apa layanan konseling mahasiswa yang tersedia di UMB?",
+    "intent": "student_services"
+  },
+  {
+    "id": "bench_00223",
+    "question": "Siapa ketua program studi Hubungan Masyarakat Universitas Mercu Buana?",
+    "intent": "study_program"
+  },
+  {
+    "id": "bench_00059",
+    "question": "Berapa biaya kuliah program studi Penyiaran di UMB?",
+    "intent": "tuition"
+  },
+  {
+    "id": "bench_00321",
+    "question": "Kapan jadwal perkuliahan untuk mahasiswa Akuntansi dimulai?",
+    "intent": "academic_calendar"
+  },
+  {
+    "id": "bench_00361",
+    "question": "Apa peraturan akademik yang berlaku untuk program studi Teknik Mesin?",
+    "intent": "academic_regulations"
+  },
+  {
+    "id": "bench_00040",
+    "question": "Berapa daya tampung program studi Psikologi di UMB?",
+    "intent": "admissions"
+  },
+  {
+    "id": "bench_00420",
+    "question": "Di kampus mana program studi Desain Komunikasi Visual diselenggarakan?",
+    "intent": "campus"
+  },
+  {
+    "id": "bench_00160",
+    "question": "Fakultas Ilmu Komunikasi?",
+    "intent": "faculty"
+  },
+  {
+    "id": "faq_010_alias_04",
+    "question": "kapan pengisian krs umb",
+    "intent": "general"
+  },
+  {
+    "id": "bench_00300",
+    "question": "Siapa dosen pengampu di program studi Penyiaran UMB?",
+    "intent": "lecturer"
+  },
+  {
+    "id": "faq_013_alias_05",
+    "question": "digilib umb",
+    "intent": "library"
+  },
+  {
+    "id": "bench_00121",
+    "question": "Beasiswa apa yang bisa diambil mahasiswa baru Teknik Mesin di UMB?",
+    "intent": "scholarship"
+  },
+  {
+    "id": "bench_00455",
+    "question": "Bagaimana mahasiswa Teknik Sipil mengisi KRS di SIA?",
+    "intent": "sia"
+  },
+  {
+    "id": "bench_00474",
+    "question": "Bagaimana mahasiswa Fakultas Ilmu Komputer login SSO untuk mengakses layanan UMB?",
+    "intent": "sso"
+  },
+  {
+    "id": "ent_0064",
+    "question": "Bagaimana cara menghubungi Biro Administrasi Akademik (BAA) UMB?",
+    "intent": "student_services"
+  },
+  {
+    "id": "bench_00195",
+    "question": "Jurusan Hubungan Masyarakat di Mercu Buana akreditasinya apa?",
+    "intent": "study_program"
+  },
+  {
+    "id": "faq_004_alias_02",
+    "question": "berapa uang kuliah mercu buana",
+    "intent": "tuition"
+  },
+  {
+    "id": "bench_00338",
+    "question": "Di mana kalender akademik untuk Fakultas Ilmu Komunikasi?",
+    "intent": "academic_calendar"
+  },
+  {
+    "id": "bench_00368",
+    "question": "Apa ketentuan kelulusan untuk mahasiswa Fakultas Teknik?",
+    "intent": "academic_regulations"
+  },
+  {
+    "id": "bench_00027",
+    "question": "Apa syarat masuk Fakultas Ekonomi dan Bisnis di Mercu Buana?",
+    "intent": "admissions"
+  },
+  {
+    "id": "bench_00428",
+    "question": "Di kampus mana program studi Teknik Industri diselenggarakan?",
+    "intent": "campus"
+  },
+  {
+    "id": "bench_00142",
+    "question": "Siapa dekan Fakultas Ilmu Komunikasi Universitas Mercu Buana?",
+    "intent": "faculty"
+  },
+  {
+    "id": "faq_008_alias_02",
+    "question": "reset password sso mercu buana",
+    "intent": "general"
+  },
+  {
+    "id": "bench_00273",
+    "question": "Siapa saja dosen di Fakultas Teknik UMB?",
+    "intent": "lecturer"
+  },
+  {
+    "id": "ent_0075",
+    "question": "Bagaimana prosedur layanan Perpustakaan Digital UMB di UMB?",
+    "intent": "library"
+  },
+  {
+    "id": "bench_00118",
+    "question": "Beasiswa apa yang bisa diambil mahasiswa baru Teknik Elektro di UMB?",
+    "intent": "scholarship"
+  },
+  {
+    "id": "bench_00452",
+    "question": "Bagaimana mahasiswa Teknik Industri mengisi KRS di SIA?",
+    "intent": "sia"
+  },
+  {
+    "id": "bench_00466",
+    "question": "Bagaimana jika lupa password SSO Universitas Mercu Buana?",
+    "intent": "sso"
+  },
+  {
+    "id": "bench_00397",
+    "question": "Layanan akademik apa yang tersedia untuk mahasiswa Teknik Informatika?",
+    "intent": "student_services"
+  }
+]
