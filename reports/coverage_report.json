@@ -1,0 +1,109 @@
+{
+  "generated": "phase31_step4",
+  "method": "measured structured+FAQ coverage of the 32 distinct failed CSV questions (NOT a fabricated crawl)",
+  "faq_coverage_of_failed_set": 0.9375,
+  "official_top_of_failed_set": 0.9375,
+  "by_category": {
+    "academic_calendar": {
+      "covered": 3,
+      "total": 3,
+      "coverage": 1.0
+    },
+    "academic_regulations": {
+      "covered": 3,
+      "total": 3,
+      "coverage": 1.0
+    },
+    "admissions": {
+      "covered": 2,
+      "total": 2,
+      "coverage": 1.0
+    },
+    "campus": {
+      "covered": 3,
+      "total": 3,
+      "coverage": 1.0
+    },
+    "faculty": {
+      "covered": 4,
+      "total": 4,
+      "coverage": 1.0
+    },
+    "general": {
+      "covered": 0,
+      "total": 1,
+      "coverage": 0.0
+    },
+    "lecturer": {
+      "covered": 1,
+      "total": 1,
+      "coverage": 1.0
+    },
+    "library": {
+      "covered": 1,
+      "total": 1,
+      "coverage": 1.0
+    },
+    "scholarship": {
+      "covered": 1,
+      "total": 1,
+      "coverage": 1.0
+    },
+    "sia": {
+      "covered": 1,
+      "total": 1,
+      "coverage": 1.0
+    },
+    "sso": {
+      "covered": 2,
+      "total": 2,
+      "coverage": 1.0
+    },
+    "student_services": {
+      "covered": 2,
+      "total": 3,
+      "coverage": 0.667
+    },
+    "study_program": {
+      "covered": 4,
+      "total": 4,
+      "coverage": 1.0
+    },
+    "tuition": {
+      "covered": 3,
+      "total": 3,
+      "coverage": 1.0
+    }
+  },
+  "true_coverage_gaps": [
+    "Apa layanan konseling mahasiswa yang tersedia di UMB?",
+    "Bagaimana prosedur layanan E-Learning UMB di UMB?"
+  ],
+  "gap_categories": [
+    "general",
+    "student_services"
+  ],
+  "crawl_plan_targets": [
+    "baa.mercubuana.ac.id",
+    "pmb.mercubuana.ac.id",
+    "library.mercubuana.ac.id",
+    "elearning.mercubuana.ac.id",
+    "sia.mercubuana.ac.id",
+    "psikologi.mercubuana.ac.id",
+    "feb.mercubuana.ac.id",
+    "ft.mercubuana.ac.id",
+    "fikom.mercubuana.ac.id",
+    "fdsk.mercubuana.ac.id"
+  ],
+  "crawl_plan_topics": [
+    "tuition_per_program",
+    "scholarship_steps",
+    "academic_calendar_dates",
+    "graduation_rules",
+    "digital_library_services",
+    "counseling_services",
+    "admission_quota"
+  ],
+  "crawl_status": "PLANNED — runnable via app.ingestion + crawl_registry; NOT executed in this environment (no fabricated crawl results)",
+  "target_faq_coverage": 0.95
+}

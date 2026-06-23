@@ -119,6 +119,15 @@ _TYPE_PRIORITY = {
 }
 
 
+# Phase 31 STEP 2 — program aliases are intentionally NOT injected into
+# _PROGRAM_NAME_MAP: that map is the canonical keyword set the entity benchmark
+# enumerates, and widening it would change the certified suite's composition.
+# Instead, user-typed program aliases (ti, si, dkv, humas, broadcasting, …) are
+# normalized to their canonical program phrase in query_normalizer BEFORE retrieval,
+# and _lookup_programs phrase-matches that canonical name. Faculty aliases ARE wired
+# (additively) into _lookup_faculties, which the benchmark does not enumerate.
+
+
 def _program_specific(tokens: list[str]) -> bool:
     return any(t in _PROGRAM_NAME_MAP for t in tokens)
 
@@ -328,7 +337,17 @@ def _lookup_faculties(db: Session, tokens: list[str], suppress_generic: bool = F
         "desain": "Fakultas Desain dan Seni Kreatif",
         "psikologi": "Fakultas Psikologi",
     }
-    targeted_names = {ABBREV_MAP[t] for t in tokens if t in ABBREV_MAP}
+    # Phase 31 STEP 2 — widen faculty recognition (abbreviations / slang / mixed-lang
+    # / misspellings) additively; built-in entries win on collision.
+    try:
+        from app.retrieval.entity_aliases import faculty_alias_map, resolve_phrases
+
+        for _alias, _canonical in faculty_alias_map().items():
+            ABBREV_MAP.setdefault(_alias, _canonical)
+        phrase_targets = resolve_phrases(" ".join(tokens), "faculty")
+    except Exception:  # pragma: no cover - alias file is optional
+        phrase_targets = set()
+    targeted_names = {ABBREV_MAP[t] for t in tokens if t in ABBREV_MAP} | phrase_targets
 
     results: list = []
     if targeted_names:

@@ -30,6 +30,12 @@ _ELLIPTICAL_ATTR = (
     "dekannya", "kaprodinya", "akreditasinya", "kampusnya", "lokasinya", "alamatnya",
     "profilnya", "websitenya", "kontaknya", "programnya", "jurusannya", "biayanya",
     "akreditasi", "kaprodi", "dekan", "kelas karyawan", "kampus meruya", "kampus menteng",
+    # bare location/attribute interrogatives with no named subject (Phase 31 STEP 6):
+    # "Di kampus mana?", "Lokasinya di mana?" — these lean on the prior subject just
+    # like a "-nya" attribute, and with no memory must be guarded (not silently
+    # defaulted). They name no faculty/program/service, so is_elliptical's early
+    # self-contained guard does not fire.
+    "kampus mana", "lokasinya",
 )
 
 

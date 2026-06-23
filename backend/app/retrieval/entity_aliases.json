@@ -1,0 +1,35 @@
+{
+  "_comment": "Phase 31 STEP 2 — fuzzy entity alias dictionary. Maps abbreviations, slang, mixed-language, and common misspellings to canonical UMB entity names. Consumed additively by entity_retriever.py (extends, never overrides, the built-in lookups). Hierarchy intent: Program > Faculty > Person > Service is enforced by entity_retriever tie-break; this file only widens recognition.",
+  "faculties": {
+    "Fakultas Psikologi": ["fpsi", "psikologi", "fak psikologi", "fakultas psikologi", "psychology", "psikologo", "psikolgi", "psikolog", "fak psi"],
+    "Fakultas Desain dan Seni Kreatif": ["fdsk", "desain", "seni kreatif", "desain dan seni", "fakultas desain", "design", "creative arts", "seni", "fak desain", "dsk"],
+    "Fakultas Ekonomi dan Bisnis": ["feb", "ekonomi", "bisnis", "ekonomi dan bisnis", "fakultas ekonomi", "economics", "business", "fak ekonomi", "fe"],
+    "Fakultas Teknik": ["ft", "teknik", "fakultas teknik", "engineering", "fak teknik", "teknik umb"],
+    "Fakultas Ilmu Komputer": ["fasilkom", "ilkom", "ilmu komputer", "komputer", "fakultas ilmu komputer", "computer science", "fasil kom", "fak ilkom", "fik komputer"],
+    "Fakultas Ilmu Komunikasi": ["fikom", "ilmu komunikasi", "komunikasi", "fakultas komunikasi", "communication", "communications", "fak komunikasi", "fik"],
+    "Pascasarjana": ["pasca", "pascasarjana", "s2", "s3", "magister", "doktor", "graduate school", "postgraduate"]
+  },
+  "programs": {
+    "Teknik Informatika": ["ti", "informatika", "teknik informatika", "tekinfo", "if", "informatics", "informatics engineering", "tekno informatika", "teknik informatka"],
+    "Sistem Informasi": ["si", "sistem informasi", "information systems", "sisfo", "sistim informasi"],
+    "Sains Data": ["sains data", "data science", "saindata", "sd"],
+    "Manajemen": ["manajemen", "management", "mnj", "manajement", "manajmen"],
+    "Akuntansi": ["akuntansi", "accounting", "akun", "akutansi", "akuntasi"],
+    "Teknik Elektro": ["teknik elektro", "elektro", "electrical engineering", "elektronika"],
+    "Teknik Mesin": ["teknik mesin", "mesin", "mechanical engineering", "tekmesin"],
+    "Teknik Sipil": ["teknik sipil", "sipil", "civil engineering"],
+    "Teknik Industri": ["teknik industri", "industri", "industrial engineering", "tekind"],
+    "Arsitektur": ["arsitektur", "architecture", "arsi"],
+    "Penyiaran": ["penyiaran", "broadcasting", "broadcast", "siaran"],
+    "Periklanan": ["periklanan", "advertising", "iklan", "ads"],
+    "Hubungan Masyarakat": ["humas", "hubungan masyarakat", "public relations", "pr", "hubmas"],
+    "Desain Komunikasi Visual": ["dkv", "desain komunikasi visual", "visual communication design", "deskomvis"],
+    "Psikologi": ["psikologi", "psychology", "psikolgi"]
+  },
+  "services": {
+    "SIA": ["sia", "sistem informasi akademik", "academic information system", "krs online"],
+    "SSO": ["sso", "single sign on", "single sign-on", "akun sso", "login umb"],
+    "E-Learning": ["elearning", "e-learning", "e learning", "online learning", "pjj", "kuliah online"],
+    "Perpustakaan": ["perpustakaan", "library", "digilib", "digital library", "repository", "repositori", "katalog"]
+  }
+}

@@ -37,11 +37,25 @@ _SLANG = {
     "info": "informasi", "infonya": "informasi", "thn": "tahun", "smt": "semester",
     "jdwl": "jadwal", "jdl": "jadwal", "bs": "bisa", "klo": "kalau", "kl": "kalau",
     "dkn": "dekan", "kaprodi": "kaprodi", "akreditas": "akreditasi",
+    "akre": "akreditasi", "akred": "akreditasi", "aja": "saja", "apaaja": "apa saja",
+    "kuliahnya": "kuliah", "biayanya": "biaya", "daftarnya": "pendaftaran",
     # campus abbreviations -> canonical entity terms
     "ti": "teknik informatika", "si": "sistem informasi", "tk": "teknik",
     "mnj": "manajemen", "akun": "akuntansi", "dkv": "desain komunikasi visual",
     "humas": "hubungan masyarakat", "psiko": "psikologi", "kom": "komunikasi",
     "maba": "mahasiswa baru", "kating": "kakak tingkat",
+    "sisfo": "sistem informasi", "deskomvis": "desain komunikasi visual",
+    "hubmas": "hubungan masyarakat",
+    # Phase 31 STEP 5 — mixed-language (English -> Indonesian KB vocabulary). Clean
+    # Indonesian queries never contain these tokens, so expansion is regression-free.
+    "dean": "dekan", "tuition": "biaya kuliah", "fee": "biaya", "fees": "biaya",
+    "cost": "biaya", "scholarship": "beasiswa", "scholarships": "beasiswa",
+    "schedule": "jadwal", "calendar": "kalender", "requirements": "persyaratan",
+    "requirement": "persyaratan", "campus": "kampus", "library": "perpustakaan",
+    "faculty": "fakultas", "lecturer": "dosen", "lecturers": "dosen",
+    "accreditation": "akreditasi", "registration": "pendaftaran", "broadcasting": "penyiaran",
+    "graduation": "wisuda", "counseling": "konseling", "services": "layanan",
+    "service": "layanan", "address": "alamat", "location": "lokasi",
 }
 # These campus acronyms are already understood downstream; keep them as-is.
 _KEEP = {"feb", "ft", "fasilkom", "fikom", "fdsk", "fpsi", "pmb", "sia", "sso",

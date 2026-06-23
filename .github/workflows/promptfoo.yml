@@ -45,6 +45,11 @@ jobs:
         run: python -m app.evaluation.promptfoo_runner --out ../evaluation/promptfoo/reports/promptfoo_report.json
         working-directory: backend
 
+      - name: Promptfoo regression CI gate (Phase 31 STEP 8 — fail < 95%)
+        # Build fails if the deterministic suite pass-rate drops below 95%.
+        run: python -m app.evaluation.promptfoo_regression_suite --json ../evaluation/promptfoo/reports/promptfoo_report.json --min-pass-rate 0.95
+        working-directory: backend
+
       - name: No-regression retrieval benchmark
         run: python -m app.evaluation.benchmark --strategy agent_hybrid --top-k 5 --out ../reports/ci_benchmark.json
         working-directory: backend

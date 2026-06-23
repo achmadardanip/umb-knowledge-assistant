@@ -36,12 +36,36 @@ def call_api(prompt, options, context):  # promptfoo python provider entrypoint
     sources = data.get("sources") or []
     hosts = [(s.get("hostname") or "").lower() for s in sources if s.get("hostname")]
     official = bool(hosts) and all(h == _OFFICIAL_SUFFIX or h.endswith("." + _OFFICIAL_SUFFIX) for h in hosts)
+
+    # Faithfulness must be graded against the grounding the pipeline ACTUALLY used.
+    # The UMB pipeline is FAQ -> Entity -> GraphRAG -> Vector -> Reranker, so an answer
+    # correctly sourced from the FAQ/Entity/Graph layers carries NO vector chunks in
+    # `retrieved_context`. Grading such a (correct, cited) answer against an empty
+    # context yields a false 0.00 / "Context is required" error. To grade the real
+    # grounding, fall back to the citation evidence the answer was built from
+    # (source title + snippet + url) whenever the vector context is thin. This does
+    # not weaken the assertion — it gives the judge the evidence it is meant to check.
+    context_parts: list[str] = [c for c in chunks if c]
+    if len(" ".join(context_parts)) < 200:
+        for s in sources:
+            frag = " — ".join(
+                str(s.get(k) or "").strip()
+                for k in ("title", "snippet", "chunk_text", "url")
+                if s.get(k)
+            )
+            if frag:
+                context_parts.append(frag)
+    context = "\n\n".join(context_parts)[:8000]
+
     return {
         "output": data.get("answer") or "",
         "metadata": {
-            "context": "\n\n".join(chunks)[:8000],
+            # Non-empty placeholder so context-faithfulness never aborts with the
+            # "Context is required" invariant on a grounded-but-chunkless answer.
+            "context": context or "(no retrieved context — answer is a refusal or out-of-scope)",
             "sources": sources,
             "official_source": official,
             "not_found": bool(data.get("not_found")),
+            "grounded": bool(sources) and not data.get("not_found"),
         },
     }
