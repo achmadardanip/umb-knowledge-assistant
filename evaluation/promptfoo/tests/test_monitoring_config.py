@@ -11,7 +11,9 @@ def test_config_is_valid_yaml_with_required_keys():
     types = [a["type"] for a in cfg["defaultTest"]["assert"]]
     assert "context-faithfulness" in types
     assert "llm-rubric" in types
-    assert "scenarios.csv" in "".join(str(t) for t in cfg["tests"])
+    sources = "".join(str(t) for t in cfg["tests"])
+    assert "scenarios.csv" in sources
+    assert "adversarial_scenarios.csv" in sources   # robustness coverage wired in
 
 
 def test_named_metrics_present():

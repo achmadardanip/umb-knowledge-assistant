@@ -1,0 +1,75 @@
+query,intent,perturbation_type,base_id
+Kapan jadwaal perrkuliahan untuk mahasiswa Hubungan Masyarakat dimulai?,academic_calendar,typo,bench_00324
+Kapan jadwal perkuliahan untuk,academic_calendar,incomplete,bench_00324
+when schedule perkuliahan untuk mahasiswa Hubungan Masyarakat dimulai?,academic_calendar,mixed_lang,bench_00324
+Kapan jadwal perkuliahan untuk mahasiswa dimulai?,academic_calendar,ambiguous,bench_00324
+Apa ketentuan kelulusan untuk mahasiswa Fakultas Ekonmoi dan Biisnis?,academic_regulations,typo,bench_00364
+Apa ketentuan kelulusan untuk mahasiswa Fakultas Ekonomi,academic_regulations,incomplete,bench_00364
+what ketentuan kelulusan untuk student faculty Ekonomi dan Bisnis?,academic_regulations,mixed_lang,bench_00364
+Apa ketentuan kelulusan untuk mahasiswa dan?,academic_regulations,ambiguous,bench_00364
+Apa saja syarat pendfataran mahasiswa bau di UMB?,admissions,typo,faq_002
+Apa saja syarat pendaftaran mahasiswa baru,admissions,incomplete,faq_002
+what saja requirements pendaftaran student baru di UMB?,admissions,mixed_lang,faq_002
+Apa saja syarat pendaftaran mahasiswa baru di?,admissions,ambiguous,faq_002
+Alamat lengkap kampus Mercu Bana Bekasi di maan?,campus,typo,bench_00409
+Alamat lengkap kampus Mercu Buana Bekasi,campus,incomplete,bench_00409
+Alamat lengkap kampus di mana?,campus,ambiguous,bench_00409
+Siapa dekan Faultas sPikologi Universitas Mercu Buana?,faculty,typo,bench_00143
+Siapa dekan Fakultas Psikologi Universitas,faculty,incomplete,bench_00143
+who dekan faculty Psikologi Universitas Mercu Buana?,faculty,mixed_lang,bench_00143
+Siapa dekan?,faculty,ambiguous,bench_00143
+Bagaimanna proseddur layanan E-Learning UMB di UMB?,general,typo,ent_0073
+Bagaimana prosedur layanan E-Learning UMB,general,incomplete,ent_0073
+how prosedur layanan E-Learning UMB di UMB?,general,mixed_lang,ent_0073
+Bagaimana prosedur layanan di?,general,ambiguous,ent_0073
+Siapa dekan Faakultas Desain dan Seni Kreatf?,lecturer,typo,ent_0009
+Siapa dekan,lecturer,incomplete,ent_0009
+who dekan Fakultas Desain dan Seni Kreatif?,lecturer,mixed_lang,ent_0009
+Siapa dekan dan?,lecturer,ambiguous,ent_0009
+reposittory umb,library,typo,faq_013_alias_03
+Bagaimana cara meendaftar besiswa KIP Kuliah di UMB?,scholarship,typo,faq_006
+Bagaimana cara mendaftar beasiswa KIP Kuliah,scholarship,incomplete,faq_006
+how cara mendaftar beasiswa KIP Kuliah di UMB?,scholarship,mixed_lang,faq_006
+Bagaimana cara mendaftar beasiswa di?,scholarship,ambiguous,faq_006
+Bagaimana mahasisaw Fakultas Teknnik mengakses SIA UMB?,sia,typo,bench_00461
+Bagaimana mahasiswa Fakultas,sia,incomplete,bench_00461
+how student faculty Teknik mengakses SIA UMB?,sia,mixed_lang,bench_00461
+Bagaimana mahasiswa mengakses?,sia,ambiguous,bench_00461
+Bagaimana mahasiswa Teknik Eletro mengaaktifkan akun SSO UMB?,sso,typo,bench_00487
+Bagaimana mahasiswa,sso,incomplete,bench_00487
+Bagaimana student Teknik Elektro mengaktifkan akun SSO UMB?,sso,mixed_lang,bench_00487
+Bagaimana mahasiswa mengaktifkan akun?,sso,ambiguous,bench_00487
+Apa layanan konseeling mahasiswa yaang tersedia di UMB?,student_services,typo,bench_00374
+Apa layanan konseling mahasiswa yang tersedia,student_services,incomplete,bench_00374
+what layanan konseling student yang tersedia di UMB?,student_services,mixed_lang,bench_00374
+Apa layanan konseling mahasiswa yang tersedia di?,student_services,ambiguous,bench_00374
+Siiapa ketua program studi Hubungan Masyarakat Universitas Meercu Buana?,study_program,typo,bench_00223
+Siapa ketua,study_program,incomplete,bench_00223
+who ketua program studi Hubungan Masyarakat Universitas Mercu Buana?,study_program,mixed_lang,bench_00223
+Siapa ketua program studi?,study_program,ambiguous,bench_00223
+Berapa biaya kluiah program stdui Penyiaran di UMB?,tuition,typo,bench_00059
+Berapa biaya kuliah,tuition,incomplete,bench_00059
+Berapa cost kuliah program studi Penyiaran di UMB?,tuition,mixed_lang,bench_00059
+Berapa biaya kuliah program studi di?,tuition,ambiguous,bench_00059
+Kapan jadwal perkuliahan untuk mahasiswwa Akuntansi dimuali?,academic_calendar,typo,bench_00321
+Kapan jadwal perkuliahan untuk mahasiswa,academic_calendar,incomplete,bench_00321
+Kapan jadwal perkuliahan untuk student Akuntansi dimulai?,academic_calendar,mixed_lang,bench_00321
+Kapan jadwal perkuliahan untuk mahasiswa dimulai?,academic_calendar,ambiguous,bench_00321
+Apa peraturan akademik yanng berlaku untuk program sudi Teknik Mesin?,academic_regulations,typo,bench_00361
+Apa peraturan akademik yang,academic_regulations,incomplete,bench_00361
+what peraturan akademik yang berlaku untuk program studi Teknik Mesin?,academic_regulations,mixed_lang,bench_00361
+Apa peraturan akademik yang berlaku untuk program studi?,academic_regulations,ambiguous,bench_00361
+erapa adya tampung program studi Psikologi di UMB?,admissions,typo,bench_00040
+Berapa daya tampung program studi Psikologi,admissions,incomplete,bench_00040
+how much daya tampung program studi Psikologi di UMB?,admissions,mixed_lang,bench_00040
+Berapa daya tampung program studi di?,admissions,ambiguous,bench_00040
+Di kampus mana program studi Desain Komunikasi Visaul diselengarakan?,campus,typo,bench_00420
+Di kampus mana,campus,incomplete,bench_00420
+Di kampus mana program studi diselenggarakan?,campus,ambiguous,bench_00420
+Fakutas lImu Komunikasi?,faculty,typo,bench_00160
+Fakultas Ilmu,faculty,incomplete,bench_00160
+faculty Ilmu Komunikasi?,faculty,mixed_lang,bench_00160
+Fakultas?,faculty,ambiguous,bench_00160
+apan pegisian krs umb,general,typo,faq_010_alias_04
+kapan pengisian krs,general,incomplete,faq_010_alias_04
+when pengisian krs umb,general,mixed_lang,faq_010_alias_04

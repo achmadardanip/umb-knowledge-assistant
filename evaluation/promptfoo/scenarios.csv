@@ -1,13 +1,13 @@
-query,intent
-Apa saja syarat pendaftaran mahasiswa baru di UMB?,admissions
-Siapa dekan Fakultas Ilmu Komputer UMB?,faculty
-Siapa dekan Fakultas Psikologi Universitas Mercu Buana?,faculty
-Berapa biaya kuliah program studi Teknik Informatika di UMB?,tuition
-Bagaimana cara mendaftar beasiswa KIP Kuliah di UMB?,scholarship
-Bagaimana mahasiswa Teknik Sipil mengisi KRS di SIA?,sia
-Bagaimana jika lupa password SSO Universitas Mercu Buana?,sso
-Apa saja program studi di Fakultas Ekonomi dan Bisnis?,study_program
-Di mana saja lokasi kampus Universitas Mercu Buana?,campus
-Apa akreditasi program studi Sistem Informasi UMB?,study_program
-Bagaimana cara menghubungi Biro Administrasi Akademik (BAA) UMB?,student_services
-Apa saja layanan perpustakaan digital UMB?,library
+query,intent,perturbation_type
+Apa saja syarat pendaftaran mahasiswa baru di UMB?,admissions,clean
+Siapa dekan Fakultas Ilmu Komputer UMB?,faculty,clean
+Siapa dekan Fakultas Psikologi Universitas Mercu Buana?,faculty,clean
+Berapa biaya kuliah program studi Teknik Informatika di UMB?,tuition,clean
+Bagaimana cara mendaftar beasiswa KIP Kuliah di UMB?,scholarship,clean
+Bagaimana mahasiswa Teknik Sipil mengisi KRS di SIA?,sia,clean
+Bagaimana jika lupa password SSO Universitas Mercu Buana?,sso,clean
+Apa saja program studi di Fakultas Ekonomi dan Bisnis?,study_program,clean
+Di mana saja lokasi kampus Universitas Mercu Buana?,campus,clean
+Apa akreditasi program studi Sistem Informasi UMB?,study_program,clean
+Bagaimana cara menghubungi Biro Administrasi Akademik (BAA) UMB?,student_services,clean
+Apa saja layanan perpustakaan digital UMB?,library,clean

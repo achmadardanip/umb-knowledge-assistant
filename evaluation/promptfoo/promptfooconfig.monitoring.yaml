@@ -47,6 +47,9 @@ tests:
   # Broad generated coverage, converted to Promptfoo CSV form (vars.query) from
   # datasets/rag_golden.json. Regenerate via the snippet in MONITORING.md when the slice changes.
   - file://golden_scenarios.csv
+  # Adversarial robustness coverage (typo/incomplete/mixed_lang/ambiguous), tagged with
+  # perturbation_type for filtering. Regenerate: python -m app.evaluation.adversarial_scenarios
+  - file://adversarial_scenarios.csv
 
 # Sharing target is set via the PROMPTFOO_REMOTE_API_BASE_URL / PROMPTFOO_REMOTE_APP_BASE_URL
 # environment variables (set by the scheduler container and the smoke command), which
