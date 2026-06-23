@@ -11,9 +11,62 @@ from sqlalchemy.orm import Session
 
 from app.db.database import get_db, get_session_local
 from app.db.models import RagEvalResult, RagEvalRun
+from pydantic import BaseModel, Field
+
 from app.evaluation import rag_eval_runner
 
 router = APIRouter(prefix="/eval/rag", tags=["rag-eval"])
+
+
+class AdhocRequest(BaseModel):
+    question: str = Field(min_length=1)
+    answer_model: str | None = None   # optional brain override
+
+
+def _adhoc_payload(question, answer, context, sources, not_found, faith, rel) -> dict:
+    """Assemble the ad-hoc single-question eval response (faithfulness skipped on refusal)."""
+    return {
+        "question": question,
+        "answer": answer,
+        "context": context,
+        "sources": sources,
+        "not_found": not_found,
+        "faithfulness": None if faith is None
+        else {"score": faith.score, "passed": faith.passed, "reason": faith.reason},
+        "relevance": {"score": rel.score, "passed": rel.passed, "reason": rel.reason},
+    }
+
+
+@router.post("/adhoc")
+def adhoc_eval(req: AdhocRequest) -> dict:
+    """Type-a-question: run it through the real retrieval+answer path and grade it live."""
+    from app.core.config import get_settings
+    from app.evaluation.benchmark import _retrieve
+    from app.evaluation.rag_graders import grade_faithfulness, grade_relevance, ollama_chat_fn
+    from app.ingestion.embedder import get_embedder
+    from app.rag.answer_generator import generate_answer
+    from app.rag.intent_classifier import classify_intent
+    from app.retrieval.hybrid_retriever import HybridRetriever
+
+    settings = get_settings()
+    db = get_session_local()()
+    try:
+        retriever = HybridRetriever(db, root_domain=settings.allowed_domain, embedder=get_embedder())
+        intent = classify_intent(req.question).intent
+        contexts = _retrieve(retriever, db, req.question, intent, 5, "agent_hybrid", settings)
+        payload = generate_answer(question=req.question, contexts=contexts,
+                                  language="id", answer_model=req.answer_model)
+    finally:
+        db.close()
+
+    answer = payload.get("answer") or ""
+    not_found = bool(payload.get("not_found"))
+    context_text = "\n\n".join((c.get("chunk_text") or "") for c in contexts)[:8000]
+    chat_fn = ollama_chat_fn(temperature=0.0)
+    faith = None if not_found else grade_faithfulness(req.question, context_text, answer, chat_fn=chat_fn)
+    rel = grade_relevance(req.question, answer, chat_fn=chat_fn)
+    return _adhoc_payload(req.question, answer, context_text,
+                          payload.get("sources") or [], not_found, faith, rel)
 
 
 def _sse(event: str, data) -> str:

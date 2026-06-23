@@ -83,3 +83,26 @@ export async function streamRun(
     for (const part of parts) if (part.trim()) consume(part);
   }
 }
+
+export interface AdhocResult {
+  question: string;
+  answer: string;
+  context: string;
+  sources: { hostname?: string; url?: string; title?: string }[];
+  not_found: boolean;
+  faithfulness: { score: number | null; passed: boolean | null; reason: string } | null;
+  relevance: { score: number | null; passed: boolean | null; reason: string };
+}
+
+export async function adhocEval(question: string, answerModel?: string): Promise<AdhocResult> {
+  const res = await fetch(`${API_BASE}/eval/rag/adhoc`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ question, answer_model: answerModel || undefined }),
+  });
+  if (!res.ok) {
+    const body = await res.json().catch(() => ({}));
+    throw new Error(body.detail || `Ad-hoc eval failed (${res.status})`);
+  }
+  return res.json();
+}

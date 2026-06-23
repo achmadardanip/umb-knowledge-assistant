@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { RagResult, startRun, streamRun } from "../lib/ragEval";
+import { AdhocResult, RagResult, adhocEval, startRun, streamRun } from "../lib/ragEval";
 
 export default function EvalPage() {
   const [status, setStatus] = useState<"idle" | "running" | "completed" | "failed">("idle");
@@ -10,6 +10,27 @@ export default function EvalPage() {
   const [agg, setAgg] = useState<{ f: number | null; r: number | null }>({ f: null, r: null });
   const [error, setError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+
+  // Ad-hoc: type a question and grade it live.
+  const [adhocQ, setAdhocQ] = useState("");
+  const [adhocBusy, setAdhocBusy] = useState(false);
+  const [adhocErr, setAdhocErr] = useState<string | null>(null);
+  const [adhoc, setAdhoc] = useState<AdhocResult | null>(null);
+
+  const runAdhoc = useCallback(async () => {
+    const q = adhocQ.trim();
+    if (!q) return;
+    setAdhocErr(null);
+    setAdhoc(null);
+    setAdhocBusy(true);
+    try {
+      setAdhoc(await adhocEval(q));
+    } catch (e) {
+      setAdhocErr(e instanceof Error ? e.message : String(e));
+    } finally {
+      setAdhocBusy(false);
+    }
+  }, [adhocQ]);
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const run = useCallback(async () => {
@@ -72,6 +93,47 @@ export default function EvalPage() {
       </header>
 
       {error && <div className="rounded-md bg-red-100 text-red-800 p-3 text-sm">{error}</div>}
+
+      <section className="rounded-lg border p-4 space-y-3">
+        <div className="text-sm font-medium">Coba 1 pertanyaan (ad-hoc)</div>
+        <div className="flex gap-2">
+          <input
+            value={adhocQ}
+            onChange={(e) => setAdhocQ(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") runAdhoc(); }}
+            placeholder="Ketik pertanyaan… (mis. Apa syarat beasiswa KIP di UMB?)"
+            className="flex-1 rounded-md border px-3 py-2 text-sm"
+          />
+          <button
+            onClick={runAdhoc}
+            disabled={adhocBusy || !adhocQ.trim()}
+            aria-busy={adhocBusy}
+            className="rounded-md bg-primary px-4 py-2 text-sm text-primary-foreground disabled:opacity-50"
+          >
+            {adhocBusy ? "Menilai…" : "Test"}
+          </button>
+        </div>
+        {adhocErr && <div className="rounded-md bg-red-100 text-red-800 p-2 text-xs">{adhocErr}</div>}
+        {adhoc && (
+          <div className="space-y-2 text-sm">
+            <div className="flex flex-wrap gap-2 items-center">
+              <span className={`rounded px-2 py-0.5 text-xs ${badge(adhoc.faithfulness?.passed ?? null)}`}>
+                Faithful: {adhoc.not_found ? "n/a" : fmt(adhoc.faithfulness?.score)}
+              </span>
+              <span className={`rounded px-2 py-0.5 text-xs ${badge(adhoc.relevance.passed)}`}>
+                Relevant: {fmt(adhoc.relevance.score)}
+              </span>
+              {adhoc.not_found && <span className="rounded px-2 py-0.5 text-xs bg-gray-200 text-gray-700">not_found</span>}
+              <span className="text-xs text-muted-foreground">{adhoc.sources.length} sumber</span>
+            </div>
+            <div className="rounded bg-muted/40 p-2 whitespace-pre-wrap">{adhoc.answer}</div>
+            {!adhoc.not_found && adhoc.faithfulness && (
+              <div className="text-xs text-muted-foreground">Faithfulness: {adhoc.faithfulness.reason}</div>
+            )}
+            <div className="text-xs text-muted-foreground">Relevance: {adhoc.relevance.reason}</div>
+          </div>
+        )}
+      </section>
 
       <section className="grid grid-cols-3 gap-4">
         <div className="rounded-lg border p-4">
