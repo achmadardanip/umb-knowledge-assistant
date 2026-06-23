@@ -1,0 +1,203 @@
+{
+  "failed_nonanswer_verdicts": 203,
+  "missing_topics_ranked": [
+    [
+      "dean_faculty",
+      36
+    ],
+    [
+      "student_services",
+      28
+    ],
+    [
+      "study_program",
+      22
+    ],
+    [
+      "academic_calendar",
+      18
+    ],
+    [
+      "sia_sso_elearning",
+      14
+    ],
+    [
+      "other",
+      13
+    ],
+    [
+      "tuition",
+      12
+    ],
+    [
+      "scholarship",
+      12
+    ],
+    [
+      "admission_quota",
+      12
+    ],
+    [
+      "graduation_rules",
+      10
+    ],
+    [
+      "academic_regulations",
+      10
+    ],
+    [
+      "campus",
+      8
+    ],
+    [
+      "digital_library",
+      6
+    ],
+    [
+      "lecturer",
+      2
+    ]
+  ],
+  "missing_entities_ranked": [
+    [
+      "faculty:teknik",
+      30
+    ],
+    [
+      "faculty:psikologi",
+      16
+    ],
+    [
+      "faculty:ekonomi dan bisnis",
+      8
+    ],
+    [
+      "faculty:ilmu komunikasi",
+      7
+    ],
+    [
+      "faculty:desain dan seni kreatif",
+      4
+    ],
+    [
+      "faculty:ilmu komputer",
+      2
+    ]
+  ],
+  "missing_programs_ranked": [
+    [
+      "program:psikologi",
+      16
+    ],
+    [
+      "program:hubungan masyarakat",
+      14
+    ],
+    [
+      "program:penyiaran",
+      8
+    ],
+    [
+      "program:teknik mesin",
+      8
+    ],
+    [
+      "program:teknik elektro",
+      6
+    ],
+    [
+      "program:akuntansi",
+      6
+    ],
+    [
+      "program:teknik informatika",
+      4
+    ],
+    [
+      "program:teknik industri",
+      4
+    ],
+    [
+      "program:sistem informasi",
+      2
+    ],
+    [
+      "program:desain komunikasi visual",
+      2
+    ]
+  ],
+  "top_missed_queries": [
+    [
+      "Siapa dekan Fakultas Psikologi Universitas Mercu Buana?",
+      4
+    ],
+    [
+      "Bagaimana cara mendaftar beasiswa KIP Kuliah di UMB?",
+      4
+    ],
+    [
+      "Bagaimana cara menghubungi Biro Administrasi Akademik (BAA) UMB?",
+      4
+    ],
+    [
+      "Kapan jadwal perkuliahan untuk mahasiswa dimulai?",
+      4
+    ],
+    [
+      "Berapa biaya kuliah program studi Teknik Informatika di UMB?",
+      2
+    ],
+    [
+      "Apa saja program studi di Fakultas Ekonomi dan Bisnis?",
+      2
+    ],
+    [
+      "Apa akreditasi program studi Sistem Informasi UMB?",
+      2
+    ],
+    [
+      "Apa saja layanan perpustakaan digital UMB?",
+      2
+    ],
+    [
+      "Kapan jadwal perkuliahan untuk mahasiswa Hubungan Masyarakat dimulai?",
+      2
+    ],
+    [
+      "Apa ketentuan kelulusan untuk mahasiswa Fakultas Ekonomi dan Bisnis?",
+      2
+    ],
+    [
+      "Alamat lengkap kampus Mercu Buana Bekasi di mana?",
+      2
+    ],
+    [
+      "Bagaimana prosedur layanan E-Learning UMB di UMB?",
+      2
+    ],
+    [
+      "Siapa dekan Fakultas Desain dan Seni Kreatif?",
+      2
+    ],
+    [
+      "repository umb",
+      2
+    ],
+    [
+      "Bagaimana mahasiswa Fakultas Teknik mengakses SIA UMB?",
+      2
+    ]
+  ],
+  "crawl_targets": [
+    "baa.mercubuana.ac.id",
+    "pmb.mercubuana.ac.id",
+    "library.mercubuana.ac.id",
+    "elearning.mercubuana.ac.id",
+    "sia.mercubuana.ac.id",
+    "psikologi.mercubuana.ac.id",
+    "feb.mercubuana.ac.id",
+    "ft.mercubuana.ac.id",
+    "fikom.mercubuana.ac.id",
+    "fdsk.mercubuana.ac.id"
+  ]
+}

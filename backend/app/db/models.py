@@ -152,6 +152,30 @@ class CrawlRegistry(Base):
     updated_at = Column(DateTime(timezone=True), default=utcnow, onupdate=utcnow)
 
 
+class KnowledgeCandidate(Base):
+    """Phase 33 P33.1 — self-expanding KB. A Tavily-discovered answer to a KB miss,
+    held for auto-ingestion (trust ≥ threshold, official domain, low duplicate, high
+    relevance) or human review. Additive; never replaces KB provenance."""
+
+    __tablename__ = "knowledge_candidates"
+
+    id = Column(GUID, primary_key=True, default=uuid_str)
+    query = Column(Text, nullable=False)
+    query_hash = Column(Text, index=True)
+    answer = Column(Text)
+    source_url = Column(Text)
+    source_domain = Column(Text, index=True)
+    trust_score = Column(Float, default=0.0, index=True)
+    source_class = Column(Text)
+    relevance = Column(Float)
+    duplicate_score = Column(Float)
+    accepted = Column(Boolean, default=False, index=True)
+    ingested = Column(Boolean, default=False, index=True)
+    reason = Column(Text)
+    retrieved_at = Column(DateTime(timezone=True), default=utcnow, index=True)
+    decided_at = Column(DateTime(timezone=True))
+
+
 class DiscoveredURL(Base):
     __tablename__ = "discovered_urls"
 

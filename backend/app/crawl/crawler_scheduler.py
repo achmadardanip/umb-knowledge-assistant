@@ -70,6 +70,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--reclassify", action="store_true")
     ap.add_argument("--tick", action="store_true")
+    ap.add_argument("--once", action="store_true", help="run a single tick across all tiers and exit (alias of --tick)")
+    ap.add_argument("--force", action="store_true", help="ignore the per-URL due check and process due+not-due in this tick")
     ap.add_argument("--verify", action="store_true", help="no-network validation pass")
     ap.add_argument("--daemon", action="store_true")
     ap.add_argument("--interval", type=int, default=3600)
@@ -84,7 +86,7 @@ def main() -> None:
     try:
         if args.reclassify:
             print(reclassify(db))
-        if args.tick:
+        if args.tick or args.once:
             res = tick(db, verify=args.verify, limit=args.limit)
             for tier, r in res["tiers"].items():
                 print(f"  {tier:8s} due={r['due']:>4} processed={r['processed']:>4} counts={r['counts']} "

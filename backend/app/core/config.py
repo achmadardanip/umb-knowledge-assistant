@@ -261,6 +261,18 @@ class Settings:
     # and reserves live web for genuine knowledge gaps (spec: controlled fallback).
     web_fallback_min_contexts: int = _int("WEB_FALLBACK_MIN_CONTEXTS", 3)
     web_fallback_min_score: float = _float("WEB_FALLBACK_MIN_SCORE", 1.2)
+    # Phase 32 — Tavily-centric fallback. Activate the external fallback only when
+    # normalized KB retrieval confidence is below this threshold (or no citations /
+    # empty KB). Higher = trust the KB more, call Tavily less.
+    tavily_fallback_threshold: float = _float("TAVILY_FALLBACK_THRESHOLD", 0.45)
+    # When true the live path uses Tavily Extract only (no Firecrawl / direct fetch),
+    # making Tavily the single external retrieval provider. Default false preserves the
+    # certified behaviour until validated live.
+    web_search_engine_tavily_only: bool = _bool("WEB_SEARCH_ENGINE_TAVILY_ONLY", False)
+    # Phase 32 P32.5 — minimum source trust to accept an external answer.
+    external_min_trust_score: float = _float("EXTERNAL_MIN_TRUST_SCORE", 0.7)
+    # Phase 33 — auto-ingest a Tavily candidate into the KB only above this trust.
+    tavily_autoingest_min_trust: float = _float("TAVILY_AUTOINGEST_MIN_TRUST", 0.9)
 
     firecrawl_api_key: str | None = os.getenv("FIRECRAWL_API_KEY")
     firecrawl_base_url: str = os.getenv("FIRECRAWL_BASE_URL", "http://localhost:3002").rstrip("/")
