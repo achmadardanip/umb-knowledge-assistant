@@ -42,9 +42,14 @@ def normalize_provider(provider: str | None) -> ProviderName:
     return selected  # type: ignore[return-value]
 
 
-def get_provider(provider_override: str | None = None) -> BaseLLMProvider:
+def get_provider(provider_override: str | None = None,
+                 model_override: str | None = None) -> BaseLLMProvider:
     provider_name = normalize_provider(provider_override)
     provider = PROVIDERS[provider_name]()
+    # Per-request model override (used by the multi-model "brain comparison" audit).
+    # Applied only when explicitly requested; harmless for providers exposing `.model`.
+    if model_override and hasattr(provider, "model"):
+        provider.model = model_override
     return provider
 
 

@@ -567,12 +567,13 @@ def _provider_candidates(provider_override: str | None) -> list[str | None]:
     return candidates
 
 
-def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int):
+def _chat_with_failover(messages: list[dict], provider_override: str | None, max_retries: int,
+                        model_override: str | None = None):
     settings = get_settings()
     last_error: Exception | None = None
     selected_provider = normalize_provider(provider_override)
     for candidate in _provider_candidates(provider_override):
-        provider = get_provider(candidate)
+        provider = get_provider(candidate, model_override=model_override)
         for attempt in range(max_retries + 1):
             try:
                 return provider, provider.chat(messages), None
@@ -883,6 +884,7 @@ def generate_answer(
     memories: list[dict] | None = None,
     provider_override: str | None = None,
     language: str | None = None,
+    answer_model: str | None = None,
 ) -> dict:
     settings = get_settings()
     memory_used = bool(memories)
@@ -929,7 +931,8 @@ def generate_answer(
         language=language,
     )
     max_retries = max(settings.llm_max_retries, 0)
-    provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries)
+    provider, response, last_error = _chat_with_failover(messages, provider_override, max_retries,
+                                                         model_override=answer_model)
 
     if response is None:
         if settings.llm_fallback_extractive:

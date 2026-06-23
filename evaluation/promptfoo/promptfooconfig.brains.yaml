@@ -1,0 +1,55 @@
+# Brain-comparison audit: run the SAME /chat (hybrid retrieval) under different answer LLMs
+# and compare which "brain" is most faithful/relevant. Columns = answer models; single judge
+# (qwen2.5:7b) so only the brain varies. Most UMB answers are deterministic (structured/FAQ)
+# and identical across brains; the brain only matters for LLM-synthesized answers.
+# HEAVY: each row runs /chat under 5 brains + grading. Occasional manual batch:
+#   ... npx promptfoo@0.121.17 eval -c promptfooconfig.brains.yaml --share        (full set)
+#   ... add --filter-first-n 10 for a quick pass.
+description: UMB Chatbot — brain comparison (answer-model audit)
+
+providers:
+  - id: file://rag_chat_provider.py
+    label: qwen7b
+    config: { retrieval_mode: hybrid, answer_model: "qwen2.5:7b-instruct" }
+  - id: file://rag_chat_provider.py
+    label: llama3b
+    config: { retrieval_mode: hybrid, answer_model: "llama3.2:3b" }
+  - id: file://rag_chat_provider.py
+    label: gemma9b
+    config: { retrieval_mode: hybrid, answer_model: "gemma2:9b" }
+  - id: file://rag_chat_provider.py
+    label: mistral
+    config: { retrieval_mode: hybrid, answer_model: "mistral:7b" }
+  - id: file://rag_chat_provider.py
+    label: qwen14b
+    config: { retrieval_mode: hybrid, answer_model: "qwen2.5:14b" }
+
+prompts:
+  - "{{query}}"
+
+defaultTest:
+  options:
+    provider: ollama:chat:qwen2.5:7b-instruct   # one judge so only the brain varies
+  assert:
+    - type: context-faithfulness
+      contextTransform: context.metadata.context
+      threshold: 0.7
+      metric: faithfulness
+    - type: llm-rubric
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance
+    - type: javascript
+      metric: official_source
+      value: |
+        const m = (context && context.metadata) || {};
+        if (m.not_found) return { pass: true, score: 1, reason: 'refusal: no sources expected' };
+        return m.official_source
+          ? { pass: true, score: 1, reason: 'official sources' }
+          : { pass: false, score: 0, reason: 'non-official or empty sources' };
+
+tests:
+  - file://scenarios.csv
+  - file://golden_scenarios.csv
+  - file://adversarial_scenarios.csv
+
+outputPath: reports/promptfoo_brains_latest.json

@@ -19,13 +19,14 @@ def call_api(prompt, options, context):  # promptfoo python provider entrypoint
     query = (context or {}).get("vars", {}).get("query") or prompt
     # Per-provider config lets us run the SAME endpoint under two retrieval modes
     # (indexed vs hybrid) as two columns, which Promptfoo needs to render charts.
-    mode = ((options or {}).get("config") or {}).get("retrieval_mode", "hybrid")
+    config = (options or {}).get("config") or {}
+    mode = config.get("retrieval_mode", "hybrid")
+    body = {"question": query, "include_retrieved_context": True, "retrieval_mode": mode}
+    # Optional answer-model override for the "brain comparison" audit.
+    if config.get("answer_model"):
+        body["answer_model"] = config["answer_model"]
     try:
-        resp = requests.post(
-            f"{_BASE}/chat",
-            json={"question": query, "include_retrieved_context": True, "retrieval_mode": mode},
-            timeout=_TIMEOUT,
-        )
+        resp = requests.post(f"{_BASE}/chat", json=body, timeout=_TIMEOUT)
         resp.raise_for_status()
         data = resp.json()
     except Exception as exc:  # network/timeout/5xx -> failed test, never crash the run

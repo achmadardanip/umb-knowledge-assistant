@@ -9,10 +9,10 @@ from app.llm.base import BaseLLMProvider, LLMResponse, ProviderConfigurationErro
 class LocalOllamaProvider(BaseLLMProvider):
     provider_name = "local_ollama"
 
-    def __init__(self):
+    def __init__(self, model_override: str | None = None):
         settings = get_settings()
         self.base_url = settings.local_llm_base_url.rstrip("/")
-        self.model = settings.local_llm_model
+        self.model = model_override or settings.local_llm_model
         self.max_tokens = settings.local_llm_max_tokens
         self.timeout = settings.local_llm_timeout_seconds
         self.default_temperature = settings.local_llm_temperature

@@ -71,6 +71,7 @@ class ChatRequest(BaseModel):
     audience: Literal["calon_mahasiswa", "mahasiswa", "orang_tua", "alumni", "dosen", "publik"] | None = None
     language: str | None = None
     include_retrieved_context: bool = False
+    answer_model: str | None = None   # eval-only: override the local LLM (brain comparison)
 
 
 def _ensure_session(db: Session, payload: ChatRequest):
@@ -803,6 +804,7 @@ def process_chat(payload: ChatRequest, db: Session, emit_step=None, defer_genera
                     memories=memories,
                     provider_override=payload.provider_override,
                     language=language_detected,
+                    answer_model=payload.answer_model,
                 )
                 if cache_enabled and not answer_payload.get("not_found"):
                     store_cached_answer(

@@ -1,0 +1,66 @@
+# Judge-reliability audit: grade the SAME /chat answers with multiple local Ollama judges
+# and compare agreement. One answer column (production hybrid); faithfulness + relevance are
+# graded per judge as separate named metrics, so the viewer shows judge-by-judge scores.
+# HEAVY: each row is graded 8x (4 judges x 2 metrics). Run as an occasional manual batch:
+#   ... npx promptfoo@0.121.17 eval -c promptfooconfig.judges.yaml --share        (full set)
+#   ... add --filter-first-n 10 for a quick pass.
+description: UMB Chatbot — judge-reliability audit (multi-model graders)
+
+providers:
+  - id: file://rag_chat_provider.py
+    label: hybrid
+    config:
+      retrieval_mode: hybrid
+
+prompts:
+  - "{{query}}"
+
+defaultTest:
+  options:
+    provider: ollama:chat:qwen2.5:7b-instruct   # default grader (each assert overrides below)
+  assert:
+    # --- faithfulness, one grader per judge model ---
+    - type: context-faithfulness
+      contextTransform: context.metadata.context
+      threshold: 0.7
+      metric: faithfulness_qwen7b
+      provider: ollama:chat:qwen2.5:7b-instruct
+    - type: context-faithfulness
+      contextTransform: context.metadata.context
+      threshold: 0.7
+      metric: faithfulness_gemma9b
+      provider: ollama:chat:gemma2:9b
+    - type: context-faithfulness
+      contextTransform: context.metadata.context
+      threshold: 0.7
+      metric: faithfulness_mistral
+      provider: ollama:chat:mistral:7b
+    - type: context-faithfulness
+      contextTransform: context.metadata.context
+      threshold: 0.7
+      metric: faithfulness_qwen14b
+      provider: ollama:chat:qwen2.5:14b
+    # --- relevance, one grader per judge model ---
+    - type: llm-rubric
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance_qwen7b
+      provider: ollama:chat:qwen2.5:7b-instruct
+    - type: llm-rubric
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance_gemma9b
+      provider: ollama:chat:gemma2:9b
+    - type: llm-rubric
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance_mistral
+      provider: ollama:chat:mistral:7b
+    - type: llm-rubric
+      value: "User question: \"{{query}}\". Judge whether the answer above directly and helpfully addresses THIS question (ignore factual correctness; judge relevance only). Pass if relevant."
+      metric: relevance_qwen14b
+      provider: ollama:chat:qwen2.5:14b
+
+tests:
+  - file://scenarios.csv
+  - file://golden_scenarios.csv
+  - file://adversarial_scenarios.csv
+
+outputPath: reports/promptfoo_judges_latest.json
