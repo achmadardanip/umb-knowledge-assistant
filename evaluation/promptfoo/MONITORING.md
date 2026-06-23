@@ -58,7 +58,29 @@ A custom provider (`rag_chat_provider.py`) calls the real `/chat` (with
 Assertions: `context-faithfulness` (answer grounded in retrieved context),
 `llm-rubric` (answer relevant to the question), and a `javascript` official-source check.
 
+## Coverage sets
+The nightly config tests three CSV sources: `scenarios.csv` (curated), `golden_scenarios.csv`
+(broad generated), and `adversarial_scenarios.csv` (robustness: typo / incomplete /
+mixed-language / ambiguous, tagged with a `perturbation_type` var you can filter in the
+viewer). Regenerate the adversarial set: `python -m app.evaluation.adversarial_scenarios --base 20`.
+
+## Multi-model audits (occasional manual batch — heavy)
+Two extra configs, graded by several local Ollama models (qwen2.5:7b, gemma2:9b, mistral:7b,
+qwen2.5:14b, llama3.2:3b). Run them on demand, not nightly. Add `--filter-first-n 10` for a quick pass.
+- **Judge reliability** — `promptfooconfig.judges.yaml`: grades the same answers with every
+  judge as per-judge metrics (`faithfulness_<model>`, `relevance_<model>`) → see judge agreement.
+- **Brain comparison** — `promptfooconfig.brains.yaml`: runs `/chat` under each answer model as
+  columns (opt-in `answer_model` override) → which LLM brain is most faithful. Most UMB answers
+  are deterministic (structured/FAQ) and identical across brains; the brain only matters for
+  LLM-synthesized answers.
+
+## Export & share to engineers
+- **Live link (best):** every `--share` run prints `http://<host>:3001/eval/?evalId=...` — send it.
+- **Export a stored eval to JSON:** `bash export_report.sh [monitoring|judges|brains|<evalId>]`
+  (writes `reports/export-<evalId>.json` and prints the share URL).
+- **Self-contained HTML to email:** add `--output reports/report.html` to the eval command.
+
 ## Caveat
-The judge is the local `qwen2.5:7b-instruct` — scores are a **signal for human review**,
-not absolute truth. It is report-only and does not gate releases. The deterministic CI gate
-(`promptfoo_runner`) and the in-app `/eval` dashboard are unchanged.
+The judge is a local model (default `qwen2.5:7b-instruct`) — scores are a **signal for human
+review**, not absolute truth. It is report-only and does not gate releases. The deterministic
+CI gate (`promptfoo_runner`) and the in-app `/eval` dashboard are unchanged.
