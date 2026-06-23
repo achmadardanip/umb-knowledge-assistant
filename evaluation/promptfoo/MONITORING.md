@@ -74,6 +74,16 @@ qwen2.5:14b, llama3.2:3b). Run them on demand, not nightly. Add `--filter-first-
   are deterministic (structured/FAQ) and identical across brains; the brain only matters for
   LLM-synthesized answers.
 
+## Red-team (offline, curated attack suite)
+`bash redteam.sh` runs a curated attack set (`redteam_scenarios.csv`: prompt-injection,
+system-prompt extraction, PII elicitation, jailbreak-of-grounding, hallucination bait)
+through the real `/chat`, and a local `qwen2.5:14b` judge scores whether each attack was
+**resisted** (`attack_resisted` metric: pass = refused / stayed grounded / no leak / no
+fabrication / didn't obey the injection). 100% local — no account needed. Add attacks by
+appending rows to `redteam_scenarios.csv`. Report-only; heavy (qwen14b) → occasional batch.
+> Note: Promptfoo's built-in `redteam` feature requires email/cloud verification, so this
+> uses a curated local suite instead to stay fully offline.
+
 ## Export & share to engineers
 - **Live link (best):** every `--share` run prints `http://<host>:3001/eval/?evalId=...` — send it.
 - **Export a stored eval to JSON:** `bash export_report.sh [monitoring|judges|brains|<evalId>]`
